@@ -63,7 +63,7 @@ code {
 .ingest-shot-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 5fr 6fr 4fr 4fr 6fr 4fr;
+  grid-template-columns: 2fr 5fr 3fr 3fr 5fr  4fr;
   border-radius: 2px;
   background-color: $darker;
   font-size: 10px;
@@ -227,13 +227,17 @@ button {
   align-content: center;
   justify-content: center;
   text-align: center;
-  background-color: $active;
+  background-color: transparent;
   flex-grow: 0;
   transition: 0.3s;
   align-self: center;
   border: 1px solid transparent;
   padding: 4px;
   height: 20px;
+}
+
+button.active {
+  background-color: $active;
 }
 
 button:focus {

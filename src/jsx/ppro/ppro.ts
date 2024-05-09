@@ -45,6 +45,15 @@ const timeDisplayToFrameRate = (td: number): number => {
       return 0;
   }
 };
+const getProjectItemFromPath = (filepath: string) => {
+  const clips = app.project.rootItem.findItemsMatchingMediaPath(filepath);
+  return JSON.stringify({ clips: clips });
+};
+
+const mediaExists = (mediaPath: string): boolean => {
+  const item = getProjectItemFromPath(mediaPath);
+  return item ? true : false;
+};
 
 export const getActiveSequence = () => {
   const seq = app.project.activeSequence;
@@ -184,6 +193,13 @@ export function getAllTracksClipsForNode(sequenceId: string) {
   for (var i = 0; i < tracksClips.length; i++) {
     const clipMarkers = getClipMarkers(tracksClips[i].clip.projectItem);
     const speed = tracksClips[i].clip.getSpeed();
+
+    let shotName = tracksClips[i].clip.name;
+    let match = shotName.match(/_v\d/);
+    if (match) {
+      shotName = shotName.split(match[0])[0];
+    }
+
     var newClip = {
       track: tracksClips[i].track.replace(" ", ""),
       trackIndex: tracksClips[i].trackIndex,
@@ -192,7 +208,6 @@ export function getAllTracksClipsForNode(sequenceId: string) {
       sequenceStart: tracksClips[i].sequenceStart,
       sequenceFramerate: tracksClips[i].sequenceFramerate,
       clipFramerate: tracksClips[i].sequenceFramerate,
-      // clipFramerate: tracksClips[i].clip.projectItem.getFootageInterpretation().frameRate,
       duration: tracksClips[i].clip.duration.seconds,
       inPoint: tracksClips[i].clip.inPoint.seconds,
       outPoint: tracksClips[i].clip.outPoint.seconds,
@@ -200,7 +215,7 @@ export function getAllTracksClipsForNode(sequenceId: string) {
       start: tracksClips[i].clip.start.seconds,
       end: tracksClips[i].clip.end.seconds,
       clipName: tracksClips[i].clip.projectItem.name,
-      shotName: tracksClips[i].clip.name,
+      shotName: shotName,
       filepath: tracksClips[i].clip.projectItem.getMediaPath(),
       markers: clipMarkers,
       speed: speed,
@@ -231,4 +246,52 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
     currentClip.name = newBasename;
     return currentClip.name;
   }
+};
+
+interface IImportOptions {
+  filepath: string;
+  isSequence: boolean;
+}
+export const importMediaFile = (options: IImportOptions) => {
+  const f = new File(options.filepath);
+  mediaExists(options.filepath);
+  app.project.importFiles(
+    [f.fsName],
+    true,
+    app.project.rootItem,
+    options.isSequence
+  );
+};
+
+export const mapSequence = () => {
+  const seq = app.project.activeSequence;
+  alert(seq.projectItem.nodeId);
+  return seq.projectItem.nodeId;
+};
+
+export const collectSequenceClips = (
+  sequenceId: string,
+  sequenceClips: string[]
+) => {
+  const seq = app.project.activeSequence;
+
+  for (
+    let trackIndex = 0;
+    trackIndex < seq.videoTracks.numTracks;
+    trackIndex++
+  ) {
+    let track = seq.videoTracks[trackIndex];
+    let clips = track.clips;
+
+    for (let clipIndex = 0; clipIndex < clips.numItems; clipIndex++) {
+      let clip = clips[clipIndex];
+
+      // Check if the clip is a sequence
+      if (clip.projectItem.isSequence()) {
+        sequenceClips.push(clip.projectItem.nodeId);
+      }
+    }
+  }
+
+  return JSON.stringify(sequenceClips);
 };

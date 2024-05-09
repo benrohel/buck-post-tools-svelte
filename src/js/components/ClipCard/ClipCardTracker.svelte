@@ -14,6 +14,7 @@
   import { GetFileVersion } from "../../api/files/files";
   export let clip: any;
   export let id = 0;
+  export let useTracker = false;
   export let selected = false;
   export let onSelect: Function;
   export let onReplace: Function;
@@ -42,7 +43,6 @@
 
   const handleSelectVersion = async () => {
     console.log(selectedVersion);
-
     if (onChange) {
       onChange(clip, editVersion);
     }
@@ -52,11 +52,33 @@
     evalES(`goToFrame(${frame})`, false);
   };
 
+  const GetShot = async () => {
+    if (useTracker) {
+      console.log("GetShot", clip.shotKey);
+      if (clip.shotKey) {
+        const shot = await getShotById(clip.shotKey);
+
+        if (shot) {
+          return shot;
+        } else {
+          throw new Error("No shot found");
+        }
+      }
+    } else {
+      return clip;
+    }
+  };
+
+  let shotPromise = GetShot();
+
   const handleReplaceClip = () => {
     console.log("replace clip");
     console.log(editVersion);
     onReplace(clip, selectedVersion);
 
+    PatchItem(clip.clipKey, {
+      shot_version: editVersion,
+    });
     // let importOptions = {
     //   nodeId: clip.nodeId,
     //   oldPath: clip.filepath,
@@ -81,13 +103,15 @@
     }
   };
 
-  const initCard = () => {
+  const initCard = async () => {
     selectedVersion = clip.versions[0];
-    editVersion = GetFileVersion(clip.filepath) ?? "";
+    // const versions = await ShotVersions(clip.shotKey);
+    // publishedVersion = versions.pop()?.item.data.name;
+    // editVersion = GetFileVersion(clip.filepath) ?? "";
   };
 
   onMount(async () => {
-    initCard();
+    await initCard();
   });
 </script>
 
@@ -99,41 +123,45 @@
   transition:fly={{ y: 60, duration: 250, delay: id * 40 }}
 >
   <div class="ingest-shot-row">
-    {#if clip}
-      <div class="shot-tb">
-        <div class="shot-tb" id={`${clip.name}`} />
-      </div>
+    {#await shotPromise}
+      <p>...loading</p>
+    {:then shot}
+      {#if shot}
+        <div class="shot-tb">
+          <div class="shot-tb" id={`${shot._key}`} />
+          <!-- style={`background-image:url(${FileUrl(shot.data.thumbnail)});`} -->
+        </div>
+        <h4 id="shot-label" class="clip-name-header" style={getSyncedColor()}>
+          {shot.data.name.toUpperCase()}
+        </h4>
+        <h4>{publishedVersion}</h4>
+        <h4>{editVersion}</h4>
+        <div class="select-wrapper">
+          <select bind:value={selectedVersion} on:change={handleSelectVersion}>
+            {#each clip.versions as version, id}
+              <option value={version}>
+                {version.displayName}
+              </option>
+            {/each}
+          </select>
+        </div>
 
-      <h4 id="shot-label" class="clip-name-header" style={getSyncedColor()}>
-        {clip.shotName}
-      </h4>
-      <h4>{publishedVersion ? publishedVersion : "n/a"}</h4>
-      <h4>{editVersion}</h4>
-      <div class="select-wrapper">
-        <select bind:value={selectedVersion} on:change={handleSelectVersion}>
-          {#each clip.versions as version, id}
-            <option value={version}>
-              {version.displayName}
-            </option>
-          {/each}
-        </select>
-      </div>
-
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-      >
-        <button
-          class="icon active"
-          on:click={handleReplaceClip}
-          disabled={publishedVersion == selectedVersion ?? false}
+        <div
+          style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
         >
-          <RefreshCw />
-        </button>
-        <button class="icon active" on:click={handleImportClip}>
-          <Download />
-        </button>
-      </div>
-    {/if}
+          <button
+            class="icon active"
+            on:click={handleReplaceClip}
+            disabled={publishedVersion == selectedVersion ?? false}
+          >
+            <RefreshCw />
+          </button>
+          <button class="icon active" on:click={handleImportClip}>
+            <Download />
+          </button>
+        </div>
+      {/if}
+    {/await}
   </div>
 </div>
 
@@ -168,6 +196,6 @@
     width: 53px;
     height: 30px;
     border-radius: 4px;
-    filter: br ightness(0.9);
+    filter: brightness(0.9);
   }
 </style>

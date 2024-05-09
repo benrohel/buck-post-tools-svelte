@@ -15,7 +15,7 @@ export const BuckRequest = async (
       "Content-Type": requestOptions.contentType
         ? requestOptions.contentType
         : "",
-      "X-BUCK-APP": "ae-cep-panel",
+      "X-BUCK-APP": "cep-panel",
     },
     data: requestOptions.data,
   };
@@ -128,6 +128,37 @@ export const Versions = async (taskKey: string): Promise<Item[]> => {
       if (a.data.name < b.data.name) {
         return -1;
       } else if (a.data.name > b.data.name) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+    return Promise.resolve(sorted);
+  } else {
+    return Promise.resolve([]);
+  }
+};
+
+export const ShotVersions = async (shotKey: string): Promise<any[]> => {
+  const tasksOptions: BuckRequestConfig = {
+    method: "POST",
+    contentType: "application/json",
+    request: `/advanced/traverse/${shotKey}`,
+    data: {
+      query: "# -($Child,4)> $Version View{item:item,parent:FIRST($parent)}",
+      aliases: { parent: "# <()- * VIEW {key:item._key,name:item.data.name}" },
+    },
+  };
+
+  const res = await BuckRequest(tasksOptions);
+
+  if (res) {
+    const versions = res as any[];
+
+    const sorted = versions.sort((a, b) => {
+      if (a.item.data.name < b.item.data.name) {
+        return -1;
+      } else if (a.item.data.name > b.item.data.name) {
         return 1;
       } else {
         return -1;
@@ -387,4 +418,63 @@ export const GetProjectProperties = async (
   };
   const res = await BuckRequest(options);
   return Promise.resolve(res[0]);
+};
+
+export const GetEdits = async (projectKey: string): Promise<any> => {
+  const options: BuckRequestConfig = {
+    method: "POST",
+    request: `/advanced/traverse/${projectKey}`,
+    contentType: "application/json",
+    data: {
+      query: "# -($Child,3)> $Timeline View{_key:item._key,data:item.data}",
+    },
+  };
+  const res = await BuckRequest(options);
+
+  return Promise.resolve(res);
+};
+
+export const GetClips = async (editKey: string): Promise<any> => {
+  const options: BuckRequestConfig = {
+    method: "POST",
+    request: `/advanced/traverse/${editKey}`,
+    contentType: "application/json",
+    data: { query: "# <($Child,1)> item.type=='Clip' View item" },
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
+
+export const GetShotForClip = async (clip: any): Promise<any> => {
+  const options: BuckRequestConfig = {
+    method: "POST",
+    request: `/advanced/traverse/${clip._key}`,
+    contentType: "application/json",
+    data: {
+      query: "# <($Breakdown, 2)> $Shot View item",
+    },
+  };
+  const res = await BuckRequest(options);
+
+  return Promise.resolve({ ...clip, shot: res[0] });
+};
+
+export const GetItem = async (itemKey: string): Promise<any> => {
+  const options: BuckRequestConfig = {
+    method: "GET",
+    request: `advanced/adv/items/${itemKey}`,
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
+
+export const PatchItem = async (itemKey: string, data: any): Promise<any> => {
+  const options: BuckRequestConfig = {
+    method: "PATCH",
+    request: `/advanced/adv/items/${itemKey}`,
+    contentType: "application/json",
+    data: data,
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
 };
