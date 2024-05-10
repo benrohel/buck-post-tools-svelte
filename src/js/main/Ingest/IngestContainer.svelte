@@ -174,7 +174,7 @@
     }
   };
 
-  onMount(async () => {
+  const refreshIngest = async () => {
     if ($codaDoc) {
       console.log("codaDoc", $codaDoc);
       codaUrl = $codaDoc;
@@ -183,6 +183,10 @@
       codaTableId = $codaTable;
     }
     await getClips();
+  };
+
+  onMount(async () => {
+    await refreshIngest();
   });
 </script>
 
