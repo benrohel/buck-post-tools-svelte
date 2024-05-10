@@ -2779,6 +2779,7 @@ __metadata:
     core-js: "npm:3"
     cross-env: "npm:^7.0.3"
     date-fns: "npm:^2.30.0"
+    dotenv: "npm:^16.4.5"
     fs-extra: "npm:^10.0.0"
     lucide-svelte: "npm:^0.294.0"
     rimraf: "npm:^3.0.2"
@@ -3234,6 +3235,13 @@ __metadata:
   version: 6.1.0
   resolution: "detect-indent@npm:6.1.0"
   checksum: dd83cdeda9af219cf77f5e9a0dc31d828c045337386cfb55ce04fad94ba872ee7957336834154f7647b89b899c3c7acc977c57a79b7c776b506240993f97acc7
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.4.5":
+  version: 16.4.5
+  resolution: "dotenv@npm:16.4.5"
+  checksum: 48d92870076832af0418b13acd6e5a5a3e83bb00df690d9812e94b24aff62b88ade955ac99a05501305b8dc8f1b0ee7638b18493deb6fe93d680e5220936292f
   languageName: node
   linkType: hard
 

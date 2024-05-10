@@ -72,7 +72,7 @@ export const GetSystemFileVersions = (
 //regex to match the version number in a filename before the extension
 
 export const GetFileVersion = (filepath: string) => {
-  const versionRegex = /(v\w+|v\d+)/i;
+  const versionRegex = /_(v\d+)/i;
   const dir = path.dirname(filepath);
   const match = path.basename(filepath.toLowerCase()).match(versionRegex);
   return match ? match[1] : null;

@@ -295,3 +295,9 @@ export const collectSequenceClips = (
 
   return JSON.stringify(sequenceClips);
 };
+
+export const goToFrame = (frame: number) => {
+  var seq = app.project.activeSequence;
+  var ticks = (parseInt(seq.timebase) * frame).toString();
+  seq.setPlayerPosition(ticks);
+};

@@ -15,6 +15,7 @@
     "axios": "^1.6.2",
     "buck5-javascript-client": "/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client",
     "date-fns": "^2.30.0",
+    "dotenv": "^16.4.5",
     "lucide-svelte": "^0.294.0",
     "svelte-icons": "^2.1.0"
   },

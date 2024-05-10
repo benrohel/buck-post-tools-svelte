@@ -8,7 +8,7 @@
     PatchItem,
   } from "../../api/buck5/buck5-api";
   import { fly } from "svelte/transition";
-  import { Download, FolderOpen, RefreshCw } from "svelte-lucide";
+  import { Download, ArrowUpDown, RefreshCw } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
   import { getShotById } from "buck5-javascript-client";
   import { GetFileVersion } from "../../api/files/files";
@@ -44,7 +44,7 @@
     console.log(selectedVersion);
 
     if (onChange) {
-      onChange(clip, editVersion);
+      onChange(clip, selectedVersion);
     }
   };
 
@@ -54,39 +54,46 @@
 
   const handleReplaceClip = () => {
     console.log("replace clip");
-    console.log(editVersion);
     onReplace(clip, selectedVersion);
-
-    // let importOptions = {
-    //   nodeId: clip.nodeId,
-    //   oldPath: clip.filepath,
-    //   newPath: selectedVersion.filepath,
-    //   isSequence: false,
-    // };
-    // evalES(`replaceMedia(${JSON.stringify(importOptions)})`).then((res) => {
-    //   editVersion = selectedVersion.version;
-    //   return res ? true : false;
-    // });
   };
 
   const handleImportClip = () => {
     onImport(clip, selectedVersion);
   };
 
+  const handleEditClipCLick = () => {
+    const startFrame = clip.start * clip.sequenceFramerate;
+    console.log(startFrame);
+    evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
+  };
+
   $: getSyncedColor = () => {
-    if (publishedVersion == editVersion) {
+    if (isSynced()) {
       return "color: #3caea3";
     } else {
       return "color: #f6d55c";
     }
   };
 
+  $: isSynced = () => {
+    if (!clip.trackerClip) return false;
+    const compVersion = clip.trackerClip["values"]["Latest Comp"];
+    const fileVersion = GetFileVersion(clip.filepath)?.split("v")[1];
+    if (!fileVersion) return false;
+    const timelineVersion = parseInt(fileVersion);
+    console.log(compVersion, timelineVersion);
+    return compVersion == timelineVersion;
+  };
+
   const initCard = () => {
     selectedVersion = clip.versions[0];
     editVersion = GetFileVersion(clip.filepath) ?? "";
+    publishedVersion = clip.trackerClip
+      ? clip.trackerClip.values["Comp Version"]
+      : "";
   };
 
-  onMount(async () => {
+  onMount(() => {
     initCard();
   });
 </script>
@@ -96,19 +103,17 @@
   style={openComments ? "height:100%" : ""}
   on:click={handleSelectTask}
   on:keydown={handleSelectTask}
-  transition:fly={{ y: 60, duration: 250, delay: id * 40 }}
+  transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
   <div class="ingest-shot-row">
     {#if clip}
-      <div class="shot-tb">
-        <div class="shot-tb" id={`${clip.name}`} />
-      </div>
-
       <h4 id="shot-label" class="clip-name-header" style={getSyncedColor()}>
         {clip.shotName}
       </h4>
       <h4>{publishedVersion ? publishedVersion : "n/a"}</h4>
-      <h4>{editVersion}</h4>
+      <h4 class="edit-version" on:dblclick|preventDefault={handleEditClipCLick}>
+        {editVersion}
+      </h4>
       <div class="select-wrapper">
         <select bind:value={selectedVersion} on:change={handleSelectVersion}>
           {#each clip.versions as version, id}
@@ -127,7 +132,7 @@
           on:click={handleReplaceClip}
           disabled={publishedVersion == selectedVersion ?? false}
         >
-          <RefreshCw />
+          <ArrowUpDown />
         </button>
         <button class="icon active" on:click={handleImportClip}>
           <Download />
@@ -152,22 +157,28 @@
   }
 
   h4 {
-    font-size: 12px;
+    font-size: 11px;
     margin: 2px;
   }
 
   #shot-label {
     text-align: start;
     color: $active;
+    max-width: 80px;
+    margin-left: 6px;
   }
 
   .shot-tb {
     background-size: 53px;
     max-width: 53px;
     max-height: 30px;
-    width: 53px;
+    width: 42px;
     height: 30px;
     border-radius: 4px;
     filter: br ightness(0.9);
+  }
+
+  .edit-version {
+    cursor: pointer;
   }
 </style>

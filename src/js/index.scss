@@ -63,7 +63,7 @@ code {
 .ingest-shot-row {
   width: 100%;
   display: grid;
-  grid-template-columns: 2fr 5fr 3fr 3fr 5fr  4fr;
+  grid-template-columns: 6fr 2fr 2fr 2fr  2fr;
   border-radius: 2px;
   background-color: $darker;
   font-size: 10px;
@@ -339,4 +339,18 @@ button:hover:disabled {
   margin-left: -6px;
   border-radius: 50%;
   animation: spinner 0.6s linear infinite;
+}
+
+input {
+  display: flex;
+  margin-right: 2px;
+  border-radius: 4px;
+  border: 1px solid $darker;
+  background: $darker;
+  height: 20px;
+  min-height: 18px;
+  color: $font;
+  font-size: 12px;
+  padding-left: 7px;
+  border-style: none;
 }
