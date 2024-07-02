@@ -1,0 +1,94 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { evalES } from "../../lib/utils/bolt";
+  import Button from "../../components/Button/Button.svelte";
+  let prefix = "SH";
+  let start = "10";
+  let increment = "10";
+  let padding = "0000";
+
+  $: getOutputName = () => {
+    const pad = padding.length;
+    console.log("pad", pad);
+    const paddedStr = start.toString().padStart(pad, "0");
+    return `${prefix}${paddedStr}`;
+  };
+
+  $: previewString = getOutputName();
+
+  const handleRenameAction = async () => {
+    const option = {
+      prefix: prefix,
+      startValue: parseInt(start),
+      increment: parseInt(increment),
+      padding: padding,
+    };
+    const optionString = JSON.stringify(option);
+    evalES(`renameShots(${optionString})`);
+  };
+
+  onMount(async () => {});
+</script>
+
+<div style="display:flex; flex-direction:column">
+  <div class="row">
+    <label for="prefix">Prefix</label>
+    <input type="text" placeholder="prefix" bind:value={prefix} />
+  </div>
+  <div class="row">
+    <label for="start">Start</label>
+    <input type="number" placeholder="prefix" bind:value={start} />
+  </div>
+  <div class="row">
+    <label for="increment">Increment</label>
+    <input type="number" placeholder="increment" bind:value={increment} />
+  </div>
+  <div class="row">
+    <label for="padding">Padding</label>
+    <input type="text" placeholder="padding" bind:value={padding} />
+  </div>
+  <div class="row-preview">
+    <label for="prefix">Preview</label>
+    <p>
+      {previewString}
+    </p>
+  </div>
+  <div style="width:100%">
+    <button class="active" on:click={handleRenameAction}>Rename</button>
+  </div>
+</div>
+
+<style lang="scss">
+  @import "../../variables.scss";
+  .row {
+    width: 50%;
+    gap: 8px;
+  }
+
+  label {
+    font-size: 12px;
+  }
+
+  input {
+    width: 100%;
+  }
+
+  .row-preview {
+    font-size: 12px;
+    align-self: flex-start;
+    align-items: center;
+    margin-left: 4px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: 100%;
+    margin-right: 4px;
+  }
+
+  p {
+    background-color: $darker;
+    color: $active;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+</style>

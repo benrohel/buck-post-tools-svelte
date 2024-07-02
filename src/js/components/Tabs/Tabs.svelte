@@ -1,4 +1,4 @@
-<script>
+<script lanf="ts">
   export let items = [];
   export let activeTabValue = 1;
 
@@ -10,8 +10,14 @@
     <li class={activeTabValue === item.value ? "active" : ""}>
       <span
         on:click={handleClick(item.value)}
-        on:keypress={handleClick(item.value)}>{item.label}</span
+        on:keypress={handleClick(item.value)}
       >
+        {#if item.icon}
+          <svelte:component this={item.icon} size="14" />
+        {:else}
+          {item.label}
+        {/if}
+      </span>
       <div class={activeTabValue === item.value ? "stripe-active" : ""} />
     </li>
   {/each}

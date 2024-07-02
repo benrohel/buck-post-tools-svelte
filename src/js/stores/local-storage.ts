@@ -1,5 +1,7 @@
 import { writable } from "svelte/store";
-
+import { asyncReadable, asyncDerived } from "@square/svelte-store";
+import { selectedCodaProject } from "./coda-store";
+import { GetCodaIdFromUrl } from "../api/coda/coda";
 const storedUser = localStorage.getItem("user");
 export const userSession = writable<UserData | null>(
   //@ts-ignore
@@ -53,3 +55,14 @@ codaTable.subscribe((value) => {
     localStorage.setItem("codatable", JSON.stringify(value));
   }
 });
+
+// export const codaId = asyncDerived(
+//   selectedCodaProject,
+//   async ($selectedCodaProject) => {
+//     let id = "";
+//     if ($selectedCodaProject) {
+//       id = GetCodaIdFromUrl($selectedCodaProject?.docUrl);
+//     }
+//     return id;
+//   }
+// );

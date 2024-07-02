@@ -213,3 +213,7 @@ export const fillMogrtText = (
 export const dbToDec = (x: number) => Math.pow(10, (x - 15) / 20);
 
 export const decToDb = (x: number) => 20 * Math.log(x) * Math.LOG10E + 15;
+
+export const padLeft = (str: string, paddingValue: string) => {
+  return String(paddingValue + str).slice(-paddingValue.length);
+};

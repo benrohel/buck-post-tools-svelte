@@ -27,10 +27,14 @@ code {
 }
 
 
+hr{
+  
+  border: $dimmed-font-color 1px solid;
+}
 
 ::-webkit-scrollbar {
-  width: 10px;
-  -webkit-appearance: always;
+  // width: 10px;
+  // -webkit-appearance: none;
 }
 ::-webkit-scrollbar-track {
   background: $darkest;
@@ -71,6 +75,16 @@ code {
   margin-bottom: 2px;
 }
 
+.replace-shot-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 6fr 2fr 6fr;
+  border-radius: 2px;
+  background-color: $darker;
+  font-size: 10px;
+  align-items: center;
+  margin-bottom: 2px;
+}
 
 
 select {
@@ -96,6 +110,7 @@ select {
   flex-direction: row;
   justify-content: space-between;
   border-radius: $default-border-radius;
+  
 }
 
 .fas {
@@ -222,7 +237,7 @@ button {
   cursor: pointer;
   opacity: 1;
   transition: opacity 0.25s border 0.25s;
-  color: white;
+  color: $font;
   max-width: 100%;
   align-content: center;
   justify-content: center;
@@ -232,11 +247,13 @@ button {
   transition: 0.3s;
   align-self: center;
   border: 1px solid transparent;
-  padding: 4px;
+  padding: 2px;
   height: 20px;
+  width: 100%;
 }
 
 button.active {
+  color: white;
   background-color: $active;
 }
 
@@ -353,4 +370,14 @@ input {
   font-size: 12px;
   padding-left: 7px;
   border-style: none;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }

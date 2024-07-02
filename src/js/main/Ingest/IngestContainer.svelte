@@ -2,10 +2,17 @@
   import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
   import { openUrl } from "../../lib/utils/utils";
   import ClipCard from "../../components/ClipCard/ClipCard.svelte";
-  import { codaDoc, codaTable } from "../../stores/local-storage";
+  import { codaDoc } from "../../stores/local-storage";
   import CodaLogo from "../../assets/coda-logo.svg";
   import "../../api/coda/coda";
   import { GetCodaTrackerData } from "../../api/tracker/tracker";
+  import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from "../../api/coda/coda";
+  import { notifications } from "../../stores/notifications-store";
+  import {
+    codaTrackerInfos,
+    selectedCodaProject,
+  } from "../../stores/coda-store";
+  import { sessionProject } from "../../stores/local-storage";
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
@@ -19,14 +26,14 @@
     ArrowUpDown,
     ExternalLink,
   } from "svelte-lucide";
+  import { getClips } from "../../api/timeline-clips";
   import { onMount } from "svelte";
 
   $: sequenceClips = [] as any[];
   $: clips = [] as any[];
 
   let openSettings = false;
-  $: codaUrl = "";
-  $: codaTableId = "";
+  let selectedProjectName: string = "";
 
   const getClips = async () => {
     sequenceClips = [];
@@ -54,14 +61,14 @@
       };
     });
     sequenceClips = systemClips;
-    if ($codaDoc && $codaTable) {
+    if ($selectedCodaProject) {
       try {
+        const docId = GetCodaIdFromUrl($selectedCodaProject.docUrl);
         const syncedClips = await GetCodaTrackerData(
           systemClips,
-          $codaDoc,
-          $codaTable
+          docId,
+          $selectedCodaProject.tableName
         );
-
         if (syncedClips.length > 0) {
           console.log("getting coda data");
           sequenceClips = syncedClips;
@@ -69,23 +76,61 @@
       } catch (err) {
         console.log(err);
       }
+    } else {
+      console.log("no coda project selected");
     }
+    console.log("sequenceClips", sequenceClips);
+  };
+
+  const handleSelectProject = (e: any) => {
+    if ($codaTrackerInfos) {
+      const proj = $codaTrackerInfos.find((p) => p.name === e.target.value);
+      if (proj) {
+        selectedCodaProject.set(proj);
+      }
+    }
+    console.log("selected coda project", $selectedCodaProject);
   };
 
   const handleClipSelect = (task: any) => {
     console.log(task);
   };
 
-  const handleReplaceClip = (clip: any, selectedVersion: any) => {
+  const handleReplaceClip = async (clip: any, selectedVersion: any) => {
     let importOptions = {
       nodeId: clip.nodeId,
       oldPath: clip.filepath,
       newPath: selectedVersion.filepath,
       isSequence: false,
     };
-    evalES(`replaceMedia(${JSON.stringify(importOptions)})`).then((res) => {
-      getClips();
+    const res = await evalES(`replaceMedia(${JSON.stringify(importOptions)})`);
+    const updatedClip = JSON.parse(res);
+
+    const clipVersion = GetFileVersion(clip.filepath);
+    const data = {
+      row: {
+        cells: [
+          {
+            column: "Edit Version",
+            value: clipVersion,
+          },
+        ],
+      },
+    };
+
+    sequenceClips = sequenceClips.map((c) => {
+      if (c.nodeId === clip.nodeId) {
+        return {
+          ...c,
+          selectedVersion: selectedVersion,
+          filepath: updatedClip.filepath,
+          clipName: updatedClip.clipName,
+        };
+      } else {
+        return c;
+      }
     });
+    // await UpdateRow(clip.trackerClip.href, data);
   };
 
   const handleImportClip = (clip: any, selectedVersion: any) => {
@@ -116,8 +161,7 @@
     });
   };
 
-  const handleClipOnChange = (clip: any, version: any) => {
-    console.log(version);
+  const handleClipOnChange = async (clip: any, version: any) => {
     const foundClipIndex = sequenceClips.findIndex((c) => {
       return c.nodeId === clip.nodeId;
     });
@@ -146,7 +190,7 @@
   };
 
   $: isCodaUrl = () => {
-    if (codaUrl.match("https://coda.io/d/")) {
+    if ($selectedCodaProject) {
       return true;
     } else {
       return false;
@@ -154,39 +198,76 @@
   };
 
   const setCodaTable = async () => {
-    codaDoc.set(codaUrl);
-    codaTable.set(codaTableId);
-    openSettings = false;
-    await getClips();
-  };
-
-  $: isTableEmpty = () => {
-    return codaTableId.length > 0;
+    if ($selectedCodaProject) {
+      sessionProject.set(JSON.stringify($selectedCodaProject));
+      openSettings = false;
+      await getClips();
+    }
   };
 
   const handleCodaSync = async () => {
-    console.log("sync coda");
+    if ($selectedCodaProject) {
+      const rowsData = sequenceClips.map((clip: any) => {
+        return {
+          cells: [
+            {
+              column: "Iterable Name",
+              value: clip.trackerClip["values"]["Iterable Name"],
+            },
+            {
+              column: "Edit Version",
+              value: GetFileVersion(clip.filepath),
+            },
+          ],
+        };
+      });
+
+      const data = {
+        rows: rowsData,
+        keyColumns: ["Iterable Name"],
+      };
+
+      console.log("data to update", data);
+      const updatedSuccess = await UpsertRows(
+        $selectedCodaProject.docUrl,
+        $selectedCodaProject.tableName,
+        data
+      );
+      if (updatedSuccess) {
+        notifications.success(
+          `Succesfully Updated Tracker: ${$selectedCodaProject.name}`,
+          2000
+        );
+      } else {
+        notifications.error(
+          `Errot Updating Tracker: ${$selectedCodaProject.name}`,
+          2000
+        );
+      }
+      await getClips();
+    }
   };
 
   const openTracker = () => {
-    if (codaUrl) {
-      openUrl(codaUrl);
+    if ($selectedCodaProject) {
+      openUrl($selectedCodaProject.docUrl);
     }
   };
 
   const refreshIngest = async () => {
-    if ($codaDoc) {
-      console.log("codaDoc", $codaDoc);
-      codaUrl = $codaDoc;
-    }
-    if ($codaTable) {
-      codaTableId = $codaTable;
-    }
     await getClips();
   };
 
   onMount(async () => {
+    if ($sessionProject) {
+      selectedCodaProject.set(JSON.parse($sessionProject));
+    } else {
+      if ($codaTrackerInfos && $codaTrackerInfos.length > 0) {
+        selectedProjectName = $codaTrackerInfos[0].name;
+      }
+    }
     await refreshIngest();
+    await codaTrackerInfos.load();
   });
 </script>
 
@@ -195,7 +276,14 @@
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
   >
-    <p class="clip-name-header">NAME</p>
+    <div
+      style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
+    >
+      <button class="icon active" style="margin-left:4px" on:click={getClips}>
+        <RefreshCw />
+      </button>
+      <p class="clip-name-header">NAME</p>
+    </div>
     <p>PUBLISHED</p>
     <p>EDIT</p>
     <p>UPDATE TO</p>
@@ -203,9 +291,6 @@
       style="display:flex; flex-direction:row ; gap:2px; align-items:center; justify-self:end;"
     >
       <p style="justify-self:end; margin-right:4px">ACTIONS</p>
-      <button class="icon active" style="margin-left:4px" on:click={getClips}>
-        <RefreshCw />
-      </button>
     </div>
   </div>
 
@@ -223,22 +308,24 @@
           <Download />
         </button>
       </div>
-
-      {#each sequenceClips as clip, id}
-        <ClipCard
-          {clip}
-          onSelect={handleClipSelect}
-          selected={false}
-          {id}
-          onReplace={handleReplaceClip}
-          onImport={handleImportClip}
-          onChange={handleClipOnChange}
-        />
-      {/each}
+      <div id="card-list">
+        {#each sequenceClips as clip, id}
+          <ClipCard
+            {clip}
+            onSelect={handleClipSelect}
+            selected={false}
+            {id}
+            onReplace={handleReplaceClip}
+            onImport={handleImportClip}
+            onChange={handleClipOnChange}
+          />
+        {/each}
+      </div>
     </div>
     <div id="coda-header">
       <div class="form-row">
         <button
+          style="margin:4px; width:auto"
           on:click={() => {
             openSettings = !openSettings;
           }}
@@ -248,29 +335,25 @@
         {#if openSettings}
           <div id="coda-settings">
             <div class="coda-form">
-              <input
-                type="text"
-                id="version"
-                name="codadoc"
-                placeholder="Coda Doc URL"
-                bind:value={codaUrl}
-              />
-            </div>
-            <div class="coda-form">
-              <input
-                type="text"
-                id="version"
-                name="codatable"
-                placeholder="Table Name"
-                bind:value={codaTableId}
-              />
+              <select
+                bind:value={selectedProjectName}
+                on:change={handleSelectProject}
+              >
+                {#if $codaTrackerInfos != null}
+                  {#each $codaTrackerInfos as projectInfo}
+                    <option value={projectInfo.name}>{projectInfo.name}</option>
+                  {/each}
+                {/if}
+              </select>
+
               <button
                 class="icon active"
                 on:click={setCodaTable}
-                disabled={!isTableEmpty() && !isCodaUrl()}
+                disabled={selectedProjectName.length > 0 ? false : true}
               >
                 <Check />
               </button>
+              <!-- {GetCodaIdFromUrl($selectedCodaProject.docUrl)} -->
             </div>
           </div>
         {/if}
@@ -281,7 +364,7 @@
         <button
           class="icon active"
           on:click={handleCodaSync}
-          disabled={!isTableEmpty() && !isCodaUrl()}
+          disabled={selectedProjectName.length > 0 ? false : true}
         >
           <RefreshCw />
         </button>
@@ -381,5 +464,10 @@
     width: 100%;
     gap: 8px;
     margin-bottom: 2px;
+  }
+
+  #card-list {
+    overflow: scroll;
+    height: calc(100vh - 160px);
   }
 </style>

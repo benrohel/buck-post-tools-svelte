@@ -1,4 +1,4 @@
-import { child_process } from "../cep/node";
+import { child_process, os, path } from "../cep/node";
 const { exec } = child_process;
 
 export const openUrl = (url: string) => {
@@ -19,4 +19,24 @@ export const openUrl = (url: string) => {
     }
     console.log(`stdout: ${stdout}`);
   });
+};
+
+const resolveHome = (filepath: string) => {
+  if (filepath[0] === "~") {
+    if (process.env.HOME) {
+      return path.join(process.env.HOME, filepath.slice(1));
+    }
+  }
+  return filepath;
+};
+
+export const openFile = async (filepath: string) => {
+  filepath = resolveHome(filepath);
+  if (os.platform() === "darwin") {
+    const cmd = `open "${filepath}"`;
+    exec(cmd);
+  } else if (os.platform() === "win32") {
+    const cmd = `start  ${filepath}`;
+    exec(cmd);
+  }
 };

@@ -1,12 +1,4 @@
-import {
-  helloVoid,
-  helloError,
-  helloStr,
-  helloNum,
-  helloArrayStr,
-  helloObj,
-} from "../utils/samples";
-export { helloError, helloStr, helloNum, helloArrayStr, helloObj, helloVoid };
+import { padLeft } from "./ppro-utils";
 
 export const qeDomFunction = () => {
   if (typeof qe === "undefined") {
@@ -70,6 +62,43 @@ export const getActiveSequence = () => {
   }
 };
 
+const getSelectedClipsInTrack = (track: Track) => {
+  var clips = track.clips;
+  var selectedClips = [];
+  var clips = track.clips;
+  for (var clipIndex = 0; clipIndex < clips.numItems; clipIndex++) {
+    var clip = clips[clipIndex];
+    if (clip.isSelected()) {
+      selectedClips.push(clip);
+    }
+  }
+  return selectedClips;
+};
+
+const getProjectSelection = () => {
+  var viewIDs = app.getProjectViewIDs();
+  var viewSelection = app.getProjectViewSelection(viewIDs[0]); // sample code optimized for a single open project
+  return viewSelection;
+};
+
+const getAlltracksSelectedClips = () => {
+  var seq = app.project.activeSequence;
+  var selectedClips = [];
+  for (
+    var trackIndex = 0;
+    trackIndex < seq.videoTracks.numTracks;
+    trackIndex++
+  ) {
+    var track = seq.videoTracks[trackIndex];
+    var clips = getSelectedClipsInTrack(track);
+    for (var clipIndex = 0; clipIndex < clips.length; clipIndex++) {
+      var clip = clips[clipIndex];
+      selectedClips.push(clip);
+    }
+  }
+  return selectedClips;
+};
+
 const getSequenceFromNodeId = (id: string): Sequence | null => {
   const sequences = app.project.sequences;
   for (var s = 0; s < sequences.numSequences; s++) {
@@ -83,7 +112,7 @@ const getSequenceFromNodeId = (id: string): Sequence | null => {
 export function getAllSequenceClips(seq?: Sequence) {
   try {
     if (!seq) {
-      var seq = app.project.activeSequence;
+      seq = app.project.activeSequence;
     }
     var selectedClips = [];
     var seqTimeStart = new Time();
@@ -121,8 +150,7 @@ export const getItemFromNodeId = (
   withId: string
 ): ProjectItem => {
   var found = false;
-  var foundItem;
-
+  var foundItem: ProjectItem | null = null;
   function recursiveSearch(bin: ProjectItem, id: string) {
     var items = bin.children;
     for (var i = 0; i < items.numItems; i++) {
@@ -139,7 +167,11 @@ export const getItemFromNodeId = (
     }
   }
   recursiveSearch(inBin, withId);
-  return foundItem;
+  if (foundItem) {
+    return foundItem;
+  } else {
+    return inBin;
+  }
 };
 
 export const GetClipMarkers = (nodeId: string) => {
@@ -244,7 +276,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
     var nameSplit = nFile.absoluteURI.split("/");
     var newBasename = nameSplit[nameSplit.length - 1];
     currentClip.name = newBasename;
-    return currentClip.name;
+    return JSON.stringify({ clipName: newBasename, filepath: nFile.fsName });
   }
 };
 
@@ -300,4 +332,193 @@ export const goToFrame = (frame: number) => {
   var seq = app.project.activeSequence;
   var ticks = (parseInt(seq.timebase) * frame).toString();
   seq.setPlayerPosition(ticks);
+};
+
+export const findAndReplace = (options: any) => {
+  var selectedClips = [];
+  switch (options.scope) {
+    case "project":
+      selectedClips = getProjectSelection();
+      break;
+    case "timeline":
+      selectedClips = getAlltracksSelectedClips();
+      break;
+    default:
+      return;
+  }
+
+  for (var c = 0; c < selectedClips.length; c++) {
+    const newName = selectedClips[c].name.replace(options.from, options.to);
+    selectedClips[c].name = newName;
+  }
+};
+
+export const renameShots = (options: any) => {
+  var shots = getAlltracksSelectedClips();
+  for (var s = 0; s < shots.length; s++) {
+    var shotNumber = (options.startValue + s * options.increment).toString();
+    var padString = padLeft(shotNumber, options.padding);
+    var shotName = options.prefix + padString;
+    shots[s].name = shotName;
+  }
+  return true;
+};
+
+const renameClipFromSource = (shot: any) => {
+  if (shot.projectItem.canChangeMediaPath()) {
+    var shotFile = new File(shot.projectItem.getMediaPath());
+    var sourceName = shotFile.displayName;
+    shot.projectItem.name = sourceName;
+  }
+};
+
+export const renameToFile = () => {
+  var clips = getAlltracksSelectedClips();
+  for (var c = 0; c < clips.length; c++) {
+    renameClipFromSource(clips[c]);
+  }
+  return true;
+};
+
+const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
+  // var medias = [];
+  var vTtracks = seq.videoTracks;
+  var aTracks = seq.audioTracks;
+
+  function findObjectByKey(array: any[], key: string, value: any) {
+    for (var i = 0; i < array.length; i++) {
+      if (array[i][key] === value) {
+        return array[i];
+      }
+    }
+    return null;
+  }
+
+  function normalizeTreePath(t: string) {
+    const pName = app.project.name;
+    t = t.replace(pName, "");
+    t = t.replace(/\\\\/g, "");
+    t = t.replace(/\\/g, "/");
+    return t;
+  }
+
+  function sequenceById(id: string) {
+    var sequences = app.project.sequences;
+    var len = sequences.numSequences;
+    for (var i = 0; i < len; i++) {
+      var sequence = sequences[i];
+      if (sequence.projectItem.nodeId === id) return sequence;
+    }
+  }
+
+  function getMediaClips(tracks: any, mediasArray: any[]) {
+    for (var t = 0; t < tracks.numTracks; t++) {
+      var clips = tracks[t].clips;
+
+      for (var c = 0; c < clips.numItems; c++) {
+        var clip = clips[c];
+
+        if (clip.projectItem.isSequence()) {
+          const seqId = clip.projectItem.nodeId;
+          const nestedSequence = sequenceById(seqId);
+
+          if (!nestedSequence) continue;
+          getSequenceMedias(nestedSequence, medias);
+        }
+
+        if (clip.projectItem.canChangeMediaPath()) {
+          var newClip = {
+            name: clip.projectItem.name,
+            nodeId: clip.projectItem.nodeId,
+            mediaPath: clip.projectItem.getMediaPath(),
+            treePath: normalizeTreePath(clip.projectItem.treePath),
+          };
+          var exists = findObjectByKey(mediasArray, "nodeId", newClip.nodeId);
+          if (!exists) {
+            mediasArray.push(newClip);
+          }
+        }
+      }
+    }
+    return mediasArray;
+  }
+
+  medias = getMediaClips(vTtracks, medias);
+  var allMedias = getMediaClips(aTracks, medias);
+
+  return allMedias;
+};
+
+const getSelectedSequences = (): Array<Sequence> => {
+  function isSequenceSelected(node: any, seqArray: any) {
+    for (var i = 0; i < seqArray.numSequences; i++) {
+      if (seqArray[i].projectItem.nodeId === node) {
+        return seqArray[i];
+      }
+    }
+    return null;
+  }
+  var sequences = [];
+  var selection = getProjectSelection();
+  if (!selection) {
+    return [app.project.activeSequence];
+  }
+  var projectSequences = app.project.sequences;
+  for (var c = 0; c < selection.length; c++) {
+    var projSeq = isSequenceSelected(selection[c].nodeId, projectSequences);
+    if (projSeq) {
+      sequences.push(projSeq);
+    }
+  }
+  if (sequences.length < 1) {
+    sequences = [app.project.activeSequence];
+  }
+  return sequences;
+};
+
+export const getSequencesMedias = (
+  scope: "activeSequence" | "selectedSequences" | "project"
+) => {
+  let medias: any[] = [];
+  switch (scope) {
+    case "activeSequence":
+      medias = getSequenceMedias(app.project.activeSequence, []);
+      break;
+    case "project":
+      let seqs = app.project.sequences;
+      for (let s = 0; s < seqs.numSequences; s++) {
+        medias = medias.concat(getSequenceMedias(seqs[s], []));
+      }
+      break;
+    case "selectedSequences":
+      var selectedSequences = getSelectedSequences();
+
+      if (selectedSequences.length < 1) {
+        return JSON.stringify({ medias: [], error: "No Sequence Selected" });
+      }
+      selectedSequences =
+        selectedSequences.length > 0
+          ? selectedSequences
+          : [app.project.activeSequence];
+      for (var s = 0; s < selectedSequences.length; s++) {
+        medias = medias.concat(getSequenceMedias(selectedSequences[s], []));
+      }
+      break;
+    default:
+      return JSON.stringify({
+        medias: getSequenceMedias(app.project.activeSequence, []),
+      });
+  }
+  //@ts-ignore
+  const reducedMedias = removeDuplicates(medias);
+  return JSON.stringify({ medias: reducedMedias });
+};
+
+export const openFolderDialog = (txt: string) => {
+  var newOutput = Folder.selectDialog(txt);
+  if (newOutput && newOutput.exists) {
+    return newOutput.fsName;
+  } else {
+    return undefined;
+  }
 };

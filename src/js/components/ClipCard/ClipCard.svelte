@@ -1,14 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    Versions,
-    Comments,
-    Shot,
-    ShotVersions,
-    PatchItem,
-  } from "../../api/buck5/buck5-api";
+  import { openFile } from "../../lib/utils/utils";
   import { fly } from "svelte/transition";
-  import { Download, ArrowUpDown, RefreshCw } from "svelte-lucide";
+  import { Download, ArrowUpDown, Eye } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
   import { getShotById } from "buck5-javascript-client";
   import { GetFileVersion } from "../../api/files/files";
@@ -20,10 +14,10 @@
   export let onImport: Function;
   export let onChange: Function;
 
-  let selectedVersion = "";
+  let selectedVersion: any = {};
   let publishedVersion = "";
   let editVersion = "";
-  let comments: any[];
+
   export const BUCK_DAEMON_URL = "http://127.0.0.1:8000";
 
   export const FileUrl = (tb: string) => {
@@ -31,8 +25,6 @@
   };
 
   let tb: string = "https://via.placeholder.com/71x40";
-  let latestPublishedVersion = "v000";
-  $: openComments = false;
 
   const handleSelectTask = async () => {
     if (onSelect) {
@@ -41,8 +33,6 @@
   };
 
   const handleSelectVersion = async () => {
-    console.log(selectedVersion);
-
     if (onChange) {
       onChange(clip, selectedVersion);
     }
@@ -54,6 +44,7 @@
 
   const handleReplaceClip = () => {
     console.log("replace clip");
+    editVersion = selectedVersion.version;
     onReplace(clip, selectedVersion);
   };
 
@@ -63,8 +54,11 @@
 
   const handleEditClipCLick = () => {
     const startFrame = clip.start * clip.sequenceFramerate;
-    console.log(startFrame);
     evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
+  };
+
+  const handleOpenFile = () => {
+    openFile(selectedVersion.filepath);
   };
 
   $: getSyncedColor = () => {
@@ -81,16 +75,27 @@
     const fileVersion = GetFileVersion(clip.filepath)?.split("v")[1];
     if (!fileVersion) return false;
     const timelineVersion = parseInt(fileVersion);
-    console.log(compVersion, timelineVersion);
+    initCard();
     return compVersion == timelineVersion;
   };
 
-  const initCard = () => {
-    selectedVersion = clip.versions[0];
+  $: initCard = () => {
+    if (clip) {
+      selectedVersion = clip.selectedVersion;
+      publishedVersion = clip.trackerClip
+        ? clip.trackerClip.values["Comp Version"]
+        : "";
+    } else {
+      publishedVersion = "";
+    }
+    console.log("init card", clip);
     editVersion = GetFileVersion(clip.filepath) ?? "";
-    publishedVersion = clip.trackerClip
-      ? clip.trackerClip.values["Comp Version"]
-      : "";
+  };
+
+  $: editIsSelected = () => {
+    if (selectedVersion) {
+      editVersion == selectedVersion.version ?? "";
+    }
   };
 
   onMount(() => {
@@ -100,28 +105,38 @@
 
 <div
   class={!selected ? "clip-card" : "clip-card selected"}
-  style={openComments ? "height:100%" : ""}
-  on:click={handleSelectTask}
+  on:dblclick={handleEditClipCLick}
   on:keydown={handleSelectTask}
   transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
   <div class="ingest-shot-row">
     {#if clip}
-      <h4 id="shot-label" class="clip-name-header" style={getSyncedColor()}>
-        {clip.shotName}
-      </h4>
+      <div style="display:flex; flex-direction:row ; align-items:center">
+        <button class="icon" on:click={handleOpenFile}>
+          <Eye />
+        </button>
+        <h4
+          id="shot-label"
+          class="clip-name-header noselect"
+          style={getSyncedColor()}
+        >
+          {clip.shotName}
+        </h4>
+      </div>
       <h4>{publishedVersion ? publishedVersion : "n/a"}</h4>
       <h4 class="edit-version" on:dblclick|preventDefault={handleEditClipCLick}>
         {editVersion}
       </h4>
       <div class="select-wrapper">
-        <select bind:value={selectedVersion} on:change={handleSelectVersion}>
-          {#each clip.versions as version, id}
-            <option value={version}>
-              {version.displayName}
-            </option>
-          {/each}
-        </select>
+        {#if clip.versions && clip.versions.length > 0}
+          <select bind:value={selectedVersion} on:change={handleSelectVersion}>
+            {#each clip.versions as version, id}
+              <option value={version}>
+                {version.displayName}
+              </option>
+            {/each}
+          </select>
+        {/if}
       </div>
 
       <div
@@ -130,11 +145,15 @@
         <button
           class="icon active"
           on:click={handleReplaceClip}
-          disabled={publishedVersion == selectedVersion ?? false}
+          disabled={editIsSelected()}
         >
           <ArrowUpDown />
         </button>
-        <button class="icon active" on:click={handleImportClip}>
+        <button
+          class="icon active"
+          on:click={handleImportClip}
+          disabled={editIsSelected()}
+        >
           <Download />
         </button>
       </div>
@@ -166,6 +185,7 @@
     color: $active;
     max-width: 80px;
     margin-left: 6px;
+    cursor: pointer;
   }
 
   .shot-tb {

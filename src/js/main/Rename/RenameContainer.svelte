@@ -1,18 +1,34 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
+  import FindAndReplace from "./FindAndReplace.svelte";
+  import SequentialRename from "./SequentialRename.svelte";
+  import RevertToFilename from "./RevertToFilename.svelte";
+  import ReplaceAndRelink from "./ReplaceAndRelink .svelte";
   const renameModes = [
-    { value: "replace", label: "Find and Replace" },
-    { value: "sequential", label: "Sequential Rename" },
-    { value: "revert", label: "Revert to filename" },
-    { value: "relink", label: "Rename and Relink" },
+    { value: "replace", label: "Find and Replace", component: FindAndReplace },
+    {
+      value: "sequential",
+      label: "Sequential Rename",
+      component: SequentialRename,
+    },
+    {
+      value: "revert",
+      label: "Revert to filename",
+      component: RevertToFilename,
+    },
+    {
+      value: "relink",
+      label: "Rename and Relink",
+      component: ReplaceAndRelink,
+    },
   ];
 
-  $: selectedMode = renameModes[0].value ?? null;
+  let selectedMode = "";
+
+  $: mode = renameModes.find((m) => m.value === selectedMode) ?? renameModes[0];
 
   const handleRenameMode = (s: any) => {
     selectedMode = s.target.value;
-    console.log(selectedMode);
   };
 
   onMount(async () => {
@@ -31,6 +47,7 @@
     </select>
   </div>
 </div>
+<svelte:component this={mode.component} />
 
 <style lang="scss">
 </style>
