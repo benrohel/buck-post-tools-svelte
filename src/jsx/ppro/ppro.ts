@@ -1,12 +1,12 @@
-import { padLeft } from "./ppro-utils";
+import { padLeft } from './ppro-utils';
 
 export const qeDomFunction = () => {
-  if (typeof qe === "undefined") {
+  if (typeof qe === 'undefined') {
     app.enableQE();
   }
   if (qe) {
     qe.name;
-    qe.project.getVideoEffectByName("test");
+    qe.project.getVideoEffectByName('test');
   }
 };
 const timeDisplayToFrameRate = (td: number): number => {
@@ -130,7 +130,7 @@ export function getAllSequenceClips(seq?: Sequence) {
           sequenceName: seq.projectItem.name,
           sequenceStart: seqTimeStart.seconds,
           sequenceFramerate: timeDisplayToFrameRate(seq.videoDisplayFormat),
-          track: track.name.replace(" ", ""),
+          track: track.name.replace(' ', ''),
           trackIndex: trackIndex,
           timebase: seq.timebase,
           clip: clips[clipIndex],
@@ -207,7 +207,7 @@ export const GetClipMarkers = (nodeId: string) => {
 
     return listMarkers;
   } catch (e) {
-    return "";
+    return '';
   }
 };
 
@@ -233,7 +233,7 @@ export function getAllTracksClipsForNode(sequenceId: string) {
     }
 
     var newClip = {
-      track: tracksClips[i].track.replace(" ", ""),
+      track: tracksClips[i].track.replace(' ', ''),
       trackIndex: tracksClips[i].trackIndex,
       sequenceNodeId: tracksClips[i].sequenceNodeId,
       sequenceName: tracksClips[i].sequenceName,
@@ -273,7 +273,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
     options.nodeId == currentClip.nodeId
   ) {
     currentClip.changeMediaPath(nFile.fsName, false);
-    var nameSplit = nFile.absoluteURI.split("/");
+    var nameSplit = nFile.absoluteURI.split('/');
     var newBasename = nameSplit[nameSplit.length - 1];
     currentClip.name = newBasename;
     return JSON.stringify({ clipName: newBasename, filepath: nFile.fsName });
@@ -337,10 +337,10 @@ export const goToFrame = (frame: number) => {
 export const findAndReplace = (options: any) => {
   var selectedClips = [];
   switch (options.scope) {
-    case "project":
+    case 'project':
       selectedClips = getProjectSelection();
       break;
-    case "timeline":
+    case 'timeline':
       selectedClips = getAlltracksSelectedClips();
       break;
     default:
@@ -369,6 +369,7 @@ const renameClipFromSource = (shot: any) => {
     var shotFile = new File(shot.projectItem.getMediaPath());
     var sourceName = shotFile.displayName;
     shot.projectItem.name = sourceName;
+    shot.name = sourceName;
   }
 };
 
@@ -396,9 +397,9 @@ const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
 
   function normalizeTreePath(t: string) {
     const pName = app.project.name;
-    t = t.replace(pName, "");
-    t = t.replace(/\\\\/g, "");
-    t = t.replace(/\\/g, "/");
+    t = t.replace(pName, '');
+    t = t.replace(/\\\\/g, '');
+    t = t.replace(/\\/g, '/');
     return t;
   }
 
@@ -433,7 +434,7 @@ const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
             mediaPath: clip.projectItem.getMediaPath(),
             treePath: normalizeTreePath(clip.projectItem.treePath),
           };
-          var exists = findObjectByKey(mediasArray, "nodeId", newClip.nodeId);
+          var exists = findObjectByKey(mediasArray, 'nodeId', newClip.nodeId);
           if (!exists) {
             mediasArray.push(newClip);
           }
@@ -477,24 +478,24 @@ const getSelectedSequences = (): Array<Sequence> => {
 };
 
 export const getSequencesMedias = (
-  scope: "activeSequence" | "selectedSequences" | "project"
+  scope: 'activeSequence' | 'selectedSequences' | 'project'
 ) => {
   let medias: any[] = [];
   switch (scope) {
-    case "activeSequence":
+    case 'activeSequence':
       medias = getSequenceMedias(app.project.activeSequence, []);
       break;
-    case "project":
+    case 'project':
       let seqs = app.project.sequences;
       for (let s = 0; s < seqs.numSequences; s++) {
         medias = medias.concat(getSequenceMedias(seqs[s], []));
       }
       break;
-    case "selectedSequences":
+    case 'selectedSequences':
       var selectedSequences = getSelectedSequences();
 
       if (selectedSequences.length < 1) {
-        return JSON.stringify({ medias: [], error: "No Sequence Selected" });
+        return JSON.stringify({ medias: [], error: 'No Sequence Selected' });
       }
       selectedSequences =
         selectedSequences.length > 0

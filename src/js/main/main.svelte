@@ -17,11 +17,13 @@
     PencilRuler,
     WrapText,
     ArrowRightFromLine,
+    Settings,
   } from "lucide-svelte";
   import ProjectContainer from "./Project/ProjectContainer.svelte";
   import RenameContainer from "./Rename/RenameContainer.svelte";
   import IngestContainer from "./Ingest/IngestContainer.svelte";
   import ExportContainer from "./Export/ExportContainer.svelte";
+  import SettingsContainer from "./Settings/SettingsContainer.svelte";
   import Footer from "./Footer.svelte";
   import Toast from "../components/Toast/Toast.svelte";
 
@@ -47,6 +49,12 @@
       value: 4,
       component: ExportContainer,
       icon: ArrowRightFromLine,
+    },
+    {
+      label: "Settings",
+      value: 5,
+      component: SettingsContainer,
+      icon: Settings,
     },
   ];
 

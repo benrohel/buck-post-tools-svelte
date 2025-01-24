@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import Button from "../../components/Button/Button.svelte";
-  let prefix = "SH";
-  let start = "10";
-  let increment = "10";
-  let padding = "0000";
+  import { onMount } from 'svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import Button from '../../components/Button/Button.svelte';
+  let prefix = 'SH';
+  let start = '10';
+  let increment = '10';
+  let padding = '0000';
 
   $: getOutputName = () => {
     const pad = padding.length;
-    console.log("pad", pad);
-    const paddedStr = start.toString().padStart(pad, "0");
+    console.log('pad', pad);
+    const paddedStr = start.toString().padStart(pad, '0');
     return `${prefix}${paddedStr}`;
   };
 
@@ -24,7 +24,7 @@
       padding: padding,
     };
     const optionString = JSON.stringify(option);
-    evalES(`renameShots(${optionString})`);
+    await evalES(`renameShots(${optionString})`);
   };
 
   onMount(async () => {});
@@ -59,7 +59,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @import '../../variables.scss';
   .row {
     width: 50%;
     gap: 8px;

@@ -96,6 +96,7 @@
     if (selectedVersion) {
       editVersion == selectedVersion.version ?? "";
     }
+    return editVersion == selectedVersion.version;
   };
 
   onMount(() => {
