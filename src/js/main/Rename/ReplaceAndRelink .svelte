@@ -2,7 +2,7 @@
   import { ArrowLeftRight, FolderSearch, RefreshCw } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { GetRenamedFiles } from '../../api/files/files';
-  import { onMount, SvelteComponentTyped } from 'svelte';
+  import { onMount, SvelteComponent } from 'svelte';
   import ClipCard from '../../components/ClipCard/ClipCard.svelte';
   import { ArrowUpDown } from 'svelte-lucide';
   import {
