@@ -1,9 +1,9 @@
-import { cep_node, cep, __adobe_cep__ } from "./lib/cep-types";
+import { cep_node, cep, __adobe_cep__ } from './lib/cep-types';
 
-declare module "*.png";
-declare module "*.gif";
-declare module "*.jpg";
-declare module "*.svg";
+declare module '*.png';
+declare module '*.gif';
+declare module '*.jpg';
+declare module '*.svg';
 
 declare global {
   interface Window {

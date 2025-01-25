@@ -53,7 +53,7 @@
       {previewString}
     </p>
   </div>
-  <div style="width:100%">
+  <div class="flex-row-end action-row">
     <button class="active" on:click={handleRenameAction}>Rename</button>
   </div>
 </div>

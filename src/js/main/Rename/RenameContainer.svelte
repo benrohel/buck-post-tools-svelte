@@ -1,29 +1,29 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import FindAndReplace from "./FindAndReplace.svelte";
-  import SequentialRename from "./SequentialRename.svelte";
-  import RevertToFilename from "./RevertToFilename.svelte";
-  import ReplaceAndRelink from "./ReplaceAndRelink .svelte";
+  import { onMount } from 'svelte';
+  import FindAndReplace from './FindAndReplace.svelte';
+  import SequentialRename from './SequentialRename.svelte';
+  import RevertToFilename from './RevertToFilename.svelte';
+  import ReplaceAndRelink from './ReplaceAndRelink .svelte';
   const renameModes = [
-    { value: "replace", label: "Find and Replace", component: FindAndReplace },
+    { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
     {
-      value: "sequential",
-      label: "Sequential Rename",
+      value: 'sequential',
+      label: 'Sequential Rename',
       component: SequentialRename,
     },
     {
-      value: "revert",
-      label: "Revert to filename",
+      value: 'revert',
+      label: 'Revert to filename',
       component: RevertToFilename,
     },
     {
-      value: "relink",
-      label: "Rename and Relink",
+      value: 'relink',
+      label: 'Rename and Relink',
       component: ReplaceAndRelink,
     },
   ];
 
-  let selectedMode = "";
+  let selectedMode = '';
 
   $: mode = renameModes.find((m) => m.value === selectedMode) ?? renameModes[0];
 
@@ -37,7 +37,7 @@
 </script>
 
 <div style="display:flex; flex-direction:row">
-  <div class="select-wrapper" style="flex-grow:1;margin-right:2px;">
+  <div class="select-wrapper" style="flex-grow:1;">
     <select bind:value={selectedMode} on:change={handleRenameMode}>
       {#each renameModes as mode, id}
         <option value={mode.value}>

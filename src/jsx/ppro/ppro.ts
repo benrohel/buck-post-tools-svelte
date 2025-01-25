@@ -523,3 +523,139 @@ export const openFolderDialog = (txt: string) => {
     return undefined;
   }
 };
+
+declare interface BinInput {
+  name: string;
+  type: string;
+  children: Array<BinInput>;
+}
+declare interface CreateBinInput {
+  bins: Array<BinInput>;
+  parent?: ProjectItem;
+}
+
+export const createBins = (options: CreateBinInput) => {
+  const bins = options.bins;
+  for (var i = 0; i < bins.length; i++) {
+    let currentParent = app.project.rootItem;
+    if (options.parent) {
+      currentParent = options.parent;
+    }
+    if (!(bins[i].type === 'directory')) {
+      continue;
+    }
+    let newParent = currentParent.createBin(bins[i].name);
+    createBins({ bins: options.bins[i].children, parent: newParent });
+  }
+};
+
+export const GetSequence = (nodeId: string = '') => {
+  let sequence;
+
+  if (nodeId) {
+    sequence = getSequenceFromNodeId(nodeId) as Sequence;
+  } else {
+    sequence = app.project.activeSequence;
+  }
+  var seqTimeStart = new Time();
+  seqTimeStart.ticks = sequence.zeroPoint;
+  return JSON.stringify({
+    sequence: {
+      name: sequence.name,
+      nodeId: sequence.projectItem.nodeId,
+      framerate: timeDisplayToFrameRate(sequence.videoDisplayFormat),
+      startTime: seqTimeStart.seconds,
+      timebase: sequence.timebase,
+    },
+  });
+};
+
+export const GetSequences = () => {
+  const sequences = getSelectedSequences;
+};
+
+export const GetSequenceMarkers = (nodeId: string) => {
+  const seq = getSequenceFromNodeId(nodeId);
+  try {
+    const markers = seq!.markers;
+    let listMarkers = [];
+    var marker = markers.getFirstMarker();
+    var count = markers.numMarkers;
+    let currentMarker = markers.getFirstMarker();
+    if (!currentMarker) {
+      alert('The Sequence has no marker.');
+      return false;
+    }
+    var firstMarker = {
+      name: currentMarker.name,
+      start: currentMarker.start.seconds,
+      end: currentMarker.end.seconds,
+      comments: currentMarker.comments,
+      type: currentMarker.type,
+      colorIndex: marker.getColorByIndex(),
+    };
+    listMarkers.push(firstMarker);
+    for (var m = 1; m < count; m++) {
+      currentMarker = markers.getNextMarker(currentMarker);
+      var newMarker = {
+        name: currentMarker.name,
+        start: currentMarker.start.seconds,
+        end: currentMarker.end.seconds,
+        comments: currentMarker.comments,
+        type: currentMarker.type,
+        colorIndex: currentMarker.getColorByIndex(),
+      };
+      listMarkers.push(newMarker);
+    }
+
+    return JSON.stringify({ markers: listMarkers });
+  } catch (e) {
+    return '';
+  }
+};
+
+export const getSelectedSequencesForNode = (selectedSequences: boolean) => {
+  let sequences = [app.project.activeSequence];
+  if (selectedSequences) {
+    sequences = getSelectedSequences();
+  }
+  let resultSequences = [];
+  for (var i = 0; i < sequences.length; i++) {
+    var seq = sequences[i];
+    var seqTimeStart = new Time();
+    seqTimeStart.ticks = seq.zeroPoint;
+    var seqObject = {
+      nodeId: seq.projectItem.nodeId,
+      name: seq.name,
+      startTime: seqTimeStart.seconds,
+      framerate: timeDisplayToFrameRate(seq.videoDisplayFormat),
+    };
+    resultSequences.push(seqObject);
+  }
+
+  return JSON.stringify({ sequences: resultSequences });
+};
+
+declare interface copySequenceSettingsProps {
+  from: string;
+  to: Array<string>;
+}
+export const copySequenceSettings = (options: copySequenceSettingsProps) => {
+  const fromSequence = getSequenceFromNodeId(options.from);
+  let toSequences = [];
+
+  if (!fromSequence) {
+    return;
+  }
+
+  for (var i = 0; i < options.to.length; i++) {
+    const toSeq = getSequenceFromNodeId(options.to[i]);
+    toSequences.push(toSeq);
+  }
+
+  const fromSettings = fromSequence.getSettings();
+
+  for (var j = 0; j < toSequences.length; j++) {
+    toSequences[j]!.setSettings(fromSettings);
+  }
+};

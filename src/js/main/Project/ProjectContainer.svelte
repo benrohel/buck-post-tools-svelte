@@ -1,14 +1,45 @@
 <script lang="ts">
-  import { evalES } from "../../lib/utils/bolt";
+  import { onMount } from 'svelte';
+  import ProjectStarter from './ProjectStarter.svelte';
+  import CopySequenceSettings from './CopySequenceSettings.svelte';
+  const toolList = [
+    {
+      label: 'Start Project',
+      value: 'projectStarter',
+      component: ProjectStarter,
+    },
+    {
+      label: 'Sequence Settings',
+      value: 'sequenceSettings',
+      component: CopySequenceSettings,
+    },
+  ];
 
-  const testEval = async () => {
-    let res = await evalES(`collectSequenceClips()`, false);
-    console.log(res);
+  let selectedMode = '';
+
+  $: tool = toolList.find((m) => m.value === selectedMode) ?? toolList[0];
+
+  const handleRenameMode = (s: any) => {
+    selectedMode = s.target.value;
   };
+
+  onMount(async () => {
+    selectedMode = toolList[0].value;
+  });
 </script>
 
-<div>
-  This is Project tab
-
-  <button on:click={testEval}> TEST</button>
+<div style="display:flex; flex-direction:row">
+  <div class="select-wrapper" style="flex-grow:1;">
+    <select bind:value={selectedMode} on:change={handleRenameMode}>
+      {#each toolList as tool, id}
+        <option value={tool.value}>
+          {tool.label}
+        </option>
+      {/each}
+    </select>
+  </div>
 </div>
+<svelte:component this={tool.component} />
+
+<style lang="scss">
+</style>

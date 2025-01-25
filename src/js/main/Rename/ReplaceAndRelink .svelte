@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { ArrowLeftRight, FolderSearch, RefreshCw } from "lucide-svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import { GetRenamedFiles } from "../../api/files/files";
-  import { onMount, SvelteComponentTyped } from "svelte";
-  import ClipCard from "../../components/ClipCard/ClipCard.svelte";
-  import { ArrowUpDown } from "svelte-lucide";
+  import { ArrowLeftRight, FolderSearch, RefreshCw } from 'lucide-svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import { GetRenamedFiles } from '../../api/files/files';
+  import { onMount, SvelteComponentTyped } from 'svelte';
+  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
+  import { ArrowUpDown } from 'svelte-lucide';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
-  } from "../../api/files/files";
-  import { getClips } from "../../api/timeline-clips";
-  import { clips } from "../../stores/clips-strore";
-  import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
-  import ClipCardReplace from "../../components/ClipCard/ClipCardReplace.svelte";
-  import { fs } from "../../lib/cep/node";
-  let find = "";
-  let replace = "";
+  } from '../../api/files/files';
+  import { getClips } from '../../api/timeline-clips';
+  import { clips } from '../../stores/clips-strore';
+  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
+  import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
+  import { fs } from '../../lib/cep/node';
+  let find = '';
+  let replace = '';
   $: sequenceClips = [] as any[];
-  let rootFolder = "";
+  let rootFolder = '';
 
   const getClips = async () => {
     const seq = await GetActiveSequence();
@@ -44,12 +44,12 @@
       };
     });
     sequenceClips = systemClips;
-    console.log("sequenceClips", sequenceClips);
+    console.log('sequenceClips', sequenceClips);
   };
 
   const handleFindAndReplace = async () => {
     const options = {
-      scope: "project",
+      scope: 'project',
       from: find,
       to: replace,
     };
@@ -62,7 +62,7 @@
   };
 
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
-    console.log("replace clip", clip, selectedVersion);
+    console.log('replace clip', clip, selectedVersion);
     let importOptions = {
       nodeId: clip.nodeId,
       oldPath: clip.filepath,
@@ -91,7 +91,7 @@
   };
 
   const handleReplaceAll = () => {
-    console.log("replace all");
+    console.log('replace all');
     sequenceClips.forEach((clip: any) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
@@ -130,14 +130,14 @@
     const folderPath = await evalES(
       `openFolderDialog("Select New Root Folder.")`
     );
-    console.log("folder path", folderPath);
+    console.log('folder path', folderPath);
     if (folderPath) {
       rootFolder = folderPath;
       searchFiles();
     }
   };
 
-  $: console.log("sequenceClips", sequenceClips);
+  $: console.log('sequenceClips', sequenceClips);
 </script>
 
 <div style="display:flex; flex-direction:row">
@@ -172,9 +172,7 @@
     {/each}
   {/if}
 
-  <div
-    style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-  >
+  <div class="flex-row-end action-row">
     <button class="icon active" on:click={handleReplaceAll}>
       <ArrowUpDown size={12} />
     </button>

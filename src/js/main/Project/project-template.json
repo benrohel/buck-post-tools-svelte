@@ -1,0 +1,39 @@
+[
+  {
+    "name": "01:Sequeces",
+    "children": [
+      { "name": "01:Builds" },
+      { "name": "02:Edits" },
+      { "name": "03:Dailies" },
+      { "name": "04:Handoffs" },
+      { "name": "05:Deliveries" }
+    ]
+  },
+  {
+    "name": "02:Assets",
+    "children": [
+      { "name": "01:Footage" },
+      { "name": "02:Animation_Renders" },
+      {
+        "name": "03:Audio",
+        "children": [
+          { "name": "01:VO" },
+          { "name": "02:Music" },
+          { "name": "03:SFX" },
+          { "name": "04:Mixes" }
+        ]
+      },
+      {
+        "name": "04:Graphics",
+        "children": [
+          { "name": "01:Supers" },
+          { "name": "02:Logos" },
+          { "name": "03:EndCards" },
+          { "name": "04:Legals" },
+          { "name": "05:Slates" }
+        ]
+      }
+    ]
+  },
+  { "name": "03:Refs" }
+]

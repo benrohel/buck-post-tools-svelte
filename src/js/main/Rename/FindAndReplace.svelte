@@ -25,7 +25,7 @@
 </script>
 
 <div>
-  <div style="display:flex; flex-direction:row">
+  <div class="row">
     <div class="row">
       <input type="text" placeholder="Find" bind:value={find} />
       <button on:click={handleSwapText}>
@@ -34,7 +34,7 @@
       <input type="text" placeholder="Replace" bind:value={replace} />
     </div>
   </div>
-  <div class="row">
+  <div class="flex-row-end action-row">
     <button class="active" on:click={handleFindAndReplace}>
       Replace Text
     </button>
