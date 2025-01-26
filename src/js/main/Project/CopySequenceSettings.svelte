@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowRight, Download, Upload } from 'svelte-lucide';
+  import { Download, Upload } from 'svelte-lucide';
   import {
     GetSequence,
     GetSelectedSequences,
@@ -9,6 +9,10 @@
   import { ArrowUp, ArrowDown } from 'lucide-svelte';
   let fromSequence: Sequence | null = null;
   let toSequences: any[] = [];
+
+  $: isReady = () => {
+    return fromSequence != null && toSequences.length > 0;
+  };
 
   const handleFromSequence = async () => {
     const seq = await GetSequence();
@@ -47,7 +51,7 @@
     <div>To: {toSequences.map((s) => s.name).join(', ')}</div>
   </div>
   <div class="flex-row-end action-row">
-    <button class="active" on:click={handleApplySettings}>
+    <button class="active" on:click={handleApplySettings} disabled={!isReady()}>
       Apply Settings
     </button>
   </div>

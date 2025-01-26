@@ -45,27 +45,30 @@
     sequenceClips = [];
     const seq = await GetActiveSequence();
     const pproClips = await GetSequencedClips(seq.id);
-    const systemClips = pproClips.map((clip) => {
-      const fileVersion = GetSystemFileVersionsWithShotName(
-        clip.filepath,
-        clip.shotName
-      );
-      fileVersion.sort((a, b) => {
-        if (a.version > b.version) {
-          return -1;
-        } else if (a.version < b.version) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
 
-      return {
-        ...clip,
-        versions: fileVersion,
-        selectedVersion: fileVersion[0],
-      };
-    });
+    const systemClips = pproClips
+      .filter((clip) => clip.filepath !== '')
+      .map((clip) => {
+        const fileVersion = GetSystemFileVersionsWithShotName(
+          clip.filepath,
+          clip.shotName
+        );
+        fileVersion.sort((a, b) => {
+          if (a.version > b.version) {
+            return -1;
+          } else if (a.version < b.version) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+
+        return {
+          ...clip,
+          versions: fileVersion,
+          selectedVersion: fileVersion[0],
+        };
+      });
     sequenceClips = systemClips;
     if ($selectedCodaProject) {
       try {
@@ -159,12 +162,14 @@
     sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
+    notifications.send('Clips replaced successfully', 'success', 2000);
   };
   const handleImportAll = () => {
     console.log('import all');
     sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
+    notifications.send('Clips imported successfully', 'success', 2000);
   };
 
   const handleClipOnChange = async (clip: any, version: any) => {
@@ -278,6 +283,7 @@
 </script>
 
 <div class="ingest-container">
+  CODA
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
@@ -419,6 +425,6 @@
 
   #card-list {
     overflow: scroll;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 140px);
   }
 </style>

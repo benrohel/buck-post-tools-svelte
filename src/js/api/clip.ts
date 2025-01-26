@@ -1,4 +1,6 @@
 import { evalES } from '../lib/utils/bolt';
+import { fs, path } from '../lib/cep/node';
+import upath from 'upath';
 import Timecode, { TIMECODE } from 'smpte-timecode';
 import { createTimecode, getFramerate, getTimecodeInTicks } from './timecode';
 //@ts-ignore
@@ -103,4 +105,44 @@ export const setItemTimecodes = async (
     tcEnd: tcEnd,
     tcSequenceStart: tcSequenceStart,
   };
+};
+
+export const GetThumbnail = async (
+  clip: ClipType,
+  outputFolder: string = ''
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (clip.tcStart) {
+      let name = clip.shotName;
+      const firstFrameInTicks = getTimecodeInTicks(clip.tcStart);
+
+      let outputTime = clip.tcStart.frameCount;
+      if (clip.tcSequenceStart) {
+        outputTime += clip.tcSequenceStart.frameCount;
+      }
+
+      if (name.match(/\.\w+$/)) {
+        name = name.split(/.\w+$/)[0];
+      }
+      const outputPath = upath.join(
+        outputFolder,
+        `${clip.sequenceName}_${name}_${outputTime}.png`
+      );
+      if (fs.existsSync(outputPath)) {
+        resolve(outputPath);
+      } else {
+        evalES(
+          `exportClipThumbnail("${firstFrameInTicks}","${outputPath}")`,
+          false
+        ).then((res) => {
+          console.log(res);
+          if (res) {
+            resolve(res);
+          } else {
+            reject('No Clip');
+          }
+        });
+      }
+    }
+  });
 };

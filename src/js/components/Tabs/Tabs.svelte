@@ -1,13 +1,20 @@
-<script lanf="ts">
-  export let items = [];
-  export let activeTabValue = 1;
+<script lang="ts">
+  interface TabItem {
+    value: number;
+    label: string;
+    icon?: any;
+    component?: any;
+  }
 
-  const handleClick = (tabValue) => () => (activeTabValue = tabValue);
+  export let items: TabItem[] = [];
+  export let activeTabValue: number = 1;
+
+  const handleClick = (tabValue: number) => () => (activeTabValue = tabValue);
 </script>
 
 <ul>
   {#each items as item}
-    <li class={activeTabValue === item.value ? "active" : ""}>
+    <li class={activeTabValue === item.value ? 'active' : ''}>
       <span
         on:click={handleClick(item.value)}
         on:keypress={handleClick(item.value)}
@@ -18,7 +25,7 @@
           {item.label}
         {/if}
       </span>
-      <div class={activeTabValue === item.value ? "stripe-active" : ""} />
+      <div class={activeTabValue === item.value ? 'stripe-active' : ''} />
     </li>
   {/each}
 </ul>
@@ -31,7 +38,7 @@
 {/each}
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @import '../../variables.scss';
   .box {
     margin-bottom: 2px;
     border-radius: 0 0 2px 2px;

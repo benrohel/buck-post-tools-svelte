@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Recycle } from "svelte-lucide";
+  import { Recycle } from 'svelte-lucide';
 
   const refreshPage = () => {
     window.location.reload();
@@ -7,7 +7,7 @@
 </script>
 
 <div class="footer">
-  <div style="margin-left:8px">©BUCK 2024</div>
+  <div style="margin-left:8px">©BUCK 2025</div>
   <div style="display:flex; flex-direction:row; align-items:center">
     <!-- <div style="margin-right:8px;">
       <Icon name="buck-logo" size="12" />
@@ -24,7 +24,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../js/variables.scss";
+  @import '../../js/variables.scss';
   .footer {
     display: flex;
     flex-direction: row;

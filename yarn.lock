@@ -2817,6 +2817,7 @@ __metadata:
     types-for-adobe: "npm:^7.0.11"
     types-for-adobe-extras: "npm:^0.0.1"
     typescript: "npm:^4.6.4"
+    upath: "npm:^2.0.1"
     vite: "npm:^4.0.5"
     vite-cep-plugin: "npm:^1.1.8"
     yarn: "npm:^1.22.17"
@@ -5649,6 +5650,13 @@ __metadata:
   version: 2.0.1
   resolution: "universalify@npm:2.0.1"
   checksum: 73e8ee3809041ca8b818efb141801a1004e3fc0002727f1531f4de613ea281b494a40909596dae4a042a4fb6cd385af5d4db2e137b1362e0e91384b828effd3a
+  languageName: node
+  linkType: hard
+
+"upath@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "upath@npm:2.0.1"
+  checksum: 79e8e1296b00e24a093b077cfd7a238712d09290c850ce59a7a01458ec78c8d26dcc2ab50b1b9d6a84dabf6511fb4969afeb8a5c9a001aa7272b9cc74c34670f
   languageName: node
   linkType: hard
 

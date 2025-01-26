@@ -1,0 +1,83 @@
+<script lang="ts">
+  import { XSquare } from 'lucide-svelte';
+  const sourceMarkers = [
+    { name: 'Green', selected: false, color: '#6B8826' },
+    { name: 'Red', selected: false, color: '#E5002D' },
+    { name: 'Purple', selected: false, color: '#B689B5' },
+    { name: 'Orange', selected: false, color: '#FA6600' },
+    { name: 'Yellow', selected: false, color: '#D99E00' },
+    { name: 'White', selected: false, color: '#FFF' },
+    { name: 'Blue', selected: false, color: '#148FFF' },
+    { name: 'Cyan', selected: false, color: '#00F4D5' },
+  ];
+
+  const clipColors = [
+    { name: 'Green', selected: false, color: '#6B8826' },
+    { name: 'Red', selected: false, color: '#E5002D' },
+    { name: 'Purple', selected: false, color: '#B689B5' },
+    { name: 'Orange', selected: false, color: '#FA6600' },
+    { name: 'Yellow', selected: false, color: '#D99E00' },
+    { name: 'White', selected: false, color: '#FFF' },
+    { name: 'Blue', selected: false, color: '#148FFF' },
+    { name: 'Cyan', selected: false, color: '#00F4D5' },
+  ];
+
+  export let onChange: Function;
+  let markers = sourceMarkers;
+
+  const toggleMarkerSelection = (marker: any) => {
+    const updatedMarkers = markers.map((m) => {
+      if (m.name != marker.name) {
+        return m;
+      } else {
+        return { ...m, selected: !m.selected };
+      }
+    });
+    markers = updatedMarkers;
+    onChange(markers);
+  };
+
+  const clearSelection = () => {
+    markers = markers.map((m) => {
+      return { ...m, selected: false };
+    });
+    onChange(markers);
+  };
+</script>
+
+<div class="markers-row">
+  <div class="marker-item">
+    <button on:click={() => clearSelection()}>
+      <XSquare size={20} />
+    </button>
+  </div>
+  {#each markers as marker}
+    <div class="marker-item">
+      <button
+        class={`marker-color ${marker.selected ? 'selected' : ''}`}
+        style="background-color: {marker.color};"
+        on:click={() => toggleMarkerSelection(marker)}
+      />
+    </div>
+  {/each}
+</div>
+
+<style lang="scss">
+  .markers-row {
+    display: flex;
+    flex-direction: row;
+  }
+  .marker-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 2px;
+  }
+  .marker-color {
+    width: 16px;
+    height: 16px;
+  }
+  .selected {
+    border: 1px solid white;
+  }
+</style>

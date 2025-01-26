@@ -56,10 +56,11 @@ hr{
   min-height: 22px;
   list-style: none;
   display: flex;
-margin-top: 4px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   align-items: center;
   justify-content: space-between;
-  
+  gap: 4px;
   
 }
 
@@ -110,7 +111,8 @@ select {
   flex-direction: row;
   justify-content: space-between;
   border-radius: $default-border-radius;
-  margin-bottom: 4px;
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 .fas {

@@ -1,4 +1,38 @@
 import { padLeft } from './ppro-utils';
+const isQEEnabled = app.enableQE();
+
+declare var JSON: any;
+declare const qe: undefined | any;
+
+//// UTILS
+const ensureDir = (filePath: string) => {
+  var destFile = new File(filePath);
+  var destFolder = destFile.parent;
+  if (!destFolder.exists) destFolder.create();
+};
+
+const updateEventPanel = (message: string) => {
+  app.setSDKEventMessage(message, 'info');
+  //app.setSDKEventMessage('Here is a warning.', 'warning');
+  //app.setSDKEventMessage('Here is an error.', 'error');  // Very annoying; use sparingly.
+};
+
+const getSep = () => {
+  if (Folder.fs === 'Macintosh') {
+    return '/';
+  } else {
+    return '\\';
+  }
+};
+
+const findInArray = (element: any, array: any[]) => {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i].match(element)) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export const qeDomFunction = () => {
   if (typeof qe === 'undefined') {
@@ -37,6 +71,17 @@ const timeDisplayToFrameRate = (td: number): number => {
       return 0;
   }
 };
+
+export const getItemMetadata = (nodeId: string) => {
+  const item = getItemFromNodeId(app.project.rootItem, nodeId);
+  return JSON.stringify({ metadata: item.getProjectMetadata() });
+};
+
+export const getItemColumnsMetadata = (nodeId: string) => {
+  const item = getItemFromNodeId(app.project.rootItem, nodeId);
+  return item.getProjectColumnsMetadata();
+};
+
 const getProjectItemFromPath = (filepath: string) => {
   const clips = app.project.rootItem.findItemsMatchingMediaPath(filepath);
   return JSON.stringify({ clips: clips });
@@ -659,3 +704,163 @@ export const copySequenceSettings = (options: copySequenceSettingsProps) => {
     toSequences[j]!.setSettings(fromSettings);
   }
 };
+declare interface ThumbnailOptions {
+  timeInSeconds: number;
+  filepath: string;
+}
+
+const markerMatch = (markerColor: any, selectedColors: Array<string>) => {
+  var markerColors = [
+    'Green',
+    'Red',
+    'Purple',
+    'Orange',
+    'Yellow',
+    'White',
+    'Blue',
+    'Cyan',
+  ];
+  var currentColor = markerColors[markerColor.getColorByIndex()];
+  if (findInArray(currentColor, selectedColors)) {
+    return true;
+  }
+  return false;
+};
+
+export const exportSequenceThumbnails = (markers: Array<ThumbnailOptions>) => {
+  app.enableQE();
+  let exportedPaths = [];
+  var activeSequence = qe.project.getActiveSequence(); // note:
+
+  for (var m = 0; m < markers.length; m++) {
+    var outputFile = new File(markers[m].filepath);
+    var tickTime = new Time();
+    tickTime.seconds = markers[m].timeInSeconds;
+    app.project.activeSequence.setPlayerPosition(tickTime.ticks);
+    activeSequence.exportFramePNG(tickTime.ticks, outputFile.fsName);
+    exportedPaths.push(outputFile.fsName);
+  }
+  return JSON.stringify({ paths: exportedPaths });
+};
+
+declare interface exportFramesForMarkersOptions {
+  colors: Array<string>;
+}
+
+export const exportFramesForMarkers = (
+  options: exportFramesForMarkersOptions
+) => {
+  var activeSequence = app.project.activeSequence;
+  if (activeSequence) {
+    var markers = activeSequence.markers;
+    var markerCount = markers.numMarkers;
+    if (markerCount) {
+      var previousMarker;
+      var currentMarker;
+
+      for (var i = 0; i < markerCount; i++) {
+        if (i === 0) {
+          currentMarker = markers.getFirstMarker();
+        } else {
+          currentMarker = markers.getNextMarker(currentMarker!);
+        }
+        if (currentMarker && markerMatch(currentMarker, options.colors)) {
+          activeSequence.setPlayerPosition(currentMarker.start.ticks);
+          previousMarker = currentMarker;
+          exportCurrentFrameAsPNG('toto');
+        }
+      }
+      return true;
+    } else {
+      updateEventPanel('No markers applied to ' + activeSequence.name + '.');
+      return false;
+    }
+  } else {
+    updateEventPanel('No active sequence.');
+    return false;
+  }
+};
+
+const exportCurrentFrameAsPNG = (outputFileName: string) => {
+  app.enableQE();
+  var activeSequence = qe.project.GetActiveSequence() as Sequence;
+  // note: make sure a sequence is active in PPro UI
+  if (activeSequence) {
+    var time = activeSequence.CTI.timecode; // CTI = Current Time Indicator.
+    activeSequence.exportFramePNG(time, outputFileName);
+  } else {
+    updateEventPanel('No active sequence.');
+  }
+};
+
+export const exportShotToPNG = (shot: any) => {
+  var seq = app.project.activeSequence;
+  seq.setPlayerPosition(shot.start.ticks);
+  exportCurrentFrameAsPNG(shot.name);
+};
+
+export const exportClipThumbnail = (ticks: string, outputPath: string) => {
+  app.enableQE();
+  var outputFile = new File(outputPath);
+
+  var qeSeq = qe.project.getActiveSequence() as Sequence;
+  var seq = app.project.activeSequence;
+  seq.setPlayerPosition(ticks);
+
+  if (seq) {
+    ensureDir(outputFile.absoluteURI);
+    var time = qeSeq.CTI.timecode;
+    qeSeq.exportFramePNG(time, outputFile.fsName);
+
+    return outputPath;
+  } else {
+    updateEventPanel('No active sequence.');
+  }
+};
+
+export const exportStills = (destination: string) => {
+  var clips = getAlltracksSelectedClips();
+  for (var c = 0; c < clips.length; c++) {
+    exportShotToPNG(clips[c]);
+  }
+  return true;
+};
+
+//  function exportCurrentFrameAsPNG (presetPath) {
+//   var seq = app.project.activeSequence;
+//   if (seq) {
+//     var currentSeqSettings	= app.project.activeSequence.getSettings();
+//     if (currentSeqSettings){
+//       var currentTime	= seq.getPlayerPosition();
+//       if (currentTime){
+//         var oldInPoint 			= seq.getInPointAsTime();
+//         var oldOutPoint 		= seq.getOutPointAsTime();
+//         var offsetTime 			= currentTime.seconds + 0.033;  // Todo: Add fancy timecode math, to get one frame, given current sequence timebase
+
+//         seq.setInPoint(currentTime.seconds);
+//         seq.setOutPoint(offsetTime);
+
+//         // Create a file name, based on timecode of frame.
+//         var timeAsText				= currentTime.getFormatted(currentSeqSettings.videoFrameRate, app.project.activeSequence.videoDisplayFormat);
+//         var removeThese 			= /:|;/ig; 				// Why? Because Windows chokes on colons in file names.
+//         var tidyTime 				= timeAsText.replace(removeThese, '_');
+//         var outputPathInToOut 		= new File("~/Desktop/output/in_to_out");
+//         var outputFileNameInToOut	= outputPathInToOut.fsName + $._PPP_.getSep() + seq.name + '___' + tidyTime  + '___' + ".png";
+
+//         var removeUponCompletion 	= 1;
+//         var startQueueImmediately 	= false;
+//         var jobID_InToOut 			= app.encoder.encodeSequence(	seq,
+//                                       outputFileNameInToOut,
+//                                       presetPath,
+//                                       app.encoder.ENCODE_IN_TO_OUT,
+//                                       removeUponCompletion,
+//                                       startQueueImmediately);
+
+//         // put in and out points back where we found them.
+
+//         seq.setInPoint(oldInPoint.seconds);
+//         seq.setOutPoint(oldOutPoint.seconds);
+//       }
+//     }
+//   }
+// },

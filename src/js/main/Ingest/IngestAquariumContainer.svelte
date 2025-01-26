@@ -1,40 +1,40 @@
 <script lang="ts">
-  import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
-  import { openUrl } from "../../lib/utils/utils";
-  import ClipCard from "../../components/ClipCard/ClipCard.svelte";
-  import { trackerType } from "../../stores/settings-store"; //trackerType
-  import { codaDoc } from "../../stores/local-storage";
-  import CodaLogo from "../../assets/coda-logo.svg";
-  import AquariumLogo from "../../assets/aquarium-logo.svg";
-  import "../../api/coda/coda";
-  import { GetCodaTrackerData } from "../../api/tracker/tracker";
-  import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from "../../api/coda/coda";
-  import { notifications } from "../../stores/notifications-store";
+  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
+  import { openUrl } from '../../lib/utils/utils';
+  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
+  import { trackerType } from '../../stores/settings-store'; //trackerType
+  import { codaDoc } from '../../stores/local-storage';
+  import CodaLogo from '../../assets/coda-logo.svg';
+  import AquariumLogo from '../../assets/aquarium-logo.svg';
+  import '../../api/coda/coda';
+  import { GetCodaTrackerData } from '../../api/tracker/tracker';
+  import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from '../../api/coda/coda';
+  import { notifications } from '../../stores/notifications-store';
   import {
     codaTrackerInfos,
     selectedCodaProject,
-  } from "../../stores/coda-store";
-  import { sessionProject } from "../../stores/local-storage";
+  } from '../../stores/coda-store';
+  import { sessionProject } from '../../stores/local-storage';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
-  } from "../../api/files/files";
+  } from '../../api/files/files';
 
-  import { evalES } from "../../lib/utils/bolt";
+  import { evalES } from '../../lib/utils/bolt';
   import {
     Download,
     Check,
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
-  } from "svelte-lucide";
-  import { onMount } from "svelte";
+  } from 'svelte-lucide';
+  import { onMount } from 'svelte';
 
   $: sequenceClips = [] as any[];
   $: clips = [] as any[];
 
   let openSettings = false;
-  let selectedProjectName: string = "";
+  let selectedProjectName: string = '';
 
   $: trackerLogo = () => {
     return AquariumLogo;
@@ -65,7 +65,9 @@
         selectedVersion: fileVersion[0],
       };
     });
+
     sequenceClips = systemClips;
+
     if ($selectedCodaProject) {
       try {
         const docId = GetCodaIdFromUrl($selectedCodaProject.docUrl);
@@ -75,16 +77,16 @@
           $selectedCodaProject.tableName
         );
         if (syncedClips.length > 0) {
-          console.log("getting coda data");
+          console.log('getting coda data');
           sequenceClips = syncedClips;
         }
       } catch (err) {
         console.log(err);
       }
     } else {
-      console.log("no coda project selected");
+      console.log('no coda project selected');
     }
-    console.log("sequenceClips", sequenceClips);
+    console.log('sequenceClips', sequenceClips);
   };
 
   const handleSelectProject = (e: any) => {
@@ -94,7 +96,7 @@
         selectedCodaProject.set(proj);
       }
     }
-    console.log("selected coda project", $selectedCodaProject);
+    console.log('selected coda project', $selectedCodaProject);
   };
 
   const handleClipSelect = (task: any) => {
@@ -116,7 +118,7 @@
       row: {
         cells: [
           {
-            column: "Edit Version",
+            column: 'Edit Version',
             value: clipVersion,
           },
         ],
@@ -154,13 +156,13 @@
   };
 
   const handleReplaceAll = () => {
-    console.log("replace all");
+    console.log('replace all');
     sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
   };
   const handleImportAll = () => {
-    console.log("import all");
+    console.log('import all');
     sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
@@ -186,7 +188,7 @@
     });
     clipsToUpdates.forEach((clip) => {
       const data = {
-        shot_version: "v01",
+        shot_version: 'v01',
       };
       const c = clips.find((c) => {
         return c.shot._key === clip.shotKey;
@@ -216,11 +218,11 @@
         return {
           cells: [
             {
-              column: "Iterable Name",
-              value: clip.trackerClip["values"]["Iterable Name"],
+              column: 'Iterable Name',
+              value: clip.trackerClip['values']['Iterable Name'],
             },
             {
-              column: "Edit Version",
+              column: 'Edit Version',
               value: GetFileVersion(clip.filepath),
             },
           ],
@@ -229,10 +231,10 @@
 
       const data = {
         rows: rowsData,
-        keyColumns: ["Iterable Name"],
+        keyColumns: ['Iterable Name'],
       };
 
-      console.log("data to update", data);
+      console.log('data to update', data);
       const updatedSuccess = await UpsertRows(
         $selectedCodaProject.docUrl,
         $selectedCodaProject.tableName,
@@ -277,6 +279,7 @@
 </script>
 
 <div class="ingest-container">
+  Aquarium
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
@@ -386,7 +389,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @import '../../variables.scss';
   .container {
     display: flex;
     flex-direction: row;
