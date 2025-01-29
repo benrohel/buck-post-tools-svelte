@@ -43,7 +43,7 @@
         selectedVersion: fileVersion[0],
       };
     });
-    sequenceClips = systemClips;
+    sequenceClips = [...systemClips];
     console.log('sequenceClips', sequenceClips);
   };
 
@@ -113,6 +113,7 @@
     }
     await getClips();
     const currentFiles = sequenceClips;
+
     for (let file of currentFiles) {
       const res = await GetRenamedFiles(
         file.filepath,
@@ -120,10 +121,12 @@
         find,
         replace
       );
+
       file.replacements = res.reverse();
       file.selectedVersion = file.replacements[0];
     }
-    sequenceClips = currentFiles;
+    sequenceClips = [...currentFiles];
+    console.log('res', sequenceClips);
   };
 
   const handleSetOutputFolder = async () => {

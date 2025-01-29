@@ -248,7 +248,7 @@ button {
   align-content: center;
   justify-content: center;
   text-align: center;
-  background-color: transparent;
+  background-color: $darker;
   flex-grow: 0;
   transition: 0.3s;
   align-self: center;
@@ -299,7 +299,8 @@ button:active {
 }
 
 button .outline {
-  border: 2px solid $dimmed-font-color;
+  outline:  1px solid $dimmed-font-color;
+  
 }
 
 

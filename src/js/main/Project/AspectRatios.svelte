@@ -172,7 +172,13 @@
     <div class="flex-row-start">
       <button on:click={getMasterSequence}><ArrowRight size={16} /> </button>
       <p>Master Sequence:</p>
-      <p>{masterSequence?.name}</p>
+      <p
+        style="
+        text-align:left;
+        flex-grow:1;background-color: #333333; padding: 4px; border-radius: 4px"
+      >
+        {masterSequence?.name}
+      </p>
     </div>
     <MultiSelect
       options={filteredPresets}

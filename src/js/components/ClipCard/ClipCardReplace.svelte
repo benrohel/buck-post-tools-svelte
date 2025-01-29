@@ -1,19 +1,18 @@
 <script lang="ts">
-  import { fs, path } from "../../lib/cep/node";
-  import { onMount } from "svelte";
-  import { openFile } from "../../lib/utils/utils";
-  import { fly } from "svelte/transition";
-  import { Download, ArrowUpDown, Eye } from "svelte-lucide";
-  import { evalES } from "../../lib/utils/bolt";
-  import { getShotById } from "buck5-javascript-client";
-  import { GetFileVersion } from "../../api/files/files";
+  import { fs, path } from '../../lib/cep/node';
+  import { onMount } from 'svelte';
+  import { openFile } from '../../lib/utils/utils';
+  import { fly } from 'svelte/transition';
+  import { Download, ArrowUpDown, Eye } from 'svelte-lucide';
+  import { evalES } from '../../lib/utils/bolt';
+  import { getShotById } from 'buck5-javascript-client';
+  import { GetFileVersion } from '../../api/files/files';
   export let clip: any;
   export let id = 0;
   export let selected = false;
   export let onChange: Function;
-  export let selectedVersion = "";
+  export let selectedVersion = '';
 
-  ``;
   const handleSelectVersion = async () => {
     if (onChange) {
       onChange(clip, selectedVersion);
@@ -26,9 +25,9 @@
 
   $: getSyncedColor = () => {
     if (isSynced()) {
-      return "color: #3caea3";
+      return 'color: #3caea3';
     } else {
-      return "color: #f6d55c";
+      return 'color: #f6d55c';
     }
   };
 
@@ -47,7 +46,7 @@
 </script>
 
 <div
-  class={!selected ? "clip-card" : "clip-card selected"}
+  class={!selected ? 'clip-card' : 'clip-card selected'}
   on:dblclick={handleEditClipCLick}
   transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
@@ -66,7 +65,7 @@
         <h4>|</h4>
       </div>
       <div style="justify-self: start; display:flex">
-        {#if clip.replacements && clip.replacements.length > 1}
+        {#if clip.replacements && clip.replacements.length > 0}
           <div class="select-wrapper">
             <select
               bind:value={selectedVersion}
@@ -86,7 +85,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @import '../../variables.scss';
 
   .comments-container {
     display: flex;

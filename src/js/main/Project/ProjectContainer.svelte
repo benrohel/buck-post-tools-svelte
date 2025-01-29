@@ -3,6 +3,7 @@
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
+  import Tools from './Tools.svelte';
 
   const toolList = [
     {
@@ -19,6 +20,11 @@
       label: 'Aspect Ratios',
       value: 'aspectRatios',
       component: AspectRatios,
+    },
+    {
+      label: 'Tools',
+      value: 'tools',
+      component: Tools,
     },
   ];
 

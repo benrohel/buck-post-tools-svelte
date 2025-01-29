@@ -250,7 +250,7 @@
     <div
       style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
     >
-      <button class="icon active" style="margin-left:4px" on:click={getClips}>
+      <button class="icon" style="margin-left:4px" on:click={getClips}>
         <RefreshCw />
       </button>
       <p class="clip-name-header">NAME</p>
