@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { trackerType } from "../../stores/settings-store";
-  import IngestCodaContainer from "./IngestCodaContainer.svelte";
-  import IngestAquariumContainer from "./IngestAquariumContainer.svelte";
+  import { trackerType } from '../../stores/settings-store';
+  import { loggedIn } from '../../stores/aquarium-store';
+  import IngestCodaContainer from './IngestCodaContainer.svelte';
+  import IngestAquariumContainer from './IngestAquariumContainer.svelte';
 </script>
 
-{#if $trackerType === "coda"}
+{#if $trackerType === 'coda'}
   <IngestCodaContainer />
-{:else if $trackerType === "aquarium"}
+{:else if $trackerType === 'aquarium' && $loggedIn}
   <IngestAquariumContainer />
 {:else}
   <p>Tracker type not found</p>

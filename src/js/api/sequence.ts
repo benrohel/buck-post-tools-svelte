@@ -86,9 +86,17 @@ export const GetSequencedClips = async (
   });
 };
 
-export const GetSequenceThumbnails = async (
+interface TimeMarker extends Marker {
+  startTicks: number;
+  endTicks: number;
+  startSeconds: number;
+  endSeconds: number;
+}
+
+export const GetMarkersThumbnails = async (
   nodeId: string = '',
-  outputFolder: string = ''
+  outputFolder: string = '',
+  colorIndices: Array<number> = [0, 1, 2, 3, 4, 5, 6, 7]
 ): Promise<boolean> => {
   const seq = await GetSequence(nodeId);
   const markers = await GetSequenceMarkers(nodeId);
@@ -96,22 +104,32 @@ export const GetSequenceThumbnails = async (
     await evalES("alert('no output folder')");
     return;
   }
-  if (markers) {
-    const opt = markers.map((marker) => {
-      const frameNumber = Math.round(marker.start * seq.framerate);
-      const outputPath = upath.join(
-        outputFolder,
-        `${seq.name}_${marker.name}_${frameNumber}.png`
-      );
-      return { filepath: outputPath, timeInSeconds: marker.start };
-    });
 
-    evalES(
-      `exportSequenceThumbnailsFromMarkers(${JSON.stringify(opt)})`,
-      false
-    ).then((res: any) => {
-      console.log(res);
-    });
+  if (colorIndices.length == 0) {
+    colorIndices = [0, 1, 2, 3, 4, 5, 6, 7];
+  }
+
+  if (markers) {
+    console.log(markers);
+    console.log('color indices', colorIndices);
+    markers
+      .filter((m) => colorIndices.includes(m.colorIndex))
+      .forEach((marker) => {
+        console.log(marker);
+        const frameNumber = Math.round(marker.startSeconds * seq.framerate);
+        const outputPath = upath.join(
+          outputFolder,
+          `${seq.name}_${
+            marker.name ? marker.name + '_' : ''
+          }${frameNumber}.png`
+        );
+        evalES(
+          `exportClipThumbnail("${marker.startTicks}","${outputPath}")`,
+          false
+        ).then((res) => {
+          console.log(res);
+        });
+      });
   }
 
   return new Promise((resolve, reject) => {
@@ -121,8 +139,11 @@ export const GetSequenceThumbnails = async (
 
 declare interface Marker {
   name: string;
-  start: number;
-  end: number;
+  startTicks: number;
+  endTicks: number;
+  startSeconds: number;
+  endSeconds: number;
+  colorIndex: number;
   type: string;
   comments: string;
 }

@@ -633,8 +633,10 @@ export const GetSequenceMarkers = (nodeId: string) => {
     }
     var firstMarker = {
       name: currentMarker.name,
-      start: currentMarker.start.seconds,
-      end: currentMarker.end.seconds,
+      startTicks: currentMarker.start.ticks,
+      endTicks: currentMarker.end.ticks,
+      startSeconds: currentMarker.start.seconds,
+      endSeconds: currentMarker.end.seconds,
       comments: currentMarker.comments,
       type: currentMarker.type,
       colorIndex: marker.getColorByIndex(),
@@ -644,8 +646,10 @@ export const GetSequenceMarkers = (nodeId: string) => {
       currentMarker = markers.getNextMarker(currentMarker);
       var newMarker = {
         name: currentMarker.name,
-        start: currentMarker.start.seconds,
-        end: currentMarker.end.seconds,
+        startTicks: currentMarker.start.ticks,
+        endTicks: currentMarker.end.ticks,
+        startSeconds: currentMarker.start.seconds,
+        endSeconds: currentMarker.end.seconds,
         comments: currentMarker.comments,
         type: currentMarker.type,
         colorIndex: currentMarker.getColorByIndex(),
@@ -654,8 +658,8 @@ export const GetSequenceMarkers = (nodeId: string) => {
     }
 
     return JSON.stringify({ markers: listMarkers });
-  } catch (e) {
-    return '';
+  } catch (e: any) {
+    return alert(e);
   }
 };
 
@@ -864,3 +868,72 @@ export const exportStills = (destination: string) => {
 //     }
 //   }
 // },
+
+declare interface NewSequenceOptions {
+  sequenceName: string;
+  presetPath: string;
+  uuid?: string;
+}
+
+const getSequenceFromName = (id: string): Sequence => {
+  const sequences = app.project.sequences;
+  for (var s = 0; s < sequences.numSequences; s++) {
+    if (sequences[s].name === id) {
+      return sequences[s];
+    }
+  }
+  return null;
+};
+
+export const newSequenceFromPreset = ({
+  sequenceName,
+  presetPath,
+  uuid,
+}: NewSequenceOptions) => {
+  app.enableQE();
+  var presetFile = new File(presetPath);
+  qe.project.newSequence(uuid, presetFile.fsName);
+  const newSeq = getSequenceFromName(uuid!);
+  newSeq.projectItem.name = sequenceName;
+  return newSeq.projectItem.nodeId;
+};
+
+declare interface InsertSequenceOptions {
+  toInsert: string;
+  inSequence: string;
+}
+
+export const InsertSequence = ({
+  toInsert,
+  inSequence,
+}: InsertSequenceOptions) => {
+  try {
+    const sequenceItemToInsert = getSequenceFromNodeId(toInsert);
+
+    const destSequence = getSequenceFromNodeId(inSequence);
+    if (sequenceItemToInsert && destSequence) {
+      var targetVTrack = destSequence.videoTracks[0];
+      if (targetVTrack) {
+        // If there are already clips in this track, append this one to the end. Otherwise, insert at start time.
+        if (targetVTrack.clips.numItems > 0) {
+          var lastClip = targetVTrack.clips[targetVTrack.clips.numItems - 1];
+          if (lastClip) {
+            targetVTrack.insertClip(
+              sequenceItemToInsert.projectItem,
+              lastClip.end.seconds
+            );
+          }
+        } else {
+          var timeAtZero = new Time();
+          timeAtZero.seconds = 0;
+          targetVTrack.insertClip(
+            sequenceItemToInsert.projectItem,
+            timeAtZero.ticks
+          );
+        }
+      }
+    }
+  } catch (e) {
+    alert('error building sequences');
+  }
+};

@@ -283,7 +283,6 @@
 </script>
 
 <div class="ingest-container">
-  CODA
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"

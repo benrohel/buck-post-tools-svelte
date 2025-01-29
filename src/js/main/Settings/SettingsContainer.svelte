@@ -6,7 +6,7 @@
     ArrowUpDown,
     ExternalLink,
   } from 'svelte-lucide';
-  import { sessionProject } from '../../stores/local-storage';
+  import { sessionProject, trackerType } from '../../stores/local-storage';
   import { openUrl } from '../../lib/utils/utils';
   import {
     codaTrackerInfos,
@@ -14,14 +14,17 @@
   } from '../../stores/coda-store';
   import { Projects } from '../../api/buck5/buck5-api';
   import { projects } from '../../stores/aquarium-store';
-  import { trackerType, activeProjectKey } from '../../stores/settings-store';
+  import { activeProjectKey } from '../../stores/settings-store';
+
   import { onMount } from 'svelte';
 
   const trackerOptions = ['coda', 'aquarium'];
   let selectedProjectName: string = '';
-  let selectedAquarieumProject: any = null;
+  let selectedAquariumProject: any = null;
 
   const handleSelectProject = (e: any) => {
+    console.log('selected project', e.target.value);
+    console.log('tracker type', $trackerType);
     if ($trackerType === 'coda') {
       if ($codaTrackerInfos) {
         const proj = $codaTrackerInfos.find((p) => p.name === e.target.value);
@@ -31,19 +34,23 @@
       }
       console.log('selected coda project', $selectedCodaProject);
     } else {
-      const proj = $projects.find((p) => p._key === e.target.value);
-      selectedAquarieumProject = proj;
+      console.log('selected aquarium project', e.target.value);
+      const proj = $projects.find((p) => p.data.name === e.target.value);
+      selectedAquariumProject = proj;
       if (proj) {
         selectedProjectName = proj.data.name;
-        activeProjectKey.set(proj._key);
+        sessionProject.set(proj._key);
       }
-      console.log('selected project', selectedProjectName);
+      console.log('selected project after', selectedProjectName);
     }
   };
 
-  const setActiveProject = async () => {
+  const setActiveProject = () => {
+    console.log('set active project');
+    console.log('tracker type', $trackerType);
+    console.log('selected aquarium project', selectedAquariumProject);
     if ($trackerType === 'aquarium') {
-      sessionProject.set(JSON.stringify(selectedAquarieumProject));
+      sessionProject.set(selectedAquariumProject._key);
     } else if ($selectedCodaProject) {
       sessionProject.set(JSON.stringify($selectedCodaProject));
     }
@@ -67,9 +74,8 @@
     const projs = await Projects();
     projects.set(projs);
   });
-
   $: console.log($trackerType);
-  $: console.log($activeProjectKey);
+  $: console.log($sessionProject);
 </script>
 
 <div class="container">

@@ -1,9 +1,9 @@
-import { format } from "date-fns";
-import axios from "axios";
+import { format } from 'date-fns';
+import axios from 'axios';
 const today = () => {
-  return format(new Date(), "yyyy-MM-dd");
+  return format(new Date(), 'yyyy-MM-dd');
 };
-export const BUCK_DAEMON_URL = "http://127.0.0.1:8000";
+export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
 
 export const BuckRequest = async (
   requestOptions: BuckRequestConfig
@@ -12,10 +12,10 @@ export const BuckRequest = async (
     method: requestOptions.method,
     url: `${BUCK_DAEMON_URL}${requestOptions.request}`,
     headers: {
-      "Content-Type": requestOptions.contentType
+      'Content-Type': requestOptions.contentType
         ? requestOptions.contentType
-        : "",
-      "X-BUCK-APP": "cep-panel",
+        : '',
+      'X-BUCK-APP': 'cep-panel',
     },
     data: requestOptions.data,
   };
@@ -32,7 +32,7 @@ export const BuckRequest = async (
 
 export const WhoAmI = async () => {
   const options: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/auth/whoami`,
   };
   try {
@@ -44,7 +44,7 @@ export const WhoAmI = async () => {
 };
 
 export const Login = async (options: BuckRequestConfig): Promise<UserData> => {
-  options.contentType = "application/json";
+  options.contentType = 'application/json';
   const userData = (await BuckRequest(options)).user.data as UserData;
   console.log(userData);
   return Promise.resolve(userData);
@@ -52,7 +52,7 @@ export const Login = async (options: BuckRequestConfig): Promise<UserData> => {
 
 export const Authenticated = async (): Promise<UserData> => {
   const options: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/auth/authenticated`,
   };
 
@@ -63,8 +63,8 @@ export const Authenticated = async (): Promise<UserData> => {
 
 export const Projects = async (): Promise<Item[]> => {
   const projectsOptions: BuckRequestConfig = {
-    method: "GET",
-    request: "/projects",
+    method: 'GET',
+    request: '/projects',
   };
   const projects = (await BuckRequest(projectsOptions)) as Item[];
   console.log(projects);
@@ -73,16 +73,26 @@ export const Projects = async (): Promise<Item[]> => {
 
 export const Project = async (projectKey: string): Promise<Item> => {
   const projectsOptions: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/projects/${projectKey}`,
   };
   const project = (await BuckRequest(projectsOptions)) as Item;
   return Promise.resolve(project);
 };
 
+export const Shots = async (projectKey: string): Promise<Item[]> => {
+  const projectsOptions: BuckRequestConfig = {
+    method: 'GET',
+    request: `/projects/${projectKey}/shots`,
+  };
+  const shots = (await BuckRequest(projectsOptions)) as Item[];
+
+  return Promise.resolve(shots);
+};
+
 export const Shot = async (shotKey: string): Promise<Item> => {
   const projectsOptions: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/shots/${shotKey}`,
   };
   const shot = (await BuckRequest(projectsOptions)) as Item;
@@ -92,7 +102,7 @@ export const Shot = async (shotKey: string): Promise<Item> => {
 
 export const Tasks = async (projectKey: string): Promise<Task[]> => {
   const tasksOptions: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/projects/${projectKey}/tasks`,
   };
   const res = await BuckRequest(tasksOptions);
@@ -102,21 +112,21 @@ export const Tasks = async (projectKey: string): Promise<Task[]> => {
 
 export const UpdateTask = async (taskKey: string, data: any): Promise<Item> => {
   const tasksOptions: BuckRequestConfig = {
-    method: "PATCH",
-    contentType: "application/json",
+    method: 'PATCH',
+    contentType: 'application/json',
     request: `/tasks/${taskKey}`,
     data: data,
   };
 
   const res = await BuckRequest(tasksOptions);
-  console.log("UPDATE TASK", res);
+  console.log('UPDATE TASK', res);
   const task = res as Item;
   return Promise.resolve(task);
 };
 
 export const Versions = async (taskKey: string): Promise<Item[]> => {
   const tasksOptions: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/tasks/${taskKey}/versions`,
   };
 
@@ -141,12 +151,12 @@ export const Versions = async (taskKey: string): Promise<Item[]> => {
 
 export const ShotVersions = async (shotKey: string): Promise<any[]> => {
   const tasksOptions: BuckRequestConfig = {
-    method: "POST",
-    contentType: "application/json",
+    method: 'POST',
+    contentType: 'application/json',
     request: `/advanced/traverse/${shotKey}`,
     data: {
-      query: "# -($Child,4)> $Version View{item:item,parent:FIRST($parent)}",
-      aliases: { parent: "# <()- * VIEW {key:item._key,name:item.data.name}" },
+      query: '# -($Child,4)> $Version View{item:item,parent:FIRST($parent)}',
+      aliases: { parent: '# <()- * VIEW {key:item._key,name:item.data.name}' },
     },
   };
 
@@ -178,9 +188,9 @@ export const PostVersions = async (
   addToPlaylist: boolean = false
 ): Promise<PostVersionData> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/tasks/${taskKey}/versions`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: { versionName: versionName, filepaths: files },
   };
 
@@ -199,11 +209,11 @@ export const PostVersions = async (
 
 export const Comments = async (versionKey: string) => {
   const tasksOptions: BuckRequestConfig = {
-    method: "POST",
-    contentType: "application/json",
+    method: 'POST',
+    contentType: 'application/json',
     request: `/advanced/traverse/${versionKey}`,
     data: {
-      query: "#-($Child, 4)> $Comment VIEW item",
+      query: '#-($Child, 4)> $Comment VIEW item',
     },
   };
   const comments = (await BuckRequest(tasksOptions)) as Item[];
@@ -212,10 +222,10 @@ export const Comments = async (versionKey: string) => {
 
 export const TaskStatuses = async (projectKey: string) => {
   const tasksOptions: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${projectKey}`,
     data: {
-      query: "# -()> $Properties  VIEW item.tasks_status",
+      query: '# -()> $Properties  VIEW item.tasks_status',
       options: {
         populate: false,
       },
@@ -227,7 +237,7 @@ export const TaskStatuses = async (projectKey: string) => {
 
 export const Playlists = async (projectKey: string) => {
   const options: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `/projects/${projectKey}/playlists`,
   };
   const playlists = (await BuckRequest(options)).items as Playlist[];
@@ -255,9 +265,9 @@ export const CreatePlaylist = async (
   end: number = 720
 ): Promise<Playlist> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/projects/${projectKey}/playlists`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
       name: name,
       framerate: framerate,
@@ -277,11 +287,11 @@ export const AddMediaToPlaylist = async (
   mediaKey: string
 ) => {
   const options: BuckRequestConfig = {
-    method: "PATCH",
+    method: 'PATCH',
     request: `/playlists/${playlistKey}/link`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
-      data: { track: "A" },
+      data: { track: 'A' },
       targetKey: mediaKey,
     },
   };
@@ -300,9 +310,9 @@ export const getLatestTaskMediaFromList = async (
     .map((s) => {
       return `^${s}$`;
     })
-    .join("|");
+    .join('|');
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/traverse/${projectKey}`,
     data: {
       query: `# -($Child,9)> $Shot AND item.data.name =~ '${regexShots}' VIEW{shot:{_key:item._key,name:item.data.name},task:$TaskName}}`,
@@ -320,46 +330,46 @@ export const AfterEffectsProperties = async (
   projectKey: string
 ): Promise<AeProperties> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${projectKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
       query:
         "# -($Child, 2)> $Properties AND item.data.name == 'AfterEffects' VIEW item",
     },
   };
   const res = await BuckRequest(options);
-  console.log("ae properties", res);
+  console.log('ae properties', res);
   const aeProperties = res[0].data as AeProperties;
   return Promise.resolve(aeProperties);
 };
 
 export const ItemTree = async (itemKey: string): Promise<string[]> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${itemKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
       query:
-        "# <($Child,9)- * COLLECT criterias = $groups INTO collection = $view  VIEW  $return",
+        '# <($Child,9)- * COLLECT criterias = $groups INTO collection = $view  VIEW  $return',
       aliases: {
         groups: {
-          type: "item.type",
-          key: "item._key",
-          name: "item.data.name",
-          length: "LENGTH(#<($Child,99)- *)",
+          type: 'item.type',
+          key: 'item._key',
+          name: 'item.data.name',
+          length: 'LENGTH(#<($Child,99)- *)',
         },
         view: {
-          type: "item.type",
-          name: "item.data.name",
-          key: "item._key",
-          length: "LENGTH(#<($Child,99)- *)",
+          type: 'item.type',
+          name: 'item.data.name',
+          key: 'item._key',
+          length: 'LENGTH(#<($Child,99)- *)',
         },
         return: {
-          type: "criterias.type",
-          name: "criterias.name",
-          key: "criterias.key",
-          length: "criterias.length",
+          type: 'criterias.type',
+          name: 'criterias.name',
+          key: 'criterias.key',
+          length: 'criterias.length',
         },
       },
     },
@@ -377,7 +387,7 @@ export const ItemTree = async (itemKey: string): Promise<string[]> => {
   });
 
   const tokens = sorted
-    .slice(sorted.indexOf(sorted.find((s: any) => s.type === "Project")))
+    .slice(sorted.indexOf(sorted.find((s: any) => s.type === 'Project')))
     .map((s: any) => {
       return s.name;
     });
@@ -393,9 +403,9 @@ declare interface VersionInput {
 
 export const Publish = async (taskKey: string, version: string) => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/tasks/${taskKey}/versions`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
       version: version,
     },
@@ -408,12 +418,12 @@ export const GetProjectProperties = async (
   projectKey: string
 ): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${projectKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
       query:
-        "# -($Child,1)> $Properties VIEW {tasks_status:item.data.tasks_status,postRoot:item.data.postRoot}",
+        '# -($Child,1)> $Properties VIEW {tasks_status:item.data.tasks_status,postRoot:item.data.postRoot}',
     },
   };
   const res = await BuckRequest(options);
@@ -422,11 +432,11 @@ export const GetProjectProperties = async (
 
 export const GetEdits = async (projectKey: string): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${projectKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
-      query: "# -($Child,3)> $Timeline View{_key:item._key,data:item.data}",
+      query: '# -($Child,3)> $Timeline View{_key:item._key,data:item.data}',
     },
   };
   const res = await BuckRequest(options);
@@ -436,9 +446,9 @@ export const GetEdits = async (projectKey: string): Promise<any> => {
 
 export const GetClips = async (editKey: string): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${editKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: { query: "# <($Child,1)> item.type=='Clip' View item" },
   };
   const res = await BuckRequest(options);
@@ -447,11 +457,11 @@ export const GetClips = async (editKey: string): Promise<any> => {
 
 export const GetShotForClip = async (clip: any): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "POST",
+    method: 'POST',
     request: `/advanced/traverse/${clip._key}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: {
-      query: "# <($Breakdown, 2)> $Shot View item",
+      query: '# <($Breakdown, 2)> $Shot View item',
     },
   };
   const res = await BuckRequest(options);
@@ -461,7 +471,7 @@ export const GetShotForClip = async (clip: any): Promise<any> => {
 
 export const GetItem = async (itemKey: string): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "GET",
+    method: 'GET',
     request: `advanced/adv/items/${itemKey}`,
   };
   const res = await BuckRequest(options);
@@ -470,9 +480,9 @@ export const GetItem = async (itemKey: string): Promise<any> => {
 
 export const PatchItem = async (itemKey: string, data: any): Promise<any> => {
   const options: BuckRequestConfig = {
-    method: "PATCH",
+    method: 'PATCH',
     request: `/advanced/adv/items/${itemKey}`,
-    contentType: "application/json",
+    contentType: 'application/json',
     data: data,
   };
   const res = await BuckRequest(options);

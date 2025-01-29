@@ -2818,6 +2818,7 @@ __metadata:
     types-for-adobe-extras: "npm:^0.0.1"
     typescript: "npm:^4.6.4"
     upath: "npm:^2.0.1"
+    uuid: "npm:^11.0.5"
     vite: "npm:^4.0.5"
     vite-cep-plugin: "npm:^1.1.8"
     yarn: "npm:^1.22.17"
@@ -5687,6 +5688,15 @@ __metadata:
   dependencies:
     inherits: "npm:2.0.3"
   checksum: d29f6893e406b63b088ce9924da03201df89b31490d4d011f1c07a386ea4b3dbe907464c274023c237da470258e1805d806c7e4009a5974cd6b1d474b675852a
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^11.0.5":
+  version: 11.0.5
+  resolution: "uuid@npm:11.0.5"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 6f59f0c605e02c14515401084ca124b9cb462b4dcac866916a49862bcf831874508a308588c23a7718269226ad11a92da29b39d761ad2b86e736623e3a33b6e7
   languageName: node
   linkType: hard
 

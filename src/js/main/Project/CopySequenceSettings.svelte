@@ -45,7 +45,7 @@
     <div>From: {fromSequence?.name ?? ''}</div>
   </div>
   <div class="flex-row-start">
-    <button class="active" on:click={handleToSequences}>
+    <button on:click={handleToSequences}>
       <Upload size={16} />
     </button>
     <div>To: {toSequences.map((s) => s.name).join(', ')}</div>

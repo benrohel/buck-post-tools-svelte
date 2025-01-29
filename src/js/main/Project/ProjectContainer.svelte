@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
+  import AspectRatios from './AspectRatios.svelte';
+
   const toolList = [
     {
       label: 'Start Project',
@@ -12,6 +14,11 @@
       label: 'Sequence Settings',
       value: 'sequenceSettings',
       component: CopySequenceSettings,
+    },
+    {
+      label: 'Aspect Ratios',
+      value: 'aspectRatios',
+      component: AspectRatios,
     },
   ];
 

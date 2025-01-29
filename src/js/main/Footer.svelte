@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { loggedIn } from '../stores/aquarium-store';
   import { Recycle } from 'svelte-lucide';
 
   const refreshPage = () => {
@@ -18,7 +19,7 @@
       on:click={refreshPage}
       on:keydown={refreshPage}
     >
-      <Recycle />
+      <Recycle color={loggedIn ? 'green' : 'white'} />
     </button>
   </div>
 </div>

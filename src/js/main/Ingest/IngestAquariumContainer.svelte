@@ -9,12 +9,15 @@
   import '../../api/coda/coda';
   import { GetCodaTrackerData } from '../../api/tracker/tracker';
   import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from '../../api/coda/coda';
+  import { Shots } from '../../api/buck5/buck5-api';
   import { notifications } from '../../stores/notifications-store';
   import {
     codaTrackerInfos,
     selectedCodaProject,
   } from '../../stores/coda-store';
-  import { sessionProject } from '../../stores/local-storage';
+  import { currentProject } from '../../stores/aquarium-store';
+  import { sessionProject, storedProject } from '../../stores/local-storage';
+  import { activeProjectKey } from '../../stores/settings-store';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
@@ -204,6 +207,10 @@
     }
   };
 
+  const refreshShots = async () => {
+    const shots = await Shots(storedProject);
+  };
+
   const setCodaTable = async () => {
     if ($selectedCodaProject) {
       sessionProject.set(JSON.stringify($selectedCodaProject));
@@ -212,52 +219,9 @@
     }
   };
 
-  const handleCodaSync = async () => {
-    if ($selectedCodaProject) {
-      const rowsData = sequenceClips.map((clip: any) => {
-        return {
-          cells: [
-            {
-              column: 'Iterable Name',
-              value: clip.trackerClip['values']['Iterable Name'],
-            },
-            {
-              column: 'Edit Version',
-              value: GetFileVersion(clip.filepath),
-            },
-          ],
-        };
-      });
-
-      const data = {
-        rows: rowsData,
-        keyColumns: ['Iterable Name'],
-      };
-
-      console.log('data to update', data);
-      const updatedSuccess = await UpsertRows(
-        $selectedCodaProject.docUrl,
-        $selectedCodaProject.tableName,
-        data
-      );
-      if (updatedSuccess) {
-        notifications.success(
-          `Succesfully Updated Tracker: ${$selectedCodaProject.name}`,
-          2000
-        );
-      } else {
-        notifications.error(
-          `Errot Updating Tracker: ${$selectedCodaProject.name}`,
-          2000
-        );
-      }
-      await getClips();
-    }
-  };
-
   const openTracker = () => {
-    if ($selectedCodaProject) {
-      openUrl($selectedCodaProject.docUrl);
+    if ($sessionProject) {
+      openUrl(`http://buck.aquarium.app/${$sessionProject}`);
     }
   };
 
@@ -279,7 +243,6 @@
 </script>
 
 <div class="ingest-container">
-  Aquarium
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
@@ -371,15 +334,15 @@
       >
         <button
           class="icon active"
-          on:click={handleCodaSync}
-          disabled={selectedProjectName.length > 0 ? false : true}
+          on:click={refreshShots}
+          disabled={storedProject == null ? true : false}
         >
           <RefreshCw />
         </button>
         <button
           class="icon active"
           on:click={openTracker}
-          disabled={!isCodaUrl()}
+          disabled={$sessionProject == null}
         >
           <ExternalLink />
         </button>

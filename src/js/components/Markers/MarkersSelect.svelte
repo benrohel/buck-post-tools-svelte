@@ -1,25 +1,21 @@
 <script lang="ts">
   import { XSquare } from 'lucide-svelte';
-  const sourceMarkers = [
-    { name: 'Green', selected: false, color: '#6B8826' },
-    { name: 'Red', selected: false, color: '#E5002D' },
-    { name: 'Purple', selected: false, color: '#B689B5' },
-    { name: 'Orange', selected: false, color: '#FA6600' },
-    { name: 'Yellow', selected: false, color: '#D99E00' },
-    { name: 'White', selected: false, color: '#FFF' },
-    { name: 'Blue', selected: false, color: '#148FFF' },
-    { name: 'Cyan', selected: false, color: '#00F4D5' },
-  ];
 
-  const clipColors = [
-    { name: 'Green', selected: false, color: '#6B8826' },
-    { name: 'Red', selected: false, color: '#E5002D' },
-    { name: 'Purple', selected: false, color: '#B689B5' },
-    { name: 'Orange', selected: false, color: '#FA6600' },
-    { name: 'Yellow', selected: false, color: '#D99E00' },
-    { name: 'White', selected: false, color: '#FFF' },
-    { name: 'Blue', selected: false, color: '#148FFF' },
-    { name: 'Cyan', selected: false, color: '#00F4D5' },
+  interface MarkerColor {
+    name: string;
+    selected: boolean;
+    color: string;
+    colorIndex: number;
+  }
+  const sourceMarkers: MarkerColor[] = [
+    { name: 'Green', selected: false, color: '#6B8826', colorIndex: 0 },
+    { name: 'Red', selected: false, color: '#E5002D', colorIndex: 1 },
+    { name: 'Purple', selected: false, color: '#B689B5', colorIndex: 2 },
+    { name: 'Orange', selected: false, color: '#FA6600', colorIndex: 3 },
+    { name: 'Yellow', selected: false, color: '#D99E00', colorIndex: 4 },
+    { name: 'White', selected: false, color: '#FFF', colorIndex: 5 },
+    { name: 'Blue', selected: false, color: '#148FFF', colorIndex: 6 },
+    { name: 'Cyan', selected: false, color: '#00F4D5', colorIndex: 7 },
   ];
 
   export let onChange: Function;

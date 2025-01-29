@@ -23,7 +23,7 @@
   import RenameContainer from './Rename/RenameContainer.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
-  // import SettingsContainer from "./Settings/SettingsContainer.svelte";
+  import SettingsContainer from './Settings/SettingsContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
 
@@ -50,12 +50,12 @@
       component: ExportContainer,
       icon: ArrowRightFromLine,
     },
-    // {
-    //   label: 'Settings',
-    //   value: 5,
-    //   component: SettingsContainer,
-    //   icon: Settings,
-    // },
+    {
+      label: 'Settings',
+      value: 5,
+      component: SettingsContainer,
+      icon: Settings,
+    },
   ];
 
   onMount(async () => {
