@@ -2767,64 +2767,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bolt-cep@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "bolt-cep@workspace:."
-  dependencies:
-    "@babel/core": "npm:^7.19.0"
-    "@babel/plugin-proposal-class-properties": "npm:^7.16.0"
-    "@babel/plugin-proposal-object-rest-spread": "npm:^7.16.0"
-    "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
-    "@babel/plugin-transform-runtime": "npm:^7.16.4"
-    "@babel/preset-env": "npm:^7.19.0"
-    "@babel/preset-typescript": "npm:^7.16.0"
-    "@babel/runtime": "npm:^7.16.3"
-    "@rollup/plugin-babel": "npm:^5.3.1"
-    "@rollup/plugin-commonjs": "npm:^21.0.2"
-    "@rollup/plugin-image": "npm:^2.1.1"
-    "@rollup/plugin-json": "npm:^4.1.0"
-    "@rollup/plugin-node-resolve": "npm:^13.1.3"
-    "@rollup/plugin-replace": "npm:^4.0.0"
-    "@square/svelte-store": "npm:^1.0.18"
-    "@sveltejs/vite-plugin-svelte": "npm:^1.2.0"
-    "@tsconfig/svelte": "npm:^3.0.0"
-    "@types/fs-extra": "npm:^9.0.13"
-    "@types/node": "npm:^16.11.7"
-    "@types/smpte-timecode": "npm:^1"
-    "@types/trusted-types": "npm:^2.0.2"
-    axios: "npm:^1.6.2"
-    babel-plugin-transform-scss: "npm:^1.1.0"
-    babel-preset-env: "npm:^1.7.0"
-    buck5-javascript-client: /Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client
-    core-js: "npm:3"
-    cross-env: "npm:^7.0.3"
-    date-fns: "npm:^2.30.0"
-    dotenv: "npm:^16.4.5"
-    fs-extra: "npm:^10.0.0"
-    lucide-svelte: "npm:^0.294.0"
-    rimraf: "npm:^3.0.2"
-    rollup: "npm:^2.68.0"
-    rollup-plugin-multi-input: "npm:^1.3.1"
-    rollup-plugin-node-copy: "npm:^1.0.4"
-    rollup-plugin-scss: "npm:^3.0.0"
-    sass: "npm:^1.69.6"
-    smpte-timecode: "npm:^1.3.6"
-    svelte: "npm:^3.53.1"
-    svelte-check: "npm:^2.9.2"
-    svelte-icons: "npm:^2.1.0"
-    svelte-lucide: "npm:^0.8.2"
-    svelte-preprocess: "npm:^4.10.7"
-    types-for-adobe: "npm:^7.0.11"
-    types-for-adobe-extras: "npm:^0.0.1"
-    typescript: "npm:^4.6.4"
-    upath: "npm:^2.0.1"
-    uuid: "npm:^11.0.5"
-    vite: "npm:^4.0.5"
-    vite-cep-plugin: "npm:^1.1.8"
-    yarn: "npm:^1.22.17"
-  languageName: unknown
-  linkType: soft
-
 "brace-expansion@npm:^1.1.7":
   version: 1.1.11
   resolution: "brace-expansion@npm:1.1.11"
@@ -2879,9 +2821,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::locator=bolt-cep%40workspace%3A.":
+"buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::locator=co.buck-post-toools.cep%40workspace%3A.":
   version: 0.0.8
-  resolution: "buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client#/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::hash=70a3b1&locator=bolt-cep%40workspace%3A."
+  resolution: "buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client#/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::hash=70a3b1&locator=co.buck-post-toools.cep%40workspace%3A."
   dependencies:
     openapi-typescript-fetch: "npm:^1.1.3"
   checksum: 3410656e943cb23a590b8a4f8c8dc3aba3d8a558790fc233fcbd3fc47a32f142a4d293e4a0f9a94fe38fb08f3baa94ed6f6f9e74fc44e2009134b39869286978
@@ -3002,6 +2944,64 @@ __metadata:
   checksum: 1f90262d5f6230a17e27d0c190b09d47ebe7efdd76a03b5a1127863f7b3c9aec4c3e6c8bb3a7bbf81d553d56a1fd35728f5a8ef4c63f867ac8d690109742a8c1
   languageName: node
   linkType: hard
+
+"co.buck-post-toools.cep@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "co.buck-post-toools.cep@workspace:."
+  dependencies:
+    "@babel/core": "npm:^7.19.0"
+    "@babel/plugin-proposal-class-properties": "npm:^7.16.0"
+    "@babel/plugin-proposal-object-rest-spread": "npm:^7.16.0"
+    "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
+    "@babel/plugin-transform-runtime": "npm:^7.16.4"
+    "@babel/preset-env": "npm:^7.19.0"
+    "@babel/preset-typescript": "npm:^7.16.0"
+    "@babel/runtime": "npm:^7.16.3"
+    "@rollup/plugin-babel": "npm:^5.3.1"
+    "@rollup/plugin-commonjs": "npm:^21.0.2"
+    "@rollup/plugin-image": "npm:^2.1.1"
+    "@rollup/plugin-json": "npm:^4.1.0"
+    "@rollup/plugin-node-resolve": "npm:^13.1.3"
+    "@rollup/plugin-replace": "npm:^4.0.0"
+    "@square/svelte-store": "npm:^1.0.18"
+    "@sveltejs/vite-plugin-svelte": "npm:^1.2.0"
+    "@tsconfig/svelte": "npm:^3.0.0"
+    "@types/fs-extra": "npm:^9.0.13"
+    "@types/node": "npm:^16.11.7"
+    "@types/smpte-timecode": "npm:^1"
+    "@types/trusted-types": "npm:^2.0.2"
+    axios: "npm:^1.6.2"
+    babel-plugin-transform-scss: "npm:^1.1.0"
+    babel-preset-env: "npm:^1.7.0"
+    buck5-javascript-client: /Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client
+    core-js: "npm:3"
+    cross-env: "npm:^7.0.3"
+    date-fns: "npm:^2.30.0"
+    dotenv: "npm:^16.4.5"
+    fs-extra: "npm:^10.0.0"
+    lucide-svelte: "npm:^0.294.0"
+    rimraf: "npm:^3.0.2"
+    rollup: "npm:^2.68.0"
+    rollup-plugin-multi-input: "npm:^1.3.1"
+    rollup-plugin-node-copy: "npm:^1.0.4"
+    rollup-plugin-scss: "npm:^3.0.0"
+    sass: "npm:^1.69.6"
+    smpte-timecode: "npm:^1.3.6"
+    svelte: "npm:^3.53.1"
+    svelte-check: "npm:^2.9.2"
+    svelte-icons: "npm:^2.1.0"
+    svelte-lucide: "npm:^0.8.2"
+    svelte-preprocess: "npm:^4.10.7"
+    types-for-adobe: "npm:^7.0.11"
+    types-for-adobe-extras: "npm:^0.0.1"
+    typescript: "npm:^4.6.4"
+    upath: "npm:^2.0.1"
+    uuid: "npm:^11.0.5"
+    vite: "npm:^4.0.5"
+    vite-cep-plugin: "npm:^1.1.8"
+    yarn: "npm:^1.22.17"
+  languageName: unknown
+  linkType: soft
 
 "color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
   version: 1.9.3

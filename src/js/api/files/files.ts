@@ -65,8 +65,8 @@ export const GetSystemFileVersionsWithShotName = (
     const variation = name
       ? name.toLowerCase().replace(shotName.toLowerCase(), '').replace('_', '')
       : null;
-    let displayName =
-      match && variation ? `${variation} | ${version}` : `${version}`;
+    // let displayName =match && variation ? `${variation} | ${version}` : `${version}`;
+    let displayName = `${version}`;
 
     return {
       filepath: v,

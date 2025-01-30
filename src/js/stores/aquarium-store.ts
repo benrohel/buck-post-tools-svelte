@@ -14,16 +14,12 @@ export const currentProject = asyncReadable<any>(null, async () => {
   if (proj) return proj;
 });
 
-export const loggedIn = asyncReadable<boolean>(
-  null,
-  async () => {
-    const response = await Authenticated();
+export const loggedIn = asyncReadable<boolean>(null, async () => {
+  const response = await Authenticated();
 
-    console.log(response);
-    return response ? true : false;
-  },
-  { reloadable: true }
-);
+  console.log(response);
+  return response ? true : false;
+});
 
 export const edits = derived(currentProject, async ($currentProject) => {
   let ed = await GetEdits($currentProject._key);

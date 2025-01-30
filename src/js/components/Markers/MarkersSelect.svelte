@@ -43,7 +43,10 @@
 
 <div class="markers-row">
   <div class="marker-item">
-    <button on:click={() => clearSelection()}>
+    <button
+      on:click={() => clearSelection()}
+      style="background-color: transparent; border:none;"
+    >
       <XSquare size={20} />
     </button>
   </div>

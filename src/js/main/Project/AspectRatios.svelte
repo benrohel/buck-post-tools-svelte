@@ -175,7 +175,7 @@
       <p
         style="
         text-align:left;
-        flex-grow:1;background-color: #333333; padding: 4px; border-radius: 4px"
+        flex-grow:1;background-color: #161616; padding: 4px; border-radius: 4px"
       >
         {masterSequence?.name}
       </p>
@@ -188,7 +188,7 @@
       title="Select New Resolutions"
     />
     <div
-      style="margin-top:4px;background-color: #222222;  flex-direction: column; align-items: flex-start; padding-left: 2px"
+      style="margin-top:4px;background-color: #161616;  flex-direction: column; align-items: flex-start; padding-left: 2px"
     >
       {#each selectedPresets
         .filter((f) => f.selected)

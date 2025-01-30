@@ -10,6 +10,7 @@
   import { GetCodaTrackerData } from '../../api/tracker/tracker';
   import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from '../../api/coda/coda';
   import { Shots } from '../../api/buck5/buck5-api';
+
   import { notifications } from '../../stores/notifications-store';
   import {
     codaTrackerInfos,
@@ -209,6 +210,7 @@
 
   const refreshShots = async () => {
     const shots = await Shots(storedProject);
+    console.log('client-shots', shots);
   };
 
   const setCodaTable = async () => {
@@ -243,6 +245,7 @@
 </script>
 
 <div class="ingest-container">
+  AQUARIUM
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
@@ -296,51 +299,26 @@
     <div id="coda-header">
       <div class="form-row">
         <button
-          style="margin:4px; width:auto"
+          style="margin:4px; width:auto; background-color:transparent; border:none;"
           on:click={() => {
             openSettings = !openSettings;
           }}
         >
-          <img src={trackerLogo()} alt="Coda logo" height="20" />
+          <img src={trackerLogo()} alt="Coda logo" height="16" />
         </button>
-        {#if openSettings}
-          <div id="coda-settings">
-            <div class="coda-form">
-              <select
-                bind:value={selectedProjectName}
-                on:change={handleSelectProject}
-              >
-                {#if $codaTrackerInfos != null}
-                  {#each $codaTrackerInfos as projectInfo}
-                    <option value={projectInfo.name}>{projectInfo.name}</option>
-                  {/each}
-                {/if}
-              </select>
-
-              <button
-                class="icon active"
-                on:click={setCodaTable}
-                disabled={selectedProjectName.length > 0 ? false : true}
-              >
-                <Check />
-              </button>
-              <!-- {GetCodaIdFromUrl($selectedCodaProject.docUrl)} -->
-            </div>
-          </div>
-        {/if}
       </div>
       <div
         style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
       >
         <button
-          class="icon active"
+          class="icon"
           on:click={refreshShots}
           disabled={storedProject == null ? true : false}
         >
           <RefreshCw />
         </button>
         <button
-          class="icon active"
+          class="icon"
           on:click={openTracker}
           disabled={$sessionProject == null}
         >
@@ -402,7 +380,7 @@
     align-items: center;
     justify-self: flex-end;
     // height: 30px;
-    background-color: $darker;
+    background-color: $darkest;
     color: $font;
     width: 100%;
     gap: 8px;

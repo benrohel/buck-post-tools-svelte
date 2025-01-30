@@ -175,10 +175,8 @@
     {/each}
   {/if}
 
-  <div class="flex-row-end action-row">
-    <button class="icon active" on:click={handleReplaceAll}>
-      <ArrowUpDown size={12} />
-    </button>
+  <div class="flex-row-end">
+    <button class="active" on:click={handleReplaceAll}> Relink Clips </button>
   </div>
 </div>
 
@@ -189,9 +187,6 @@
 
   input {
     width: 100%;
-  }
-  button {
-    width: 32px;
   }
 
   #search-folder {

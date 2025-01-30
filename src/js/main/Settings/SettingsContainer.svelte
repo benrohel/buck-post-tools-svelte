@@ -90,7 +90,11 @@
   <div class="setting">
     <p>Project:</p>
     {#if $trackerType === 'coda'}
-      <select bind:value={selectedProjectName} on:change={handleSelectProject}>
+      <select
+        bind:value={selectedProjectName}
+        on:change={handleSelectProject}
+        class="select-overflow"
+      >
         {#if $codaTrackerInfos != null}
           {#each $codaTrackerInfos as projectInfo}
             <option value={projectInfo.name}>{projectInfo.name}</option>
@@ -99,7 +103,11 @@
       </select>
     {/if}
     {#if $trackerType === 'aquarium'}
-      <select bind:value={selectedProjectName} on:change={handleSelectProject}>
+      <select
+        bind:value={selectedProjectName}
+        on:change={handleSelectProject}
+        class="select-overflow"
+      >
         {#if $projects != null}
           {#each $projects as project}
             <option value={project.data.name}>{project.data.name}</option>
@@ -140,5 +148,12 @@
     p {
       margin: 0;
     }
+  }
+
+  .select-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
   }
 </style>

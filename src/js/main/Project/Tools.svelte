@@ -27,7 +27,6 @@ function addGapsBetweenClips(gap) {
       clips[c].move(newInTime);
     }
   }
-
   alert('Gaps added between clips.');
 }
 
@@ -45,7 +44,9 @@ addGapsBetweenClips(${gap});`;
 </script>
 
 <div style="display:flex; flex-direction:row; text-align:center">Tools</div>
-<button on:click={handleExecuteScript}>Launch Script</button>
+<div class="flex-row-end">
+  <button class="active" on:click={handleExecuteScript}>Execute Script</button>
+</div>
 
 <style lang="scss">
 </style>
