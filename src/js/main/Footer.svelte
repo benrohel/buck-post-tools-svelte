@@ -10,14 +10,10 @@
 <div class="footer">
   <div style="margin-left:8px">©BUCK 2025</div>
   <div style="display:flex; flex-direction:row; align-items:center">
-    <!-- <div style="margin-right:8px;">
-      <Icon name="buck-logo" size="12" />
-    </div> -->
     <button
       class="icon"
-      style="margin-right:8px; cursor:pointer"
+      style="margin-right:8px; cursor:pointer; background-color:transparent"
       on:click={refreshPage}
-      on:keydown={refreshPage}
     >
       <Recycle color={loggedIn ? 'green' : 'white'} />
     </button>

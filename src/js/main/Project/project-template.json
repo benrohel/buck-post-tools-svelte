@@ -2,7 +2,7 @@
   {
     "name": "01:Sequeces",
     "children": [
-      { "name": "01:Builds" },
+      { "name": "01:Builds", "children": [{ "name": "tests" }] },
       { "name": "02:Edits" },
       { "name": "03:Dailies" },
       { "name": "04:Handoffs" },
@@ -26,11 +26,11 @@
       {
         "name": "04:Graphics",
         "children": [
-          { "name": "01:Supers" },
-          { "name": "02:Logos" },
-          { "name": "03:EndCards" },
-          { "name": "04:Legals" },
-          { "name": "05:Slates" }
+          { "name": "01:Supers", "type": "directory" },
+          { "name": "02:Logos", "type": "directory" },
+          { "name": "03:EndCards", "type": "directory" },
+          { "name": "04:Legals", "type": "directory" },
+          { "name": "05:Slates", "type": "directory" }
         ]
       }
     ]

@@ -73,6 +73,8 @@
   onMount(async () => {
     const projs = await Projects();
     projects.set(projs);
+    selectedProjectName = projs.find((p) => p._key === $sessionProject)?.data
+      .name;
   });
   $: console.log($trackerType);
   $: console.log($sessionProject);

@@ -571,26 +571,36 @@ export const openFolderDialog = (txt: string) => {
 
 declare interface BinInput {
   name: string;
-  type: string;
   children: Array<BinInput>;
 }
 declare interface CreateBinInput {
   bins: Array<BinInput>;
-  parent?: ProjectItem;
+  parent: ProjectItem;
 }
+
+// export const createBins = (options: CreateBinInput) => {
+//   const bins = options.bins;
+//   alert(String(bins.length));
+//   let parent = options.parent ?? app.project.rootItem;
+//   for (var i = 0; i < bins.length; i++) {
+//     createBins({ bins: options.bins[i].children, parent: parent });
+//     let newParent = parent.createBin(bins[i].name);
+//     parent = newParent;
+//   }
+// };
 
 export const createBins = (options: CreateBinInput) => {
   const bins = options.bins;
+  let parent = options.parent ?? app.project.rootItem;
+
   for (var i = 0; i < bins.length; i++) {
-    let currentParent = app.project.rootItem;
-    if (options.parent) {
-      currentParent = options.parent;
+    // Create the current bin as a child of the parent
+    let newParent = parent.createBin(bins[i].name);
+
+    // If the current bin has children, call createBins recursively
+    if (bins[i].children) {
+      createBins({ bins: bins[i].children, parent: newParent });
     }
-    if (!(bins[i].type === 'directory')) {
-      continue;
-    }
-    let newParent = currentParent.createBin(bins[i].name);
-    createBins({ bins: options.bins[i].children, parent: newParent });
   }
 };
 

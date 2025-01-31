@@ -33,7 +33,6 @@ code {
 
 
 hr{
-  
   border: $dimmed-font-color 1px solid;
 }
 
@@ -395,6 +394,7 @@ input {
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
+  margin: 2px 2px 0px 0px;
 }
 
 .flex-row-start{
@@ -403,6 +403,7 @@ input {
   align-items: center;
   justify-content: flex-start;
   gap: 4px;
+  margin: 2px 2px 0px 0px
 }
 
 .action-row{

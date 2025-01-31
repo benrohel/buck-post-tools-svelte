@@ -29,6 +29,7 @@
     </li>
   {/each}
 </ul>
+<div style="margin-top:4px"></div>
 {#each items as item}
   {#if activeTabValue == item.value}
     <div class="box">

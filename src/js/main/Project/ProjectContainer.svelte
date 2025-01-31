@@ -52,6 +52,7 @@
     </select>
   </div>
 </div>
+
 <svelte:component this={tool.component} />
 
 <style lang="scss">
