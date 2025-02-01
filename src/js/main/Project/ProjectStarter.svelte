@@ -69,7 +69,7 @@
   };
 
   const handleSequenceNameChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement;
+    const target = event.target as HTMLInputElement;
     sequenceName = target.value;
   };
 

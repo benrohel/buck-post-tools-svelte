@@ -48,27 +48,28 @@
     sequenceClips = [];
     const seq = await GetActiveSequence();
     const pproClips = await GetSequencedClips(seq.id);
-    const systemClips = pproClips.map((clip) => {
-      const fileVersion = GetSystemFileVersionsWithShotName(
-        clip.filepath,
-        clip.shotName
-      );
-      fileVersion.sort((a, b) => {
-        if (a.version > b.version) {
-          return -1;
-        } else if (a.version < b.version) {
-          return 1;
-        } else {
-          return 0;
-        }
+    const systemClips = pproClips
+      .filter((clip) => clip.filepath !== '')
+      .map((clip) => {
+        const fileVersion = GetSystemFileVersionsWithShotName(
+          clip.filepath,
+          clip.shotName
+        );
+        fileVersion.sort((a, b) => {
+          if (a.version > b.version) {
+            return -1;
+          } else if (a.version < b.version) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+        return {
+          ...clip,
+          versions: fileVersion,
+          selectedVersion: fileVersion[0],
+        };
       });
-
-      return {
-        ...clip,
-        versions: fileVersion,
-        selectedVersion: fileVersion[0],
-      };
-    });
 
     sequenceClips = systemClips;
 
@@ -213,14 +214,6 @@
     console.log('client-shots', shots);
   };
 
-  const setCodaTable = async () => {
-    if ($selectedCodaProject) {
-      sessionProject.set(JSON.stringify($selectedCodaProject));
-      openSettings = false;
-      await getClips();
-    }
-  };
-
   const openTracker = () => {
     if ($sessionProject) {
       openUrl(`http://buck.aquarium.app/${$sessionProject}`);
@@ -268,65 +261,61 @@
     </div>
   </div>
 
-  {#if sequenceClips.length === 0}
-    <p>selecet a project</p>
-  {:else}
-    <div>
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-      >
-        <button class="icon active" on:click={handleReplaceAll}>
-          <ArrowUpDown />
-        </button>
-        <button class="icon active" on:click={handleImportAll}>
-          <Download />
-        </button>
-      </div>
-      <div id="card-list">
-        {#each sequenceClips as clip, id}
-          <ClipCard
-            {clip}
-            onSelect={handleClipSelect}
-            selected={false}
-            {id}
-            onReplace={handleReplaceClip}
-            onImport={handleImportClip}
-            onChange={handleClipOnChange}
-          />
-        {/each}
-      </div>
+  <div>
+    <div
+      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
+    >
+      <button class="icon active" on:click={handleReplaceAll}>
+        <ArrowUpDown />
+      </button>
+      <button class="icon active" on:click={handleImportAll}>
+        <Download />
+      </button>
     </div>
-    <div id="coda-header">
-      <div class="form-row">
-        <button
-          style="margin:4px; width:auto; background-color:transparent; border:none;"
-          on:click={() => {
-            openSettings = !openSettings;
-          }}
-        >
-          <img src={trackerLogo()} alt="Coda logo" height="16" />
-        </button>
-      </div>
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-      >
-        <button
-          class="icon"
-          on:click={refreshShots}
-          disabled={storedProject == null ? true : false}
-        >
-          <RefreshCw />
-        </button>
-        <button
-          class="icon"
-          on:click={openTracker}
-          disabled={$sessionProject == null}
-        >
-          <ExternalLink />
-        </button>
-      </div>
+    <div id="card-list">
+      {#each sequenceClips as clip, id}
+        <ClipCard
+          {clip}
+          onSelect={handleClipSelect}
+          selected={false}
+          {id}
+          onReplace={handleReplaceClip}
+          onImport={handleImportClip}
+          onChange={handleClipOnChange}
+        />
+      {/each}
     </div>
-  {/if}
+  </div>
+  <div id="coda-header">
+    <div class="form-row">
+      <button
+        style="margin:4px; width:auto; background-color:transparent; border:none;"
+        on:click={() => {
+          openSettings = !openSettings;
+        }}
+      >
+        <img src={trackerLogo()} alt="Coda logo" height="16" />
+      </button>
+    </div>
+    <div
+      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
+    >
+      <button
+        class="icon"
+        on:click={refreshShots}
+        disabled={storedProject == null ? true : false}
+      >
+        <RefreshCw />
+      </button>
+      <button
+        class="icon"
+        on:click={openTracker}
+        disabled={$sessionProject == null}
+      >
+        <ExternalLink />
+      </button>
+    </div>
+  </div>
 </div>
 
 <style lang="scss">

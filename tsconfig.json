@@ -21,6 +21,6 @@
       "@esTypes/*": ["./src/jsx"]
     }
   },
-  "include": ["./src"],
+  "include": ["./src", "./src/js/api/buck5/index.d.ts"],
   "exclude": ["./src/jsx"]
 }

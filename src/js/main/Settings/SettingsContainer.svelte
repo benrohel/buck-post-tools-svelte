@@ -1,11 +1,5 @@
 <script lang="ts">
-  import {
-    Download,
-    Check,
-    RefreshCw,
-    ArrowUpDown,
-    ExternalLink,
-  } from 'svelte-lucide';
+  import { Check, ExternalLink } from 'svelte-lucide';
   import { sessionProject, trackerType } from '../../stores/local-storage';
   import { openUrl } from '../../lib/utils/utils';
   import {
@@ -14,8 +8,6 @@
   } from '../../stores/coda-store';
   import { Projects } from '../../api/buck5/buck5-api';
   import { projects } from '../../stores/aquarium-store';
-  import { activeProjectKey } from '../../stores/settings-store';
-
   import { onMount } from 'svelte';
 
   const trackerOptions = ['coda', 'aquarium'];
@@ -36,6 +28,7 @@
     } else {
       console.log('selected aquarium project', e.target.value);
       const proj = $projects.find((p) => p.data.name === e.target.value);
+      console.log(proj);
       selectedAquariumProject = proj;
       if (proj) {
         selectedProjectName = proj.data.name;

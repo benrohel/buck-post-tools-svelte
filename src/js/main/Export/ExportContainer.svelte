@@ -2,10 +2,10 @@
   import { onMount } from 'svelte';
   import ExportShots from './ExportShots.svelte';
   import ExportStills from './ExportStills.svelte';
-  import ExportSequence from './ExportSequence.svelte';
+  import ExportSequenceXML from './ExportSequenceXML.svelte';
 
   const exportModes = [
-    { value: 'sequence', label: 'Sequence', component: ExportSequence },
+    { value: 'xml', label: 'Sequence to Xml', component: ExportSequenceXML },
     { value: 'still', label: 'Stills', component: ExportStills },
     { value: 'shots', label: 'Shots', component: ExportShots },
   ];
@@ -23,7 +23,7 @@
   });
 </script>
 
-<div style="display:flex; flex-direction:row">
+<div class="row">
   <div class="select-wrapper" style="flex-grow:1;">
     <select bind:value={selectedExportMode} on:change={handleExportMode}>
       {#each exportModes as mode, id}

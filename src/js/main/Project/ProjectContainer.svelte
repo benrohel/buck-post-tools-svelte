@@ -21,11 +21,11 @@
       value: 'aspectRatios',
       component: AspectRatios,
     },
-    {
-      label: 'Tools',
-      value: 'tools',
-      component: Tools,
-    },
+    // {
+    //   label: 'Tools',
+    //   value: 'tools',
+    //   component: Tools,
+    // },
   ];
 
   let selectedMode = '';

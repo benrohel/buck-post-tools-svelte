@@ -947,3 +947,13 @@ export const InsertSequence = ({
     alert('error building sequences');
   }
 };
+
+export const exportSequenceXml = (filepath: string, sequenceId: string) => {
+  const seq = getSequenceFromNodeId(sequenceId);
+  if (!seq) {
+    alert('Could not find sequence with ID: ' + sequenceId);
+    return null;
+  }
+  seq.exportAsFinalCutProXML(filepath);
+  return filepath;
+};

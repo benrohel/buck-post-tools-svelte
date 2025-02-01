@@ -306,35 +306,31 @@
     </div>
   </div>
 
-  {#if sequenceClips.length === 0}
-    <p>selecet a project</p>
-  {:else}
-    <div>
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-      >
-        <button class="icon active" on:click={handleReplaceAll}>
-          <ArrowUpDown />
-        </button>
-        <button class="icon active" on:click={handleImportAll}>
-          <Download />
-        </button>
-      </div>
-      <div id="card-list">
-        {#each sequenceClips as clip, id}
-          <ClipCard
-            {clip}
-            onSelect={handleClipSelect}
-            selected={false}
-            {id}
-            onReplace={handleReplaceClip}
-            onImport={handleImportClip}
-            onChange={handleClipOnChange}
-          />
-        {/each}
-      </div>
+  <div>
+    <div
+      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
+    >
+      <button class="icon active" on:click={handleReplaceAll}>
+        <ArrowUpDown />
+      </button>
+      <button class="icon active" on:click={handleImportAll}>
+        <Download />
+      </button>
     </div>
-  {/if}
+    <div id="card-list">
+      {#each sequenceClips as clip, id}
+        <ClipCard
+          {clip}
+          onSelect={handleClipSelect}
+          selected={false}
+          {id}
+          onReplace={handleReplaceClip}
+          onImport={handleImportClip}
+          onChange={handleClipOnChange}
+        />
+      {/each}
+    </div>
+  </div>
 </div>
 
 <style lang="scss">

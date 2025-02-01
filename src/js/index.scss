@@ -59,8 +59,8 @@ hr{
   min-height: 22px;
   list-style: none;
   display: flex;
-  margin-top: 2px;
-  margin-bottom: 2px;
+  margin-top: 4px;
+  margin-bottom:4px;
   align-items: center;
   justify-content: space-between;
   gap: 4px;
@@ -367,14 +367,14 @@ button:hover:disabled {
 input {
   display: flex;
   border-radius: 4px;
-  border: 1px solid $darker;
+  border: 1px solid $border-dimmed;
   background: $extra-dark;
   height: 20px;
   min-height: 18px;
   color: $font;
   font-size: 12px;
   padding-left: 7px;
-  border-style: none;
+  
   
 }
 
@@ -394,7 +394,7 @@ input {
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
-  margin: 2px 2px 0px 0px;
+  margin: 4px 4px 0px 0px;
 }
 
 .flex-row-start{
@@ -403,7 +403,7 @@ input {
   align-items: center;
   justify-content: flex-start;
   gap: 4px;
-  margin: 2px 2px 0px 0px
+  margin: 4px 4px 0px 0px
 }
 
 .action-row{

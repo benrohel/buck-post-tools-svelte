@@ -1,4 +1,4 @@
-import type * as BUCK5 from './buck5-api.d';
+import type * as BUCK5 from '.';
 import { format } from 'date-fns';
 import axios from 'axios';
 const today = () => {
