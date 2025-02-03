@@ -2821,6 +2821,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"buck-client@file:../buck5/javascript/lib/buck-client::locator=co.buck-post-toools.cep%40workspace%3A.":
+  version: 1.0.0
+  resolution: "buck-client@file:../buck5/javascript/lib/buck-client#../buck5/javascript/lib/buck-client::hash=23503e&locator=co.buck-post-toools.cep%40workspace%3A."
+  checksum: e75129afb844666bbcf5b2de33747cd8574bdb1ecbc138e5244b197b5d5bec875d7583c28a0dfd0f75ba2aa7705cc420135c1a4aad0834d1f75ccb9b3fe15cc6
+  languageName: node
+  linkType: hard
+
 "buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::locator=co.buck-post-toools.cep%40workspace%3A.":
   version: 0.0.8
   resolution: "buck5-javascript-client@file:/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client#/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client::hash=70a3b1&locator=co.buck-post-toools.cep%40workspace%3A."
@@ -2973,6 +2980,7 @@ __metadata:
     axios: "npm:^1.6.2"
     babel-plugin-transform-scss: "npm:^1.1.0"
     babel-preset-env: "npm:^1.7.0"
+    buck-client: ../buck5/javascript/lib/buck-client
     buck5-javascript-client: /Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client
     core-js: "npm:3"
     cross-env: "npm:^7.0.3"

@@ -840,45 +840,6 @@ export const exportStills = (destination: string) => {
   return true;
 };
 
-//  function exportCurrentFrameAsPNG (presetPath) {
-//   var seq = app.project.activeSequence;
-//   if (seq) {
-//     var currentSeqSettings	= app.project.activeSequence.getSettings();
-//     if (currentSeqSettings){
-//       var currentTime	= seq.getPlayerPosition();
-//       if (currentTime){
-//         var oldInPoint 			= seq.getInPointAsTime();
-//         var oldOutPoint 		= seq.getOutPointAsTime();
-//         var offsetTime 			= currentTime.seconds + 0.033;  // Todo: Add fancy timecode math, to get one frame, given current sequence timebase
-
-//         seq.setInPoint(currentTime.seconds);
-//         seq.setOutPoint(offsetTime);
-
-//         // Create a file name, based on timecode of frame.
-//         var timeAsText				= currentTime.getFormatted(currentSeqSettings.videoFrameRate, app.project.activeSequence.videoDisplayFormat);
-//         var removeThese 			= /:|;/ig; 				// Why? Because Windows chokes on colons in file names.
-//         var tidyTime 				= timeAsText.replace(removeThese, '_');
-//         var outputPathInToOut 		= new File("~/Desktop/output/in_to_out");
-//         var outputFileNameInToOut	= outputPathInToOut.fsName + $._PPP_.getSep() + seq.name + '___' + tidyTime  + '___' + ".png";
-
-//         var removeUponCompletion 	= 1;
-//         var startQueueImmediately 	= false;
-//         var jobID_InToOut 			= app.encoder.encodeSequence(	seq,
-//                                       outputFileNameInToOut,
-//                                       presetPath,
-//                                       app.encoder.ENCODE_IN_TO_OUT,
-//                                       removeUponCompletion,
-//                                       startQueueImmediately);
-
-//         // put in and out points back where we found them.
-
-//         seq.setInPoint(oldInPoint.seconds);
-//         seq.setOutPoint(oldOutPoint.seconds);
-//       }
-//     }
-//   }
-// },
-
 declare interface NewSequenceOptions {
   sequenceName: string;
   presetPath: string;

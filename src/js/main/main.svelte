@@ -12,6 +12,7 @@
   import '../index.scss';
   import { configureFetcher } from 'buck5-javascript-client';
   import Tabs from '../components/Tabs/Tabs.svelte';
+  import { getAuthAuthenticated, client } from 'buck-client';
   import {
     ArrowDownUp,
     PencilRuler,
@@ -19,6 +20,7 @@
     ArrowRightFromLine,
     Settings,
   } from 'lucide-svelte';
+  import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
   import RenameContainer from './Rename/RenameContainer.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
@@ -27,7 +29,7 @@
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
 
-  let count: number = 0;
+  $: authenticated = false;
   let backgroundColor: string = '#282c34';
 
   let items = [
@@ -62,6 +64,11 @@
     if (window.cep) {
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
       await configureFetcher(); // this is a one time call
+
+      await connectToDaemon();
+      if (client) {
+        authenticated = (await getAuthAuthenticated()).data.user ? true : false;
+      }
     }
   });
 </script>
@@ -69,10 +76,8 @@
 <div class="app" style="background-color: {backgroundColor};">
   <Tabs {items} />
   <Toast />
-  <Footer />
+  <Footer {authenticated} />
 </div>
 
 <style>
-  .app {
-  }
 </style>

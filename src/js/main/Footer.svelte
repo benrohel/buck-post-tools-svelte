@@ -1,10 +1,17 @@
 <script lang="ts">
-  import { loggedIn } from '../stores/aquarium-store';
+  // import { loggedIn } from '../stores/aquarium-store';
+  import { onMount } from 'svelte';
+  import { getAuthAuthenticated, client } from 'buck-client';
   import { Recycle } from 'svelte-lucide';
+  import { connectToDaemon } from './backend';
+  import { Authenticated } from '../api/buck5/buck5-api';
 
+  export let authenticated: boolean = false;
   const refreshPage = () => {
     window.location.reload();
   };
+
+  onMount(async () => {});
 </script>
 
 <div class="footer">
@@ -15,7 +22,7 @@
       style="margin-right:8px; cursor:pointer; background-color:transparent"
       on:click={refreshPage}
     >
-      <Recycle color={loggedIn ? 'green' : 'white'} />
+      <Recycle color={authenticated ? 'green' : 'red'} />
     </button>
   </div>
 </div>
