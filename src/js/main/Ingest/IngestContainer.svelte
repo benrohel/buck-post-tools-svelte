@@ -5,10 +5,4 @@
   import IngestAquariumContainer from './IngestAquariumContainer.svelte';
 </script>
 
-{#if $trackerType === 'coda'}
-  <IngestCodaContainer />
-{:else if $trackerType === 'aquarium' && $loggedIn}
-  <IngestAquariumContainer />
-{:else}
-  <p>Tracker type not found</p>
-{/if}
+<IngestAquariumContainer />
