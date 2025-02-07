@@ -1,21 +1,14 @@
 <script lang="ts">
-  // import { loggedIn } from '../stores/aquarium-store';
-  import { onMount } from 'svelte';
-  import { getAuthAuthenticated, client } from 'buck-client';
   import { Recycle } from 'svelte-lucide';
-  import { connectToDaemon } from './backend';
-  import { Authenticated } from '../api/buck5/buck5-api';
 
   export let authenticated: boolean = false;
   const refreshPage = () => {
     window.location.reload();
   };
-
-  onMount(async () => {});
 </script>
 
 <div class="footer">
-  <div style="margin-left:8px">©BUCK 2025</div>
+  <div style="margin-left:8px">BUCK 2025</div>
   <div style="display:flex; flex-direction:row; align-items:center">
     <button
       class="icon"

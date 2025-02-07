@@ -2,15 +2,8 @@
   import { ArrowLeftRight, FolderSearch, RefreshCw } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { GetRenamedFiles } from '../../api/files/files';
-  import { onMount, SvelteComponentTyped } from 'svelte';
-  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
-  import { ArrowUpDown } from 'svelte-lucide';
-  import {
-    GetSystemFileVersionsWithShotName,
-    GetFileVersion,
-  } from '../../api/files/files';
-  import { getClips } from '../../api/timeline-clips';
-  import { clips } from '../../stores/clips-strore';
+  import { GetSystemFileVersionsWithShotName } from '../../api/files/files';
+
   import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
   import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
   import { fs } from '../../lib/cep/node';
@@ -133,7 +126,6 @@
     const folderPath = await evalES(
       `openFolderDialog("Select New Root Folder.")`
     );
-    console.log('folder path', folderPath);
     if (folderPath) {
       rootFolder = folderPath;
       searchFiles();

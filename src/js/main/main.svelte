@@ -1,14 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { os, path } from '../lib/cep/node';
-  import {
-    csi,
-    evalES,
-    evalFile,
-    openLinkInBrowser,
-    subscribeBackgroundColor,
-    evalTS,
-  } from '../lib/utils/bolt';
+  import { subscribeBackgroundColor } from '../lib/utils/bolt';
   import '../index.scss';
   import { configureFetcher } from 'buck5-javascript-client';
   import Tabs from '../components/Tabs/Tabs.svelte';
@@ -18,7 +10,6 @@
     PencilRuler,
     WrapText,
     ArrowRightFromLine,
-    Settings,
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';

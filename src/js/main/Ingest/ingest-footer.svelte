@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Download, FolderOpen, Settings } from "svelte-lucide";
+  import { Settings } from 'svelte-lucide';
 
   const handleClick = () => {};
 </script>
@@ -11,7 +11,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @import '../../variables.scss';
   div {
     color: $darker;
   }
