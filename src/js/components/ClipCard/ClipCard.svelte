@@ -94,7 +94,6 @@
 
   $: editIsSelected = () => {
     if (selectedVersion) {
-      editVersion == selectedVersion.version ?? '';
       return editVersion == selectedVersion.version;
     } else {
       return false;
