@@ -39,7 +39,7 @@
 {/each}
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
   .box {
     margin-bottom: 2px;
     border-radius: 0 0 2px 2px;

@@ -21,7 +21,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../js/variables.scss';
+  @use '../../js/variables.scss' as *;
   .footer {
     display: flex;
     flex-direction: row;

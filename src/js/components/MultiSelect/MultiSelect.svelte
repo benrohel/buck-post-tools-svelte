@@ -125,7 +125,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
   .multiselect {
     position: relative;
     z-index: 1000;
@@ -140,16 +140,7 @@
   .selectBox:hover {
     cursor: pointer;
   }
-  .overSelect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-    opacity: 0;
-    cursor: pointer;
-  }
+
   #checkboxes {
     display: none;
     position: absolute;
@@ -157,9 +148,7 @@
     left: 0;
     width: 100%;
   }
-  #checkboxes.show {
-    display: block;
-  }
+
   #checkboxes ul {
     list-style: none;
     background-color: $darker;

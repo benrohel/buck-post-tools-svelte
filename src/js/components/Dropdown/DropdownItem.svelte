@@ -1,18 +1,18 @@
 <script>
-  import { getContext, createEventDispatcher, onMount } from "svelte";
-  import { slide } from "svelte/transition";
+  import { getContext, createEventDispatcher, onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
   const dispatch = createEventDispatcher();
   export let value;
   export let id = 0;
 
   const selectValue = () => {
-    dispatch("clicked", value);
+    dispatch('clicked', value);
     $selectedValue = value;
     $visible = false;
   };
 
-  let selectedValue = getContext("selected");
-  let visible = getContext("visible");
+  let selectedValue = getContext('selected');
+  let visible = getContext('visible');
 </script>
 
 <div
@@ -22,7 +22,7 @@
   in:slide={{ delay: id * 50 }}
   out:slide={{ delay: id * 50 }}
 >
-  {#if $$slots["icon"]}
+  {#if $$slots['icon']}
     <div class="menu-item-icon">
       <slot name="icon" />
     </div>
@@ -31,7 +31,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use '../../variables.scss' as *;
 
   .option {
     padding: 0.5rem;

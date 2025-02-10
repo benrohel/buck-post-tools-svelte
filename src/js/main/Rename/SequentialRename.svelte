@@ -59,7 +59,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
   .row {
     width: 50%;
     gap: 8px;

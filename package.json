@@ -1,6 +1,6 @@
 {
-  "name": "co.buck-post-toools.cep",
-  "version": "0.0.1",
+  "name": "co.buck-post-tools.cep",
+  "version": "0.1.0",
   "scripts": {
     "dev": "vite",
     "watch": "tsc && vite build --watch true",
@@ -14,7 +14,6 @@
   "dependencies": {
     "axios": "^1.6.2",
     "buck-client": "../buck5/javascript/lib/buck-client",
-    "buck5-javascript-client": "/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck5-javascript-client",
     "date-fns": "^2.30.0",
     "dotenv": "^16.4.5",
     "lucide-svelte": "^0.294.0",
@@ -68,6 +67,5 @@
     "yarn": "^1.22.17"
   },
   "main": "index.js",
-  "license": "MIT",
-  "packageManager": "yarn@4.6.0"
+  "license": "MIT"
 }

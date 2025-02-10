@@ -11,7 +11,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
   div {
     color: $darker;
   }

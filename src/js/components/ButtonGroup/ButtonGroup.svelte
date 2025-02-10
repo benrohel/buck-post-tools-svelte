@@ -33,7 +33,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
 
   *,
   *:before,
@@ -78,10 +78,5 @@
   input[type='radio']:checked {
     background-color: $active;
     transform: scale(1);
-  }
-
-  .active {
-    background-color: $active;
-    border: 1px solid $highlight;
   }
 </style>

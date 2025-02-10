@@ -1,4 +1,4 @@
-@import "./variables.scss";
+@use "./variables.scss" as *;
 html{
   margin: 0;
   font-family: Helvetica;;
@@ -22,6 +22,7 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+    
 }
 
 .app {
@@ -37,17 +38,17 @@ hr{
 }
 
 ::-webkit-scrollbar {
-  // width: 10px;
-  // -webkit-appearance: none;
+  width: 0px;
+  -webkit-appearance: none;
 }
 ::-webkit-scrollbar-track {
   background: $darkest;
   padding: 2.25em 1.6875em;
 }
-::-webkit-scrollbar-thumb {
-  background: $darker;
-  border-radius: 5px;
-}
+// ::-webkit-scrollbar-thumb {
+//   background: $darker;
+//   border-radius: 5px;
+// }
 ::-webkit-scrollbar-thumb:hover {
   background: $dark;
 }

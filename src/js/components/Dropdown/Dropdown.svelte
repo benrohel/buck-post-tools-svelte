@@ -1,31 +1,31 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import { clickOutside } from "./ClickOutside";
-  import { setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import Button from "../Button/Button.svelte";
+  import { fade } from 'svelte/transition';
+  import { clickOutside } from './ClickOutside';
+  import { setContext } from 'svelte';
+  import { writable } from 'svelte/store';
+  import Button from '../Button/Button.svelte';
 
-  export let position: "bottom-left" | "bottom-right" | "center" =
-    "bottom-left";
-  export let label = "Actions";
+  export let position: 'bottom-left' | 'bottom-right' | 'center' =
+    'bottom-left';
+  export let label = 'Actions';
   export let disabled = false;
 
   let isMenuVisible = writable(false);
-  let selectedValue = writable("");
-  setContext("selected", selectedValue);
-  setContext("visible", isMenuVisible);
+  let selectedValue = writable('');
+  setContext('selected', selectedValue);
+  setContext('visible', isMenuVisible);
 
   $: menuPosition = (): string => {
     switch (position) {
-      case "bottom-left": {
-        return "left:0";
+      case 'bottom-left': {
+        return 'left:0';
       }
-      case "bottom-right":
-        return "right:0";
-      case "center":
-        return "transform:translateX(-25%)";
+      case 'bottom-right':
+        return 'right:0';
+      case 'center':
+        return 'transform:translateX(-25%)';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -53,7 +53,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use '../../variables.scss' as *;
 
   .dropdown {
     border-radius: 4px;

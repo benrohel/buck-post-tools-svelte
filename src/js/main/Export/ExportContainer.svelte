@@ -7,7 +7,7 @@
   const exportModes = [
     { value: 'xml', label: 'Sequence to Xml', component: ExportSequenceXML },
     { value: 'still', label: 'Stills', component: ExportStills },
-    { value: 'shots', label: 'Shots', component: ExportShots },
+    // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
 
   let selectedExportMode = '';
@@ -35,6 +35,3 @@
   </div>
 </div>
 <svelte:component this={mode.component} />
-
-<style lang="scss">
-</style>
