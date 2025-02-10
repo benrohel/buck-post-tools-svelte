@@ -6,7 +6,7 @@
     CopySequenceSettings,
   } from '../../api/sequence';
   import type { Sequence } from '../../api/sequence';
-  import { ArrowUp, ArrowDown } from 'lucide-svelte';
+
   let fromSequence: Sequence | null = null;
   let toSequences: any[] = [];
 

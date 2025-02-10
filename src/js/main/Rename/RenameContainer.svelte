@@ -3,7 +3,7 @@
   import FindAndReplace from './FindAndReplace.svelte';
   import SequentialRename from './SequentialRename.svelte';
   import RevertToFilename from './RevertToFilename.svelte';
-  import ReplaceAndRelink from './ReplaceAndRelink .svelte';
+  import ReplaceAndRelink from './ReplaceAndRelink.svelte';
   const renameModes = [
     { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
     {

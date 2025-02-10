@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { evalES } from '../../lib/utils/bolt';
   import upath from 'upath';
-  import { getSqTemplate, getPresetFile } from '../../api/SQPreset';
+  import { getPresetFile } from '../../api/SQPreset';
   import type { Sequence } from '../../api/sequence';
   import { ArrowRight } from 'svelte-lucide';
   import { v4 as uuidv4 } from 'uuid';
@@ -74,11 +74,6 @@
   const GetResolutions = async () => {
     return videoResolutions.resolutions;
   };
-
-  async function handleSetTemplate() {
-    let folderPath = await evalES(`openFolderDialog("Select Output Folder")`);
-    folderPath = upath.normalize(folderPath);
-  }
 
   async function getMasterSequence() {
     let selectedSequences = true;
@@ -214,10 +209,4 @@
 </div>
 
 <style>
-  .settings {
-    /* Add your styles here */
-  }
-  .row {
-    /* Add your styles here */
-  }
 </style>

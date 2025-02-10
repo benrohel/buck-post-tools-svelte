@@ -1,44 +1,44 @@
 <script lang="ts">
-  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
-  import { openUrl } from '../../lib/utils/utils';
-  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
-  import { trackerType } from '../../stores/settings-store'; //trackerType
-  import { codaDoc } from '../../stores/local-storage';
-  import CodaLogo from '../../assets/coda-logo.svg';
-  import AquariumLogo from '../../assets/aquarium-logo.svg';
-  import '../../api/coda/coda';
-  import { GetCodaTrackerData } from '../../api/tracker/tracker';
-  import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from '../../api/coda/coda';
-  import { Shots } from '../../api/buck5/buck5-api';
+  import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
+  import { openUrl } from "../../lib/utils/utils";
+  import ClipCard from "../../components/ClipCard/ClipCard.svelte";
+  import { trackerType } from "../../stores/settings-store"; //trackerType
+  import { codaDoc } from "../../stores/local-storage";
+  import CodaLogo from "../../assets/coda-logo.svg";
+  import AquariumLogo from "../../assets/aquarium-logo.svg";
+  import "../../api/coda/coda";
+  import { GetCodaTrackerData } from "../../api/tracker/tracker";
+  import { UpdateRow, UpsertRows, GetCodaIdFromUrl } from "../../api/coda/coda";
+  import { Shots } from "../../api/buck5/buck5-api";
 
-  import { notifications } from '../../stores/notifications-store';
+  import { notifications } from "../../stores/notifications-store";
   import {
     codaTrackerInfos,
     selectedCodaProject,
-  } from '../../stores/coda-store';
-  import { currentProject } from '../../stores/aquarium-store';
-  import { sessionProject, storedProject } from '../../stores/local-storage';
-  import { activeProjectKey } from '../../stores/settings-store';
+  } from "../../stores/coda-store";
+  import { currentProject } from "../../stores/aquarium-store";
+  import { sessionProject, storedProject } from "../../stores/local-storage";
+  import { activeProjectKey } from "../../stores/settings-store";
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
-  } from '../../api/files/files';
+  } from "../../api/files/files";
 
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from "../../lib/utils/bolt";
   import {
     Download,
     Check,
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
-  } from 'svelte-lucide';
-  import { onMount } from 'svelte';
+  } from "svelte-lucide";
+  import { onMount } from "svelte";
 
   $: sequenceClips = [] as any[];
   $: clips = [] as any[];
 
   let openSettings = false;
-  let selectedProjectName: string = '';
+  let selectedProjectName: string = "";
 
   $: trackerLogo = () => {
     return AquariumLogo;
@@ -49,7 +49,8 @@
     const seq = await GetActiveSequence();
     const pproClips = await GetSequencedClips(seq.id);
     const systemClips = pproClips
-      .filter((clip) => clip.filepath !== '')
+      .filter((clip) => clip.filepath !== "")
+      .filter((clip) => clip.selected)
       .map((clip) => {
         const fileVersion = GetSystemFileVersionsWithShotName(
           clip.filepath,
@@ -71,7 +72,7 @@
         };
       });
 
-    sequenceClips = systemClips;
+    sequenceClips = [...systemClips];
 
     if ($selectedCodaProject) {
       try {
@@ -82,16 +83,16 @@
           $selectedCodaProject.tableName
         );
         if (syncedClips.length > 0) {
-          console.log('getting coda data');
+          console.log("getting coda data");
           sequenceClips = syncedClips;
         }
       } catch (err) {
         console.log(err);
       }
     } else {
-      console.log('no coda project selected');
+      console.log("no coda project selected");
     }
-    console.log('sequenceClips', sequenceClips);
+    console.log("sequenceClips", sequenceClips);
   };
 
   const handleSelectProject = (e: any) => {
@@ -101,7 +102,7 @@
         selectedCodaProject.set(proj);
       }
     }
-    console.log('selected coda project', $selectedCodaProject);
+    console.log("selected coda project", $selectedCodaProject);
   };
 
   const handleClipSelect = (task: any) => {
@@ -123,7 +124,7 @@
       row: {
         cells: [
           {
-            column: 'Edit Version',
+            column: "Edit Version",
             value: clipVersion,
           },
         ],
@@ -161,13 +162,11 @@
   };
 
   const handleReplaceAll = () => {
-    console.log('replace all');
     sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
   };
   const handleImportAll = () => {
-    console.log('import all');
     sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
@@ -193,7 +192,7 @@
     });
     clipsToUpdates.forEach((clip) => {
       const data = {
-        shot_version: 'v01',
+        shot_version: "v01",
       };
       const c = clips.find((c) => {
         return c.shot._key === clip.shotKey;
@@ -201,27 +200,15 @@
     });
   };
 
-  $: isCodaUrl = () => {
-    if ($selectedCodaProject) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
   const refreshShots = async () => {
     const shots = await Shots(storedProject);
-    console.log('client-shots', shots);
+    console.log("client-shots", shots);
   };
 
   const openTracker = () => {
     if ($sessionProject) {
       openUrl(`http://buck.aquarium.app/${$sessionProject}`);
     }
-  };
-
-  const refreshIngest = async () => {
-    await getClips();
   };
 
   onMount(async () => {
@@ -232,7 +219,7 @@
         selectedProjectName = $codaTrackerInfos[0].name;
       }
     }
-    await refreshIngest();
+    await getClips();
     await codaTrackerInfos.load();
   });
 </script>
@@ -273,15 +260,17 @@
     </div>
     <div id="card-list">
       {#each sequenceClips as clip, id}
-        <ClipCard
-          {clip}
-          onSelect={handleClipSelect}
-          selected={false}
-          {id}
-          onReplace={handleReplaceClip}
-          onImport={handleImportClip}
-          onChange={handleClipOnChange}
-        />
+        {#key clip.nodeId}
+          <ClipCard
+            {clip}
+            onSelect={handleClipSelect}
+            selected={false}
+            {id}
+            onReplace={handleReplaceClip}
+            onImport={handleImportClip}
+            onChange={handleClipOnChange}
+          />
+        {/key}
       {/each}
     </div>
   </div>
@@ -318,7 +307,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @import "../../variables.scss";
   .container {
     display: flex;
     flex-direction: row;
