@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { fs, path } from '../../lib/cep/node';
-  import { onMount } from 'svelte';
-  import { openFile } from '../../lib/utils/utils';
-  import { fly } from 'svelte/transition';
-  import { Download, ArrowUpDown, Eye } from 'svelte-lucide';
-  import { evalES } from '../../lib/utils/bolt';
-  import { getShotById } from 'buck5-javascript-client';
-  import { GetFileVersion } from '../../api/files/files';
+  import { fs, path } from "../../lib/cep/node";
+  import { onMount } from "svelte";
+  import { fly } from "svelte/transition";
+  import { evalES } from "../../lib/utils/bolt";
+
   export let clip: any;
   export let id = 0;
   export let selected = false;
   export let onChange: Function;
-  export let selectedVersion = '';
+  export let selectedVersion = "";
 
   const handleSelectVersion = async () => {
     if (onChange) {
@@ -25,9 +22,9 @@
 
   $: getSyncedColor = () => {
     if (isSynced()) {
-      return 'color: #3caea3';
+      return "color: #3caea3";
     } else {
-      return 'color: #f6d55c';
+      return "color: #f6d55c";
     }
   };
 
@@ -46,7 +43,7 @@
 </script>
 
 <div
-  class={!selected ? 'clip-card' : 'clip-card selected'}
+  class={!selected ? "clip-card" : "clip-card selected"}
   on:dblclick={handleEditClipCLick}
   transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
@@ -85,7 +82,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @import "../../variables.scss";
 
   .comments-container {
     display: flex;

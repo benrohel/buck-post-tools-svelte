@@ -4,7 +4,6 @@
   import { fly } from "svelte/transition";
   import { Download, ArrowUpDown, Eye } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
-  import { getShotById } from "buck5-javascript-client";
   import { GetFileVersion } from "../../api/files/files";
   export let clip: any;
   export let id = 0;

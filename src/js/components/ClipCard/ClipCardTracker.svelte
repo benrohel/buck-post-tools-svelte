@@ -10,7 +10,7 @@
   import { fly } from "svelte/transition";
   import { Download, FolderOpen, RefreshCw } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
-  import { getShotById } from "buck5-javascript-client";
+
   import { GetFileVersion } from "../../api/files/files";
   export let clip: any;
   export let id = 0;
@@ -56,7 +56,7 @@
     if (useTracker) {
       console.log("GetShot", clip.shotKey);
       if (clip.shotKey) {
-        const shot = await getShotById(clip.shotKey);
+        const shot = await Shot(clip.shotKey);
 
         if (shot) {
           return shot;
