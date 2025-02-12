@@ -53,6 +53,8 @@ switch (BridgeTalk.appName as ApplicationName) {
 
   case "premierepro":
   case "premiereprobeta":
+    //@ts-ignore
+    app.enableQE();
     host[ns] = ppro;
     break;
 

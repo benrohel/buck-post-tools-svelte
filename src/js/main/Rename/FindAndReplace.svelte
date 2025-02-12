@@ -1,20 +1,23 @@
 <script lang="ts">
-  import { ArrowLeftRight } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  let find = '';
-  let replace = '';
+  import { getContext } from "svelte";
+  import { ArrowLeftRight } from "lucide-svelte";
+  import { evalES } from "../../lib/utils/bolt";
+
+  let find = "";
+  let replace = "";
 
   const handleFindAndReplace = async () => {
     const options = {
-      scope: 'project',
+      scope: "project",
       from: find,
       to: replace,
     };
-    console.log(options);
 
-    await evalES(`findAndReplace(${JSON.stringify(options)})`).then((res) => {
-      console.log(res);
-    });
+    await evalES(`findAndReplace(${JSON.stringify(options)})`, false).then(
+      (res) => {
+        console.log(res);
+      }
+    );
   };
 
   const handleSwapText = () => {
@@ -28,7 +31,7 @@
   <div class="row">
     <div class="row">
       <input type="text" placeholder="Find" bind:value={find} />
-      <button on:click={handleSwapText}>
+      <button on:click={handleSwapText} tabindex="-1">
         <ArrowLeftRight size="16" />
       </button>
       <input type="text" placeholder="Replace" bind:value={replace} />

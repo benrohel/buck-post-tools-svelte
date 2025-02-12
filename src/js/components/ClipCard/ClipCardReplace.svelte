@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { fs, path } from '../../lib/cep/node';
-  import { onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
-  import { evalES } from '../../lib/utils/bolt';
+  import { fs, path } from "../../lib/cep/node";
+  import { onMount } from "svelte";
+  import { fly } from "svelte/transition";
+  import { evalES } from "../../lib/utils/bolt";
 
   export let clip: any;
   export let id = 0;
   export let selected = false;
   export let onChange: Function;
-  export let selectedVersion = '';
+  export let selectedVersion = "";
 
   const handleSelectVersion = async () => {
     if (onChange) {
@@ -22,9 +22,9 @@
 
   $: getSyncedColor = () => {
     if (isSynced()) {
-      return 'color: #3caea3';
+      return "color: #3caea3";
     } else {
-      return 'color: #f6d55c';
+      return "color: #f6d55c";
     }
   };
 
@@ -43,7 +43,7 @@
 </script>
 
 <div
-  class={!selected ? 'clip-card' : 'clip-card selected'}
+  class={!selected ? "clip-card" : "clip-card selected"}
   on:dblclick={handleEditClipCLick}
   transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
@@ -82,7 +82,7 @@
 </div>
 
 <style lang="scss">
-  @use '../../variables.scss' as *;
+  @use "../../variables.scss" as *;
   .selected {
     background-color: $highlight;
   }
@@ -98,7 +98,7 @@
   #shot-label {
     text-align: start;
     color: $active;
-    max-width: 80px;
+
     margin-left: 6px;
     cursor: pointer;
   }

@@ -1,5 +1,5 @@
-import { getProjects } from 'buck-client';
-import { evalES } from '../lib/utils/bolt';
+import { getProjects } from "buck-client";
+import { evalES } from "../lib/utils/bolt";
 
 export const GetProjectShots = async (key: string) => {
   const items = await getProjects(key);
@@ -11,7 +11,7 @@ export const GetActiveSequence = async (): Promise<any> => {
   return new Promise((resolve, reject) => {
     evalES(`getActiveSequence()`, false).then((res) => {
       if (!res) {
-        reject('no sequence');
+        reject("no sequence");
       }
       const aeResult = JSON.parse(res);
       resolve(aeResult);
@@ -21,7 +21,7 @@ export const GetActiveSequence = async (): Promise<any> => {
 
 export const GetSequencedClips = async (
   sequenceId: string,
-  trackName: string = ''
+  trackName: string = ""
 ): Promise<Array<any>> => {
   const res = await evalES(`getAllTracksClipsForNode("${sequenceId}")`, false);
   return new Promise((resolve, reject) => {

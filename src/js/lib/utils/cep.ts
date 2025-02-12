@@ -33,3 +33,5 @@ export const keyRegisterOverride = () => {
   const keyRes = csi.registerKeyEventsInterest(JSON.stringify(allKeys));
   console.log("Key Events Registered Completed: " + keyRes);
 };
+
+export const appId = csi.getApplicationID();

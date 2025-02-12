@@ -1,6 +1,5 @@
-import { padLeft } from './ppro-utils';
-const isQEEnabled = app.enableQE();
-
+import { padLeft, openFolderDialog } from "../utils/utils";
+export { openFolderDialog };
 declare var JSON: any;
 declare const qe: undefined | any;
 
@@ -12,16 +11,16 @@ const ensureDir = (filePath: string) => {
 };
 
 const updateEventPanel = (message: string) => {
-  app.setSDKEventMessage(message, 'info');
+  app.setSDKEventMessage(message, "info");
   //app.setSDKEventMessage('Here is a warning.', 'warning');
   //app.setSDKEventMessage('Here is an error.', 'error');  // Very annoying; use sparingly.
 };
 
 const getSep = () => {
-  if (Folder.fs === 'Macintosh') {
-    return '/';
+  if (Folder.fs === "Macintosh") {
+    return "/";
   } else {
-    return '\\';
+    return "\\";
   }
 };
 
@@ -35,12 +34,12 @@ const findInArray = (element: any, array: any[]) => {
 };
 
 export const qeDomFunction = () => {
-  if (typeof qe === 'undefined') {
+  if (typeof qe === "undefined") {
     app.enableQE();
   }
   if (qe) {
     qe.name;
-    qe.project.getVideoEffectByName('test');
+    qe.project.getVideoEffectByName("test");
   }
 };
 const timeDisplayToFrameRate = (td: number): number => {
@@ -175,7 +174,7 @@ export function getAllSequenceClips(seq?: Sequence) {
           sequenceName: seq.projectItem.name,
           sequenceStart: seqTimeStart.seconds,
           sequenceFramerate: timeDisplayToFrameRate(seq.videoDisplayFormat),
-          track: track.name.replace(' ', ''),
+          track: track.name.replace(" ", ""),
           trackIndex: trackIndex,
           timebase: seq.timebase,
           clip: clips[clipIndex],
@@ -252,7 +251,7 @@ export const GetClipMarkers = (nodeId: string) => {
 
     return listMarkers;
   } catch (e) {
-    return '';
+    return "";
   }
 };
 
@@ -278,7 +277,7 @@ export function getAllTracksClipsForNode(sequenceId: string) {
     }
 
     var newClip = {
-      track: tracksClips[i].track.replace(' ', ''),
+      track: tracksClips[i].track.replace(" ", ""),
       trackIndex: tracksClips[i].trackIndex,
       sequenceNodeId: tracksClips[i].sequenceNodeId,
       sequenceName: tracksClips[i].sequenceName,
@@ -318,7 +317,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
     options.nodeId == currentClip.nodeId
   ) {
     currentClip.changeMediaPath(nFile.fsName, false);
-    var nameSplit = nFile.absoluteURI.split('/');
+    var nameSplit = nFile.absoluteURI.split("/");
     var newBasename = nameSplit[nameSplit.length - 1];
     currentClip.name = newBasename;
     return JSON.stringify({ clipName: newBasename, filepath: nFile.fsName });
@@ -382,10 +381,10 @@ export const goToFrame = (frame: number) => {
 export const findAndReplace = (options: any) => {
   var selectedClips = [];
   switch (options.scope) {
-    case 'project':
+    case "project":
       selectedClips = getProjectSelection();
       break;
-    case 'timeline':
+    case "timeline":
       selectedClips = getAlltracksSelectedClips();
       break;
     default:
@@ -442,9 +441,9 @@ const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
 
   function normalizeTreePath(t: string) {
     const pName = app.project.name;
-    t = t.replace(pName, '');
-    t = t.replace(/\\\\/g, '');
-    t = t.replace(/\\/g, '/');
+    t = t.replace(pName, "");
+    t = t.replace(/\\\\/g, "");
+    t = t.replace(/\\/g, "/");
     return t;
   }
 
@@ -479,7 +478,7 @@ const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
             mediaPath: clip.projectItem.getMediaPath(),
             treePath: normalizeTreePath(clip.projectItem.treePath),
           };
-          var exists = findObjectByKey(mediasArray, 'nodeId', newClip.nodeId);
+          var exists = findObjectByKey(mediasArray, "nodeId", newClip.nodeId);
           if (!exists) {
             mediasArray.push(newClip);
           }
@@ -523,24 +522,24 @@ const getSelectedSequences = (): Array<Sequence> => {
 };
 
 export const getSequencesMedias = (
-  scope: 'activeSequence' | 'selectedSequences' | 'project'
+  scope: "activeSequence" | "selectedSequences" | "project"
 ) => {
   let medias: any[] = [];
   switch (scope) {
-    case 'activeSequence':
+    case "activeSequence":
       medias = getSequenceMedias(app.project.activeSequence, []);
       break;
-    case 'project':
+    case "project":
       let seqs = app.project.sequences;
       for (let s = 0; s < seqs.numSequences; s++) {
         medias = medias.concat(getSequenceMedias(seqs[s], []));
       }
       break;
-    case 'selectedSequences':
+    case "selectedSequences":
       var selectedSequences = getSelectedSequences();
 
       if (selectedSequences.length < 1) {
-        return JSON.stringify({ medias: [], error: 'No Sequence Selected' });
+        return JSON.stringify({ medias: [], error: "No Sequence Selected" });
       }
       selectedSequences =
         selectedSequences.length > 0
@@ -558,15 +557,6 @@ export const getSequencesMedias = (
   //@ts-ignore
   const reducedMedias = removeDuplicates(medias);
   return JSON.stringify({ medias: reducedMedias });
-};
-
-export const openFolderDialog = (txt: string) => {
-  var newOutput = Folder.selectDialog(txt);
-  if (newOutput && newOutput.exists) {
-    return newOutput.fsName;
-  } else {
-    return undefined;
-  }
 };
 
 declare interface BinInput {
@@ -604,7 +594,7 @@ export const createBins = (options: CreateBinInput) => {
   }
 };
 
-export const GetSequence = (nodeId: string = '') => {
+export const GetSequence = (nodeId: string = "") => {
   let sequence;
 
   if (nodeId) {
@@ -638,7 +628,7 @@ export const GetSequenceMarkers = (nodeId: string) => {
     var count = markers.numMarkers;
     let currentMarker = markers.getFirstMarker();
     if (!currentMarker) {
-      alert('The Sequence has no marker.');
+      alert("The Sequence has no marker.");
       return false;
     }
     var firstMarker = {
@@ -725,14 +715,14 @@ declare interface ThumbnailOptions {
 
 const markerMatch = (markerColor: any, selectedColors: Array<string>) => {
   var markerColors = [
-    'Green',
-    'Red',
-    'Purple',
-    'Orange',
-    'Yellow',
-    'White',
-    'Blue',
-    'Cyan',
+    "Green",
+    "Red",
+    "Purple",
+    "Orange",
+    "Yellow",
+    "White",
+    "Blue",
+    "Cyan",
   ];
   var currentColor = markerColors[markerColor.getColorByIndex()];
   if (findInArray(currentColor, selectedColors)) {
@@ -781,16 +771,16 @@ export const exportFramesForMarkers = (
         if (currentMarker && markerMatch(currentMarker, options.colors)) {
           activeSequence.setPlayerPosition(currentMarker.start.ticks);
           previousMarker = currentMarker;
-          exportCurrentFrameAsPNG('toto');
+          exportCurrentFrameAsPNG("toto");
         }
       }
       return true;
     } else {
-      updateEventPanel('No markers applied to ' + activeSequence.name + '.');
+      updateEventPanel("No markers applied to " + activeSequence.name + ".");
       return false;
     }
   } else {
-    updateEventPanel('No active sequence.');
+    updateEventPanel("No active sequence.");
     return false;
   }
 };
@@ -803,7 +793,7 @@ const exportCurrentFrameAsPNG = (outputFileName: string) => {
     var time = activeSequence.CTI.timecode; // CTI = Current Time Indicator.
     activeSequence.exportFramePNG(time, outputFileName);
   } else {
-    updateEventPanel('No active sequence.');
+    updateEventPanel("No active sequence.");
   }
 };
 
@@ -828,7 +818,7 @@ export const exportClipThumbnail = (ticks: string, outputPath: string) => {
 
     return outputPath;
   } else {
-    updateEventPanel('No active sequence.');
+    updateEventPanel("No active sequence.");
   }
 };
 
@@ -905,14 +895,14 @@ export const InsertSequence = ({
       }
     }
   } catch (e) {
-    alert('error building sequences');
+    alert("error building sequences");
   }
 };
 
 export const exportSequenceXml = (filepath: string, sequenceId: string) => {
   const seq = getSequenceFromNodeId(sequenceId);
   if (!seq) {
-    alert('Could not find sequence with ID: ' + sequenceId);
+    alert("Could not find sequence with ID: " + sequenceId);
     return null;
   }
   seq.exportAsFinalCutProXML(filepath);

@@ -61,3 +61,16 @@ export const join = (...args: string[]) => {
   }
   return res;
 };
+
+export const padLeft = (str: string, paddingValue: string) => {
+  return String(paddingValue + str).slice(-paddingValue.length);
+};
+
+export const openFolderDialog = (txt: string) => {
+  var newOutput = Folder.selectDialog(txt);
+  if (newOutput && newOutput.exists) {
+    return newOutput.fsName;
+  } else {
+    return undefined;
+  }
+};
