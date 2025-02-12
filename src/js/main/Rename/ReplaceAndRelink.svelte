@@ -22,7 +22,7 @@
   const getAeClips = async () => {
     const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
     console.log("selectedClips", selectedClips);
-    const systemClips = selectedClips.map((clip) => {
+    const systemClips = selectedClips.map((clip: any) => {
       const fileVersion = GetSystemFileVersionsWithShotName(
         clip.filepath,
         clip.shotName

@@ -397,6 +397,27 @@ export const findAndReplace = (options: any) => {
   }
 };
 
+export const addPrefixOrSuffix = (options: any) => {
+  var selectedClips = [];
+  switch (options.scope) {
+    case "project":
+      selectedClips = getProjectSelection();
+      break;
+    case "timeline":
+      selectedClips = getAlltracksSelectedClips();
+      break;
+    default:
+      return;
+  }
+
+  for (var c = 0; c < selectedClips.length; c++) {
+    const newName = `${options.prefix ? options.prefix + "_" : ""}${
+      selectedClips[c].name
+    }${options.suffix ? "_" + options.suffix : ""}`;
+    selectedClips[c].name = newName;
+  }
+};
+
 export const renameShots = (options: any) => {
   var shots = getAlltracksSelectedClips();
   for (var s = 0; s < shots.length; s++) {

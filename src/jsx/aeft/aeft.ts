@@ -39,6 +39,30 @@ export const findAndReplace = (options: any) => {
   }
 };
 
+export const addPrefixOrSuffix = (options: any) => {
+  var selectedClips: any[] = [];
+
+  switch (options.scope) {
+    case "project":
+      selectedClips = app.project.selection;
+      break;
+    case "timeline":
+      var activeSequene = app.project.activeItem;
+      if (activeSequene instanceof CompItem) {
+        selectedClips = activeSequene.selectedLayers;
+      }
+      break;
+    default:
+      return;
+  }
+  for (var c = 0; c < selectedClips.length; c++) {
+    const newName = `${options.prefix ? options.prefix + "_" : ""}${
+      selectedClips[c].name
+    }${options.suffix ? "_" + options.suffix : ""}`;
+    selectedClips[c].name = newName;
+  }
+};
+
 export const renameShots = (options: any) => {
   var sequence = app.project.activeItem;
   if (!(sequence instanceof CompItem)) {
@@ -81,14 +105,15 @@ export const renameToFile = () => {
 };
 
 export const getSelectedClips = () => {
-  var clips: Item[] = app.project.selection;
+  var clips = app.project.selection;
   if (clips.length === 0) {
     alert("No clips selected");
     return null;
   }
+
   clips = clips
-    .filter((clip) => clip instanceof FootageItem)
-    .map((clip) => {
+    .filter((clip: any) => clip instanceof FootageItem)
+    .map((clip: any) => {
       return {
         name: clip.name,
         filepath: clip.file.fsName,
@@ -105,11 +130,16 @@ interface IReplaceMediaOptions {
 }
 export const replaceMedia = function (options: IReplaceMediaOptions) {
   var currentClip = getItemFromNodeId(options.nodeId);
+
   var pFile = new File(options.oldPath);
   var nFile = new File(options.newPath);
 
   if (currentClip instanceof FootageItem && pFile.exists && nFile.exists) {
-    currentClip.replace(nFile);
+    if (pFile.fsName.match(/\.\d+|_\d+/)) {
+      currentClip.replaceWithSequence(nFile, true);
+    } else {
+      currentClip.replace(nFile);
+    }
     currentClip.name = nFile.displayName;
     return JSON.stringify({
       clipName: currentClip.name,
