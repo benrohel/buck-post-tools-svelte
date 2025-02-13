@@ -171,20 +171,29 @@
       />
     </div>
   {/if}
-  {#if appId === 'PPRO' || template === 'Shot'}
+  {#if appId === 'PPRO' || template}
     <div class="flex-row-start">
-      <label for="sequenceName"
-        >{appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
-      </label>
+      <label for="sequenceName">Composition Name: </label>
       <input
         type="text"
         placeholder="master"
         bind:value={sequenceName}
-        style="flex-grow:1;"
         on:change={handleSequenceNameChange}
       />
     </div>
   {/if}
+  <div class="flex-row-start">
+    <label for="sequenceName"
+      >{appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
+    </label>
+    <input
+      type="text"
+      placeholder="master"
+      bind:value={sequenceName}
+      style="flex-grow:1;"
+      on:change={handleSequenceNameChange}
+    />
+  </div>
 
   <div class="flex-row-end">
     <button class="active" on:click={handleStartProject}>Start Project</button>

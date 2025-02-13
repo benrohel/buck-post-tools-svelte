@@ -244,6 +244,7 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
   }
 
   if (!(shotComp instanceof CompItem)) {
+    alert('No comp selected');
     return false;
   }
   var rqItems = app.project.renderQueue.items;
