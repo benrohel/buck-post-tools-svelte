@@ -1,42 +1,36 @@
 <script lang="ts">
-  import { onMount, getContext } from "svelte";
-  import ExportShots from "./ExportShots.svelte";
-  import ExportStills from "./ExportStills.svelte";
-  import ExportSequenceXML from "./ExportSequenceXML.svelte";
-  import ExportCompositions from "./ExportCompositions.svelte";
+  import { onMount, getContext } from 'svelte';
+  import ExportShots from './ExportShots.svelte';
+  import ExportStills from './ExportStills.svelte';
+  import ExportSequenceXML from './ExportSequenceXML.svelte';
+  import ExportCompositions from './ExportCompositions.svelte';
 
-  const appId = getContext("appId") as string;
+  const appId = getContext('appId') as string;
 
   const exportModes = [
     {
-      value: "xml",
-      label: "Sequence to Xml",
+      value: 'xml',
+      label: 'Sequence to Xml',
       component: ExportSequenceXML,
-      apps: ["PPRO"],
+      apps: ['PPRO'],
     },
     {
-      value: "still",
-      label: "Stills",
+      value: 'still',
+      label: 'Stills',
       component: ExportStills,
-      apps: ["PPRO"],
+      apps: ['PPRO'],
     },
     {
-      value: "activeComp",
-      label: "Active Comp",
+      value: 'selectedComps',
+      label: 'Selected Comps',
       component: ExportCompositions,
-      apps: ["AEFT"],
-    },
-    {
-      value: "selectedComps",
-      label: "Selected Comps",
-      component: ExportCompositions,
-      apps: ["AEFT"],
+      apps: ['AEFT'],
     },
     // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
-  let selectedExportMode = "";
+  let selectedExportMode = '';
   $: mode =
     exportModes.find((m) => m.value === selectedExportMode) ?? exportModes[0];
 
@@ -45,7 +39,8 @@
   };
 
   onMount(async () => {
-    selectedExportMode = appId === "PPRO" ? exportModes[0].value : "activeComp";
+    selectedExportMode =
+      appId === 'PPRO' ? exportModes[0].value : 'selectedComps';
   });
 </script>
 

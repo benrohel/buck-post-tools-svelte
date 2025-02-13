@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { ChevronDown, ChevronUp, FolderSearch } from "svelte-lucide";
-  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
-  import { evalES } from "../../lib/utils/bolt";
+  import { ChevronDown, ChevronUp, FolderSearch } from 'svelte-lucide';
+  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
+  import { evalES } from '../../lib/utils/bolt';
   import {
     exportPresets,
     selectedExportPreset,
-  } from "../../stores/local-storage";
-  import { ArrowLeftRight, ListPlus } from "lucide-svelte";
-  import { onMount } from "svelte";
+  } from '../../stores/local-storage';
+  import { sequenceOutputFolder } from '../../stores/local-storage';
+  import { ArrowLeftRight, ListPlus } from 'lucide-svelte';
+  import { onMount } from 'svelte';
+  import { fs, path } from '../../lib/cep/node';
 
   $: presetList = () => {
     if ($exportPresets) {
-      return $exportPresets.split(",");
+      return $exportPresets.split(',');
     } else {
       return [];
     }
@@ -19,49 +21,55 @@
 
   const tokenList = [
     {
-      value: "compName",
-      label: "Comp Name",
+      value: 'compName',
+      label: 'Comp Name',
     },
     {
-      value: "projectVersion",
-      label: "Project Version",
+      value: 'projectVersion',
+      label: 'Project Version',
     },
     {
-      label: "frameNumber",
-      value: "frameNumber",
+      value: 'version',
+      label: 'Version',
     },
     {
-      value: "/",
-      label: "folder",
+      label: 'frameNumber',
+      value: 'frameNumber',
+    },
+    {
+      value: '/',
+      label: 'folder',
     },
   ];
 
   let activePreset = $selectedExportPreset;
-  let activeRenderSetting = "";
-  let rootFolder = "";
+  let activeRenderSetting = '';
   let showBuildPreset = false;
-  let prefix = "";
-  let suffix = "";
+  let prefix = '';
+  let suffix = '';
+  //@ts-ignore
   $: tokens = [];
-  let selectedToken = "";
+  let selectedToken = '';
   let version = 0;
   let renderSettingsList: string[] = [];
 
   $: getPreviewString = () => {
     if (showBuildPreset) {
-      return `${prefix ? prefix + "_" : ""}${tokens.join("_")}${
-        suffix ? "_" + suffix : ""
-      }${version > 0 ? `_v${String(version).padStart(3, "0")}` : ""}`;
+      const tempString = `${prefix ? prefix + '_' : ''}${tokens.join('_')}${
+        suffix ? '_' + suffix : ''
+      }`;
+      return tempString.replace(/_\/_/g, '/');
     } else {
       if ($selectedExportPreset) {
-        return $selectedExportPreset;
+        return $selectedExportPreset.replace(/_\/_/g, '/');
       }
-      return "";
+      return '';
     }
   };
 
   $: previewString = getPreviewString();
-  $: console.log("tokens", tokens);
+  $: console.log('tokens', tokens);
+  $: console.log('previewString', previewString);
 
   const handlePresetChange = (e: any) => {
     selectedExportPreset.set(e.target.value);
@@ -88,33 +96,72 @@
       exportPresets.set(previewString);
       return;
     } else {
-      exportPresets.set($exportPresets + "," + previewString);
+      exportPresets.set($exportPresets + ',' + previewString);
       return;
     }
   };
   const handleSetOutputFolder = async (value: string) => {
-    rootFolder = value;
+    sequenceOutputFolder.set(value);
   };
 
-  const addToRenderQueue = async () => {
-    const renderPath = `${rootFolder}/${previewString}`;
-    await evalES(
-      `addToRenderQueue("${renderPath}", "","${activeRenderSetting}")`
-    );
+  interface CompRenderData {
+    compName: string;
+    nodeId: number;
+    projectName: string;
+    projectVersion: string;
+  }
+  const buildRenderPath = (compData: CompRenderData) => {
+    const projectVersionString = compData.projectVersion.padStart(3, '0');
+    const dataString = previewString
+      .replace(/projectName/g, compData.projectName)
+      .replace(/compName/g, compData.compName)
+      .replace(/projectVersion/g, projectVersionString)
+      .replace(/version/g, `v${version.toString().padStart(3, '0')}`)
+      .replace(/frameNumber/g, '[####]');
+
+    return `${$sequenceOutputFolder}/${dataString}`;
+  };
+
+  const addToRenderQueue = async (comp: CompRenderData) => {
+    const renderPath = buildRenderPath(comp);
+    const options = {
+      compId: comp.nodeId,
+      filepath: renderPath,
+      presetNAme: activeRenderSetting,
+    };
+
+    fs.existsSync(path.dirname(renderPath)) ||
+      fs.mkdirSync(renderPath, { recursive: true });
+
+    await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
+  };
+
+  const addCompsToRenderQueue = async () => {
+    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
+      .comps as CompRenderData[];
+
+    comps.forEach((element: any) => {
+      addToRenderQueue(element);
+    });
   };
 
   onMount(async () => {
     const renderSettings = JSON.parse(
-      await evalES("getOutputModulesTemplates()")
+      await evalES('getOutputModulesTemplates()')
     );
-    renderSettingsList = renderSettings;
+    renderSettingsList = renderSettings.filter(
+      (p: string) => !p.startsWith('_')
+    );
+    // renderSettingsList = renderSettings.filter(
+    //   (p: string) => !p.startsWith('_')
+    // );
     activeRenderSetting = renderSettings[0];
   });
 </script>
 
 <div>
   <SelectFolder
-    defaultFolder={rootFolder}
+    defaultFolder={$sequenceOutputFolder}
     onChange={handleSetOutputFolder}
     label="Select Output Folder"
   />
@@ -138,26 +185,26 @@
         </select>
       </div>
     </div>
-    <div
-      style="display:flex; flex-direction:row; justify-content: space-between;"
-    >
-      <p>Select Render Setting</p>
-      <div class="select-wrapper">
-        <select
-          bind:value={activeRenderSetting}
-          on:change={handleRenderSettingChange}
-          placeholder="Select Preset"
-        >
-          <option value="" disabled selected>Select Render Settings</option>
-          {#each renderSettingsList as preset, id}
-            <option value={preset}>
-              {preset}
-            </option>
-          {/each}
-        </select>
-      </div>
-    </div>
   {/if}
+  <div
+    style="display:flex; flex-direction:row; justify-content: space-between;"
+  >
+    <p>Select Output Module</p>
+    <div class="select-wrapper">
+      <select
+        bind:value={activeRenderSetting}
+        on:change={handleRenderSettingChange}
+        placeholder="Select Preset"
+      >
+        <option value="" disabled selected>Select Render Settings</option>
+        {#each renderSettingsList as preset, id}
+          <option value={preset}>
+            {preset}
+          </option>
+        {/each}
+      </select>
+    </div>
+  </div>
   <div class="flex-row-end action-row">
     <p>Build Export Name Preset</p>
     <button
@@ -224,13 +271,15 @@
   </p>
 </div>
 <div class="flex-row-end action-row">
-  <button class="active" on:click={addToRenderQueue} disabled={!rootFolder}
-    >Add To Render Queue</button
+  <button
+    class="active"
+    on:click={addCompsToRenderQueue}
+    disabled={!sequenceOutputFolder}>Add To Render Queue</button
   >
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   #template-builder {
     display: flex;

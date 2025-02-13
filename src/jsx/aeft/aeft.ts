@@ -1,13 +1,20 @@
-import { padLeft, openFolderDialog } from "../utils/utils";
+import { padLeft, openFolderDialog, forEach } from '../utils/utils';
 import {
   findCompByName,
   findFolderByName,
   getOutputModulesTemplates,
-} from "./aeft-utils";
-export { openFolderDialog, getOutputModulesTemplates };
+  getSelectedCompsForRender,
+} from './aeft-utils';
+export {
+  openFolderDialog,
+  getOutputModulesTemplates,
+  getSelectedCompsForRender,
+  findCompByName,
+  findFolderByName,
+};
 
 export const helloWorld = () => {
-  alert("Hello from After Effects!");
+  alert('Hello from After Effects!');
   app.project.activeItem;
 };
 
@@ -35,29 +42,38 @@ declare interface INewSequenceOptions {
 export const newSequenceFromPreset = (options: INewSequenceOptions) => {
   var templateFile = new File(options.presetPath);
   if (!templateFile.exists) {
+    alert(templateFile.fsName);
+    alert('Template file not found');
     return null;
   }
+
   app.open(templateFile);
-  var comp = findCompByName("PT010_shotName_v01");
+  var comp = findCompByName('compName');
   if (!comp) {
     return null;
   }
 
-  var newComp = app.project.items.addComp(
-    options.name,
-    options.width,
-    options.height,
-    1,
-    options.duration / options.framerate,
-    options.framerate
-  );
+  comp.width = options.width;
+  comp.height = options.height;
+  comp.frameRate = options.framerate;
+  comp.duration = options.duration / options.framerate;
+  comp.name = options.name;
 
-  var folder = findFolderByName("1 Master");
-  if (folder) {
-    newComp.parentFolder = folder;
-  }
+  // var newComp = app.project.items.addComp(
+  //   options.name,
+  //   options.width,
+  //   options.height,
+  //   1,
+  //   options.duration / options.framerate,
+  //   options.framerate
+  // );
 
-  return newComp.id;
+  var folder = findFolderByName('01_Master');
+  // if (folder) {
+  //   newComp.parentFolder = folder;
+  // }
+
+  return comp.id;
 };
 
 // Renamer
@@ -65,10 +81,10 @@ export const findAndReplace = (options: any) => {
   var selectedClips: any[] = [];
 
   switch (options.scope) {
-    case "project":
+    case 'project':
       selectedClips = app.project.selection;
       break;
-    case "timeline":
+    case 'timeline':
       var activeSequene = app.project.activeItem;
       if (activeSequene instanceof CompItem) {
         selectedClips = activeSequene.selectedLayers;
@@ -87,10 +103,10 @@ export const addPrefixOrSuffix = (options: any) => {
   var selectedClips: any[] = [];
 
   switch (options.scope) {
-    case "project":
+    case 'project':
       selectedClips = app.project.selection;
       break;
-    case "timeline":
+    case 'timeline':
       var activeSequene = app.project.activeItem;
       if (activeSequene instanceof CompItem) {
         selectedClips = activeSequene.selectedLayers;
@@ -100,9 +116,9 @@ export const addPrefixOrSuffix = (options: any) => {
       return;
   }
   for (var c = 0; c < selectedClips.length; c++) {
-    const newName = `${options.prefix ? options.prefix + "_" : ""}${
+    const newName = `${options.prefix ? options.prefix + '_' : ''}${
       selectedClips[c].name
-    }${options.suffix ? "_" + options.suffix : ""}`;
+    }${options.suffix ? '_' + options.suffix : ''}`;
     selectedClips[c].name = newName;
   }
 };
@@ -132,14 +148,14 @@ const renameClipFromSource = (shot: any) => {
       shot.name = sourceName;
     }
   } else {
-    alert("Not a footage item");
+    alert('Not a footage item');
   }
 };
 
 export const renameToFile = () => {
   var clips = app.project.selection;
   if (clips.length === 0) {
-    alert("No clips selected");
+    alert('No clips selected');
     return false;
   }
   for (var c = 0; c < clips.length; c++) {
@@ -151,7 +167,7 @@ export const renameToFile = () => {
 export const getSelectedClips = () => {
   var clips = app.project.selection;
   if (clips.length === 0) {
-    alert("No clips selected");
+    alert('No clips selected');
     return null;
   }
 
@@ -197,7 +213,7 @@ export const getSelectedSequencesForNode = () => {
   var sequences = [];
   var selection = app.project.selection;
   if (selection.length === 0) {
-    alert("No sequences selected");
+    alert('No sequences selected');
     return null;
   }
   for (var i = 0; i < selection.length; i++) {
@@ -213,12 +229,14 @@ export const getSelectedSequencesForNode = () => {
 };
 
 //Export
-export const addToRenderQueue = (
-  fileStr: string,
-  compId: number = -1,
-  presetName: string = ""
-) => {
+interface IRenderWithTokensOptions {
+  compId: number;
+  filepath: string;
+  presetName: string;
+}
+export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
   var shotComp;
+  var { compId, filepath, presetName } = options;
   if (compId <= 0) {
     shotComp = app.project.activeItem;
   } else {
@@ -232,7 +250,8 @@ export const addToRenderQueue = (
   var newItem = rqItems.add(shotComp);
 
   newItem.timeSpanDuration = shotComp.workAreaDuration;
-  var renderFile = new File(fileStr);
+
+  var renderFile = new File(filepath);
   var om = newItem.outputModule(1);
   if (presetName) {
     om.applyTemplate(presetName);
