@@ -62,3 +62,36 @@ export const getAeMetadata = (propName: string) => {
   const metadata = new XMPMeta(app.project.xmpPacket);
   return metadata.getProperty(uri, newPropName);
 };
+
+export const findCompByName = (name: string) => {
+  const items = app.project.items;
+  for (var i = 1; i <= items.length; i++) {
+    var currentItem = items[i];
+    if (currentItem.name === name) {
+      return currentItem as CompItem;
+    }
+  }
+  return null;
+};
+
+export const findFolderByName = (name: string) => {
+  const items = app.project.items;
+  for (var i = 1; i <= items.length; i++) {
+    var currentItem = items[i];
+    if (currentItem.name === name && currentItem instanceof FolderItem) {
+      return currentItem as FolderItem;
+    }
+  }
+  return null;
+};
+
+export const getOutputModulesTemplates = () => {
+  var comp = app.project.items.addComp("tempComp", 1920, 1080, 1, 1, 24);
+  var rq = app.project.renderQueue;
+  var rqItems = rq.items;
+  var tempRqItem = rqItems.add(comp);
+  var templates = tempRqItem.outputModule(1).templates;
+  tempRqItem.remove();
+  comp.remove();
+  return JSON.stringify(templates);
+};

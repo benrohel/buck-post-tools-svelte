@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import upath from 'upath';
-  import { getPresetFile } from '../../api/SQPreset';
-  import type { Sequence } from '../../api/sequence';
-  import { ArrowRight } from 'svelte-lucide';
-  import { v4 as uuidv4 } from 'uuid';
-  import MultiSelect from '../../components/MultiSelect/MultiSelect.svelte';
-  import { fs } from '../../lib/cep/node';
+  import { onMount } from "svelte";
+  import { evalES } from "../../lib/utils/bolt";
+  import upath from "upath";
+  import { getPresetFile } from "../../api/SQPreset";
+  import type { Sequence } from "../../api/sequence";
+  import { ArrowRight } from "svelte-lucide";
+  import { v4 as uuidv4 } from "uuid";
+  import MultiSelect from "../../components/MultiSelect/MultiSelect.svelte";
+  import { fs } from "../../lib/cep/node";
   interface Resolution {
     value: string;
     label: string;
@@ -18,39 +18,39 @@
   const videoResolutions = {
     resolutions: [
       {
-        value: '2880x2880',
-        label: '2880x2880',
-        ratio: '1x1',
+        value: "2880x2880",
+        label: "2880x2880",
+        ratio: "1x1",
         selected: false,
       },
       {
-        value: '1920x1080',
-        label: '1920x1080',
-        ratio: '16x9',
+        value: "1920x1080",
+        label: "1920x1080",
+        ratio: "16x9",
         selected: false,
       },
       {
-        label: '1080x1920',
-        value: '1080x1920',
-        ratio: '9x16',
+        label: "1080x1920",
+        value: "1080x1920",
+        ratio: "9x16",
         selected: false,
       },
       {
-        label: '1920x1920',
-        value: '1920x1920',
-        ratio: '1x1',
+        label: "1920x1920",
+        value: "1920x1920",
+        ratio: "1x1",
         selected: false,
       },
       {
-        label: '1080x1080',
-        value: '1080x1080',
-        ratio: '1x1',
+        label: "1080x1080",
+        value: "1080x1080",
+        ratio: "1x1",
         selected: false,
       },
       {
-        label: '1350x1080',
-        value: '1350x1080',
-        ratio: '4x5',
+        label: "1350x1080",
+        value: "1350x1080",
+        ratio: "4x5",
         selected: false,
       },
     ],
@@ -59,11 +59,21 @@
   let filteredPresets: any[] = [];
   let selectedPresets: Resolution[] = [];
   let masterSequence: Sequence;
-  let presetFilter: string = '';
+  let presetFilter: string = "";
 
   $: filteredPresets = videoResolutions.resolutions.filter((f) =>
     f.label.includes(presetFilter)
   );
+
+  const getMasterSequence = async () => {
+    let selectedSequences = true;
+    const aeResult = await evalES(
+      `getSelectedSequencesForNode(${selectedSequences})`,
+      false
+    );
+    const aeJson = JSON.parse(aeResult);
+    masterSequence = aeJson.sequences[0];
+  };
 
   onMount(async () => {
     await getMasterSequence();
@@ -74,17 +84,6 @@
   const GetResolutions = async () => {
     return videoResolutions.resolutions;
   };
-
-  async function getMasterSequence() {
-    let selectedSequences = true;
-    const aeResult = await evalES(
-      `getSelectedSequencesForNode(${selectedSequences})`,
-      false
-    );
-    console.log(aeResult);
-    const aeJson = JSON.parse(aeResult);
-    masterSequence = aeJson.sequences[0];
-  }
 
   const buildChildrenSequences = async () => {
     const promises = selectedPresets
@@ -98,8 +97,8 @@
 
   const buildAspectRatiosSequence = async (resolution: Resolution) => {
     if (masterSequence?.framerate) {
-      const width: string = resolution.value.split('x')[0];
-      const height: string = resolution.value.split('x')[1];
+      const width: string = resolution.value.split("x")[0];
+      const height: string = resolution.value.split("x")[1];
       const option = {
         width,
         height,
@@ -154,8 +153,8 @@
   }
 
   function getItemWidth(item: Resolution): string {
-    const w = parseInt(item.value.split('x')[0]);
-    const h = parseInt(item.value.split('x')[1]);
+    const w = parseInt(item.value.split("x")[0]);
+    const h = parseInt(item.value.split("x")[1]);
     const ar = w / h;
     const pixelWidth = 20 * ar;
     return `${pixelWidth}px`;

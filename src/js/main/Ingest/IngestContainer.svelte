@@ -214,10 +214,6 @@
       openUrl(`http://buck.aquarium.app/${$sessionProject}`);
     }
   };
-
-  onMount(async () => {
-    await getClips();
-  });
 </script>
 
 <div class="ingest-container">
@@ -245,10 +241,10 @@
 
   <div>
     <div
-      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
+      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
     >
       <button class="icon active" on:click={handleReplaceAll}>
-        <ArrowUpDown />
+        <ArrowUpDown size="20" />
       </button>
       <button class="icon active" on:click={handleImportAll}>
         <Download />
@@ -271,16 +267,7 @@
     </div>
   </div>
   <div id="coda-header">
-    <div class="form-row">
-      <button
-        style="margin:4px; width:auto; background-color:transparent; border:none;"
-        on:click={() => {
-          openSettings = !openSettings;
-        }}
-      >
-        <img src={trackerLogo()} alt="Coda logo" height="16" />
-      </button>
-    </div>
+    <div class="form-row"></div>
     <div
       style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
     >
@@ -328,12 +315,10 @@
     justify-content: space-between;
     align-items: center;
     justify-self: flex-end;
-    // height: 30px;
-    background-color: $darkest;
     color: $font;
     width: 100%;
     gap: 8px;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
   }
 
   #card-list {

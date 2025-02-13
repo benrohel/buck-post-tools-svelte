@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Recycle } from 'svelte-lucide';
+  import { Recycle } from "svelte-lucide";
 
   export let authenticated: boolean = false;
   const refreshPage = () => {
@@ -8,20 +8,20 @@
 </script>
 
 <div class="footer">
-  <div style="margin-left:8px">BUCK 2025</div>
+  <div>BUCK 2025</div>
   <div style="display:flex; flex-direction:row; align-items:center">
     <button
       class="icon"
       style="margin-right:8px; cursor:pointer; background-color:transparent"
       on:click={refreshPage}
     >
-      <Recycle color={authenticated ? 'green' : 'red'} />
+      <Recycle color={authenticated ? "green" : "red"} />
     </button>
   </div>
 </div>
 
 <style lang="scss">
-  @use '../../js/variables.scss' as *;
+  @use "../../js/variables.scss" as *;
   .footer {
     display: flex;
     flex-direction: row;

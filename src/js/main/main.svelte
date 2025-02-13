@@ -20,9 +20,10 @@
   import Footer from "./Footer.svelte";
   import Toast from "../components/Toast/Toast.svelte";
 
-  $: authenticated = false;
   let backgroundColor: string = "#282c34";
   setContext("appId", appId);
+
+  $: console.log("appId", appId);
 
   let items = [
     {
@@ -49,7 +50,6 @@
   onMount(async () => {
     if (window.cep) {
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
-
       // await connectToDaemon();
       // if (client) {
       //   authenticated = (await getAuthAuthenticated()).data.user ? true : false;

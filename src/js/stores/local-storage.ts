@@ -118,13 +118,36 @@ sequenceOutputFolder.subscribe((value) => {
   }
 });
 
-// export const codaId = asyncDerived(
-//   selectedCodaProject,
-//   async ($selectedCodaProject) => {
-//     let id = "";
-//     if ($selectedCodaProject) {
-//       id = GetCodaIdFromUrl($selectedCodaProject?.docUrl);
-//     }
-//     return id;
-//   }
-// );
+// Export Presets
+const storedExportPresets = safeload("aeexportpresets");
+export const exportPresets = writable<string | null>(
+  //@ts-ignore
+  JSON.parse(
+    storedExportPresets ? localStorage.getItem("aeexportpresets") : null
+  )
+);
+exportPresets.subscribe((value) => {
+  if (value === "") {
+    return "";
+  } else {
+    localStorage.setItem("aeexportpresets", JSON.stringify(value));
+  }
+});
+
+// Selected Export Preset
+const storedSelectedExportPreset = safeload("selectedExportPresets");
+export const selectedExportPreset = writable<string | null>(
+  //@ts-ignore
+  JSON.parse(
+    storedSelectedExportPreset
+      ? localStorage.getItem("selectedExportPresets")
+      : null
+  )
+);
+selectedExportPreset.subscribe((value) => {
+  if (value === "") {
+    return "";
+  } else {
+    localStorage.setItem("selectedExportPresets", JSON.stringify(value));
+  }
+});

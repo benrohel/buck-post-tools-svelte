@@ -1,24 +1,29 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import ProjectStarter from './ProjectStarter.svelte';
-  import CopySequenceSettings from './CopySequenceSettings.svelte';
-  import AspectRatios from './AspectRatios.svelte';
-  import Tools from './Tools.svelte';
+  import { onMount } from "svelte";
+  import { getContext } from "svelte";
+  import ProjectStarter from "./ProjectStarter.svelte";
+  import CopySequenceSettings from "./CopySequenceSettings.svelte";
+  import AspectRatios from "./AspectRatios.svelte";
+
+  const appId = getContext("appId") as string;
 
   const toolList = [
     {
-      label: 'Start Project',
-      value: 'projectStarter',
+      label: "Start Project",
+      value: "projectStarter",
       component: ProjectStarter,
+      apps: ["AEFT", "PPRO"],
     },
     {
-      label: 'Sequence Settings',
-      value: 'sequenceSettings',
+      label: "Sequence Settings",
+      value: "sequenceSettings",
       component: CopySequenceSettings,
+      apps: ["PPRO"],
     },
     {
-      label: 'Aspect Ratios',
-      value: 'aspectRatios',
+      label: "Aspect Ratios",
+      value: "aspectRatios",
+      apps: ["PPRO"],
       component: AspectRatios,
     },
     // {
@@ -28,7 +33,9 @@
     // },
   ];
 
-  let selectedMode = '';
+  let selectedMode = "";
+
+  let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
 
   $: tool = toolList.find((m) => m.value === selectedMode) ?? toolList[0];
 
@@ -44,7 +51,7 @@
 <div style="display:flex; flex-direction:row">
   <div class="select-wrapper" style="flex-grow:1;">
     <select bind:value={selectedMode} on:change={handleRenameMode}>
-      {#each toolList as tool, id}
+      {#each filteredToolList as tool, id}
         <option value={tool.value}>
           {tool.label}
         </option>

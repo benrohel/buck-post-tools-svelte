@@ -11,6 +11,7 @@
   import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
   import ClipCardReplace from "../../components/ClipCard/ClipCardReplace.svelte";
   import { fs } from "../../lib/cep/node";
+  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
   import { onMount, getContext } from "svelte";
 
   const appId = getContext("appId");
@@ -177,17 +178,12 @@
     console.log("res", sequenceClips);
   };
 
-  const handleSetOutputFolder = async () => {
-    const folderPath = await evalES(
-      `openFolderDialog("Select New Root Folder.")`
-    );
+  const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
       rootFolder = folderPath;
       searchFiles();
     }
   };
-
-  $: console.log("sequenceClips", sequenceClips);
 
   onMount(async () => {
     await getClips();
@@ -204,12 +200,11 @@
   </div>
 </div>
 <div id="search-folder">
-  <div class="flex-row-start">
-    <button on:click={handleSetOutputFolder}>
-      <FolderSearch size="16" />
-    </button>
-    <p>{rootFolder}</p>
-  </div>
+  <SelectFolder
+    defaultFolder={rootFolder}
+    onChange={handleSetOutputFolder}
+    label="select search folder"
+  />
   <button on:click={searchFiles} style="justify-self:flex-end">
     <RefreshCw size="16" />
   </button>
@@ -256,5 +251,6 @@
     overflow-x: hidden;
     text-overflow: ellipsis;
     justify-content: space-between;
+    margin-bottom: 4px;
   }
 </style>

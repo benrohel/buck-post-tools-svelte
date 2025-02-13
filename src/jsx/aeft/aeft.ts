@@ -1,5 +1,10 @@
 import { padLeft, openFolderDialog } from "../utils/utils";
-export { openFolderDialog };
+import {
+  findCompByName,
+  findFolderByName,
+  getOutputModulesTemplates,
+} from "./aeft-utils";
+export { openFolderDialog, getOutputModulesTemplates };
 
 export const helloWorld = () => {
   alert("Hello from After Effects!");
@@ -16,6 +21,45 @@ const getItemFromNodeId = (nodeId: number): Item | null => {
   }
   return null;
 };
+
+// Project
+
+declare interface INewSequenceOptions {
+  presetPath: string;
+  width: number;
+  height: number;
+  framerate: number;
+  duration: number;
+  name: string;
+}
+export const newSequenceFromPreset = (options: INewSequenceOptions) => {
+  var templateFile = new File(options.presetPath);
+  if (!templateFile.exists) {
+    return null;
+  }
+  app.open(templateFile);
+  var comp = findCompByName("PT010_shotName_v01");
+  if (!comp) {
+    return null;
+  }
+
+  var newComp = app.project.items.addComp(
+    options.name,
+    options.width,
+    options.height,
+    1,
+    options.duration / options.framerate,
+    options.framerate
+  );
+
+  var folder = findFolderByName("1 Master");
+  if (folder) {
+    newComp.parentFolder = folder;
+  }
+
+  return newComp.id;
+};
+
 // Renamer
 export const findAndReplace = (options: any) => {
   var selectedClips: any[] = [];
@@ -112,6 +156,7 @@ export const getSelectedClips = () => {
   }
 
   clips = clips
+    //@ts-ignore
     .filter((clip: any) => clip instanceof FootageItem)
     .map((clip: any) => {
       return {
@@ -146,4 +191,51 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
       filepath: nFile.fsName,
     });
   }
+};
+
+export const getSelectedSequencesForNode = () => {
+  var sequences = [];
+  var selection = app.project.selection;
+  if (selection.length === 0) {
+    alert("No sequences selected");
+    return null;
+  }
+  for (var i = 0; i < selection.length; i++) {
+    var sequence = selection[i];
+    if (sequence instanceof CompItem) {
+      sequences.push({
+        name: sequence.name,
+        nodeId: sequence.id,
+      });
+    }
+  }
+  return JSON.stringify({ sequences: sequences });
+};
+
+//Export
+export const addToRenderQueue = (
+  fileStr: string,
+  compId: number = -1,
+  presetName: string = ""
+) => {
+  var shotComp;
+  if (compId <= 0) {
+    shotComp = app.project.activeItem;
+  } else {
+    shotComp = getItemFromNodeId(compId);
+  }
+
+  if (!(shotComp instanceof CompItem)) {
+    return false;
+  }
+  var rqItems = app.project.renderQueue.items;
+  var newItem = rqItems.add(shotComp);
+
+  newItem.timeSpanDuration = shotComp.workAreaDuration;
+  var renderFile = new File(fileStr);
+  var om = newItem.outputModule(1);
+  if (presetName) {
+    om.applyTemplate(presetName);
+  }
+  om.file = renderFile;
 };

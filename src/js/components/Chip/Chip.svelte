@@ -1,5 +1,5 @@
 <script lang="ts">
-  import IoMdCloseCircle from "svelte-icons/io/IoMdCloseCircle.svelte";
+  import { XCircle } from "svelte-lucide";
   export let label: string = "";
   export let color: string = "#232323";
   export let closable: boolean = false;
@@ -23,20 +23,21 @@
   <div id="chip-icon">
     <slot name="icon" />
   </div>
-  <slot name="label" clas="chip-label" />
+  <slot name="label" class="chip-label" />
   {#if closable}
     <div id="chip-icon" on:click={close}>
-      <IoMdCloseCircle />
+      <XCircle size={14} />
     </div>
   {/if}
 </div>
 
 <style lang="scss">
+  @use "../../variables.scss" as *;
   :root {
     --chip-background: inherit;
   }
   .chip {
-    color: black;
+    color: $font;
     display: flex;
     flex-direction: row;
     gap: 4px;
