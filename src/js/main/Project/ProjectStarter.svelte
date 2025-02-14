@@ -3,9 +3,9 @@
   import { evalES } from '../../lib/utils/bolt';
   import { getPresetFile } from '../../api/SQPreset';
   import { v4 as uuidv4 } from 'uuid';
-  import { fs, path } from '../../lib/cep/node';
+  import { fs } from '../../lib/cep/node';
 
-  const appId = getContext('appId');
+  const appId: string = getContext('appId');
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },
@@ -16,10 +16,29 @@
     { label: '1350x1080', value: '1350x1080' },
   ];
 
-  const templates = [
-    { label: 'Shot', value: 'Shot' },
-    { label: 'Edit', value: 'Edit' },
+  interface Template {
+    label: string;
+    value: string;
+    apps: string[];
+  }
+
+  const templateList = [
+    { label: 'Shot', value: 'Shot', apps: ['AEFT'] },
+    { label: 'Edit', value: 'Edit', apps: ['AEFT', 'PPRO'] },
+    { label: 'Conform', value: 'Conform', apps: ['PPRO'] },
   ];
+
+  $: getTemplates = () => {
+    if (appId) {
+      return templateList.filter((t) => {
+        return t.apps.includes(appId);
+      });
+    }
+    return [templateList[0]];
+  };
+
+  $: templates = getTemplates();
+  $: console.log(templates);
 
   const framerates = [
     { label: '23.976', value: '23.976' },
@@ -34,9 +53,10 @@
   let framerate = '24';
   let resolution = '1920x1080';
   let duration = 240;
-  let template = templates[0].value;
+  let template = templateList[1].value;
 
   $: aeTemplatePath = `/buck/globalprefs/SHARED/AFTER_EFFECTS/templates/default${template}Template.aep`;
+  $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
 
   const handleStartProject = async () => {
     const [width, height] = resolution.split('x');
@@ -46,20 +66,27 @@
       framerate: framerate,
     };
 
-    const sqp = await getPresetFile(
-      option.width,
-      option.height,
-      option.framerate
-    );
+    if (appId === 'PPRO') {
+      const sqp = await getPresetFile(
+        option.width,
+        option.height,
+        option.framerate
+      );
+      if (sqp) {
+        const sequenceOptions = {
+          sequenceName: sequenceName,
+          templatePath: pproTemplatePath,
+          presetPath: sqp,
+          uuid: uuidv4(),
+        };
 
-    if (sqp) {
-      const sequenceOptions = {
-        sequenceName: sequenceName,
-        presetPath: sqp,
-        uuid: uuidv4(),
-      };
-      const pproOptions = { bins: template };
-
+        await evalES(
+          `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
+          false
+        );
+        fs.unlinkSync(sqp);
+      }
+    } else if (appId === 'AEFT') {
       const aeOptions = {
         presetPath: aeTemplatePath,
         width: parseInt(option.width),
@@ -68,25 +95,10 @@
         duration: duration,
         name: sequenceName,
       };
-
-      switch (appId) {
-        case 'AEFT':
-          await evalES(
-            `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
-            false
-          );
-          break;
-        case 'PPRO':
-          await evalES(`createBins(${JSON.stringify(pproOptions)})`, false);
-          await evalES(
-            `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
-            false
-          );
-          fs.unlinkSync(sqp);
-          break;
-        default:
-          break;
-      }
+      await evalES(
+        `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
+        false
+      );
     }
   };
 
