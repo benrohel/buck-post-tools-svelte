@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { ChevronDown, ChevronUp, FolderSearch } from 'svelte-lucide';
-  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { ChevronDown, ChevronUp, PlusSquare } from "svelte-lucide";
+  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
+  import { evalES } from "../../lib/utils/bolt";
   import {
     exportPresets,
     selectedExportPreset,
-  } from '../../stores/local-storage';
-  import { sequenceOutputFolder } from '../../stores/local-storage';
-  import { ArrowLeftRight, ListPlus } from 'lucide-svelte';
-  import { onMount } from 'svelte';
-  import { fs, path } from '../../lib/cep/node';
+  } from "../../stores/local-storage";
+  import { sequenceOutputFolder } from "../../stores/local-storage";
+  import { ArrowLeftRight, ListPlus } from "lucide-svelte";
+  import { onMount } from "svelte";
+  import { fs, path } from "../../lib/cep/node";
 
   $: presetList = () => {
     if ($exportPresets) {
-      return $exportPresets.split(',');
+      return $exportPresets.split(",");
     } else {
       return [];
     }
@@ -21,55 +21,53 @@
 
   const tokenList = [
     {
-      value: 'compName',
-      label: 'Comp Name',
+      value: "compName",
+      label: "Comp Name",
     },
     {
-      value: 'projectVersion',
-      label: 'Project Version',
+      value: "projectVersion",
+      label: "Project Version",
     },
     {
-      value: 'version',
-      label: 'Version',
+      value: "version",
+      label: "Version",
     },
     {
-      label: 'frameNumber',
-      value: 'frameNumber',
+      label: "frameNumber",
+      value: "frameNumber",
     },
     {
-      value: '/',
-      label: 'folder',
+      value: "/",
+      label: "folder",
     },
   ];
 
   let activePreset = $selectedExportPreset;
-  let activeRenderSetting = '';
+  let activeRenderSetting = "";
   let showBuildPreset = false;
-  let prefix = '';
-  let suffix = '';
+  let prefix = "";
+  let suffix = "";
   //@ts-ignore
   $: tokens = [];
-  let selectedToken = '';
+  let selectedToken = "";
   let version = 0;
   let renderSettingsList: string[] = [];
 
   $: getPreviewString = () => {
     if (showBuildPreset) {
-      const tempString = `${prefix ? prefix + '_' : ''}${tokens.join('_')}${
-        suffix ? '_' + suffix : ''
-      }`;
-      return tempString.replace(/_\/_/g, '/');
+      const tempString = `${tokens.join("_")}`;
+      return tempString.replace(/_\/_/g, "/");
     } else {
       if ($selectedExportPreset) {
-        return $selectedExportPreset.replace(/_\/_/g, '/');
+        return $selectedExportPreset.replace(/_\/_/g, "/");
       }
-      return '';
+      return "";
     }
   };
 
   $: previewString = getPreviewString();
-  $: console.log('tokens', tokens);
-  $: console.log('previewString', previewString);
+  $: console.log("tokens", tokens);
+  $: console.log("previewString", previewString);
 
   const handlePresetChange = (e: any) => {
     selectedExportPreset.set(e.target.value);
@@ -77,10 +75,6 @@
 
   const handleRenderSettingChange = (e: any) => {
     activeRenderSetting = e.target.value;
-  };
-
-  const addToken = (token: string) => {
-    tokens = [...tokens, token];
   };
 
   const removeToken = (token: number) => {
@@ -96,7 +90,7 @@
       exportPresets.set(previewString);
       return;
     } else {
-      exportPresets.set($exportPresets + ',' + previewString);
+      exportPresets.set($exportPresets + "," + previewString);
       return;
     }
   };
@@ -111,13 +105,13 @@
     projectVersion: string;
   }
   const buildRenderPath = (compData: CompRenderData) => {
-    const projectVersionString = compData.projectVersion.padStart(3, '0');
+    const projectVersionString = compData.projectVersion.padStart(3, "0");
     const dataString = previewString
       .replace(/projectName/g, compData.projectName)
       .replace(/compName/g, compData.compName)
       .replace(/projectVersion/g, projectVersionString)
-      .replace(/version/g, `v${version.toString().padStart(3, '0')}`)
-      .replace(/frameNumber/g, '[####]');
+      .replace(/version/g, `v${version.toString().padStart(3, "0")}`)
+      .replace(/frameNumber/g, "[####]");
 
     return `${$sequenceOutputFolder}/${dataString}`;
   };
@@ -137,7 +131,7 @@
   };
 
   const addCompsToRenderQueue = async () => {
-    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
+    const comps = JSON.parse(await evalES("getSelectedCompsForRender()"))
       .comps as CompRenderData[];
 
     comps.forEach((element: any) => {
@@ -145,12 +139,16 @@
     });
   };
 
+  const handleAddWordToken = (e: Event) => {
+    tokens = [...tokens, prefix];
+  };
+
   onMount(async () => {
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
+      await evalES("getOutputModulesTemplates()")
     );
     renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith('_')
+      (p: string) => !p.startsWith("_")
     );
     // renderSettingsList = renderSettings.filter(
     //   (p: string) => !p.startsWith('_')
@@ -229,9 +227,15 @@
         class="row"
         style="display:flex; flex-direction:justify-content:space-between; width:100%"
       >
-        <input type="text" placeholder="Prefix" bind:value={prefix} />
+        <div style="display: flex; flex-direction:row;">
+          <input type="text" placeholder="Custom String" bind:value={prefix} />
+          <button on:click={handleAddWordToken}>
+            <PlusSquare size="16" />
+          </button>
+        </div>
         <div class="select-wrapper" style="flex-grow:1;">
           <select bind:value={selectedToken} on:change={handleAddToken}>
+            <option value="" disabled selected>Select Token</option>
             {#each tokenList as token, id}
               <option value={token.value}>
                 {token.label}
@@ -239,7 +243,6 @@
             {/each}
           </select>
         </div>
-        <input type="text" placeholder="Suffix" bind:value={suffix} />
       </div>
       <div id="token-list">
         {#each tokens as token, id}
@@ -279,7 +282,7 @@
 </div>
 
 <style lang="scss">
-  @use '../../variables.scss' as *;
+  @use "../../variables.scss" as *;
 
   #template-builder {
     display: flex;
