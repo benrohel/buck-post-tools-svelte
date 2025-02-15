@@ -1,28 +1,29 @@
 <script lang="ts">
-  import { ArrowLeftRight, FolderSearch, RefreshCw } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetRenamedFiles } from '../../api/files/files';
-  import { onMount, SvelteComponent } from 'svelte';
-  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
-  import { ArrowUpDown } from 'svelte-lucide';
   import {
-    GetSystemFileVersionsWithShotName,
-    GetFileVersion,
-  } from '../../api/files/files';
-  import { getClips } from '../../api/timeline-clips';
-  import { clips } from '../../stores/clips-strore';
-  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
-  import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
-  import { fs } from '../../lib/cep/node';
-  let find = '';
-  let replace = '';
-  $: sequenceClips = [] as any[];
-  let rootFolder = '';
+    ArrowLeftRight,
+    FolderSearch,
+    RefreshCw,
+    ListRestart,
+  } from "lucide-svelte";
+  import { evalES } from "../../lib/utils/bolt";
+  import { GetRenamedFiles } from "../../api/files/files";
+  import { GetSystemFileVersionsWithShotName } from "../../api/files/files";
+  import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
+  import ClipCardReplace from "../../components/ClipCard/ClipCardReplace.svelte";
+  import { fs } from "../../lib/cep/node";
+  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
+  import { onMount, getContext } from "svelte";
 
-  const getClips = async () => {
-    const seq = await GetActiveSequence();
-    const pproClips = await GetSequencedClips(seq.id);
-    const systemClips = pproClips.map((clip) => {
+  const appId = getContext("appId");
+  let find = "";
+  let replace = "";
+  $: sequenceClips = [] as any[];
+  let rootFolder = "";
+
+  const getAeClips = async () => {
+    const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
+    console.log("selectedClips", selectedClips);
+    const systemClips = selectedClips.map((clip: any) => {
       const fileVersion = GetSystemFileVersionsWithShotName(
         clip.filepath,
         clip.shotName
@@ -43,13 +44,61 @@
         selectedVersion: fileVersion[0],
       };
     });
-    sequenceClips = systemClips;
-    console.log('sequenceClips', sequenceClips);
+    sequenceClips = [...systemClips];
+    console.log("sequenceClips", sequenceClips);
+  };
+
+  const getPProClips = async () => {
+    const seq = await GetActiveSequence();
+    const pproClips = await GetSequencedClips(seq.id);
+    const systemClips = pproClips
+      .filter((clip) => clip.selected)
+      .map((clip) => {
+        const fileVersion = GetSystemFileVersionsWithShotName(
+          clip.filepath,
+          clip.shotName
+        );
+        fileVersion.sort((a, b) => {
+          if (a.version > b.version) {
+            return -1;
+          } else if (a.version < b.version) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+
+        return {
+          ...clip,
+          versions: fileVersion,
+          selectedVersion: fileVersion[0],
+        };
+      });
+    sequenceClips = [...systemClips];
+    console.log("sequenceClips", sequenceClips);
+  };
+
+  const getClips = async () => {
+    switch (appId) {
+      case "AEFT":
+        await getAeClips();
+        break;
+      case "PPRO":
+        await getPProClips();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const resetList = () => {
+    getClips();
+    searchFiles();
   };
 
   const handleFindAndReplace = async () => {
     const options = {
-      scope: 'project',
+      scope: "project",
       from: find,
       to: replace,
     };
@@ -62,7 +111,7 @@
   };
 
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
-    console.log('replace clip', clip, selectedVersion);
+    console.log("replace clip", clip, selectedVersion);
     let importOptions = {
       nodeId: clip.nodeId,
       oldPath: clip.filepath,
@@ -91,7 +140,7 @@
   };
 
   const handleReplaceAll = () => {
-    console.log('replace all');
+    console.log("replace all");
     sequenceClips.forEach((clip: any) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
@@ -113,6 +162,7 @@
     }
     await getClips();
     const currentFiles = sequenceClips;
+
     for (let file of currentFiles) {
       const res = await GetRenamedFiles(
         file.filepath,
@@ -120,40 +170,41 @@
         find,
         replace
       );
+
       file.replacements = res.reverse();
       file.selectedVersion = file.replacements[0];
     }
-    sequenceClips = currentFiles;
+    sequenceClips = [...currentFiles];
+    console.log("res", sequenceClips);
   };
 
-  const handleSetOutputFolder = async () => {
-    const folderPath = await evalES(
-      `openFolderDialog("Select New Root Folder.")`
-    );
-    console.log('folder path', folderPath);
+  const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
       rootFolder = folderPath;
       searchFiles();
     }
   };
 
-  $: console.log('sequenceClips', sequenceClips);
+  onMount(async () => {
+    await getClips();
+  });
 </script>
 
 <div style="display:flex; flex-direction:row">
   <div class="row">
     <input type="text" placeholder="Find" bind:value={find} />
-    <button on:click={handleFindAndReplace}>
+    <button on:click={handleFindAndReplace} tabindex="-1">
       <ArrowLeftRight size="16" />
     </button>
     <input type="text" placeholder="Replace" bind:value={replace} />
   </div>
 </div>
 <div id="search-folder">
-  <button on:click={handleSetOutputFolder}>
-    <FolderSearch size="16" />
-  </button>
-  <p>{rootFolder}</p>
+  <SelectFolder
+    defaultFolder={rootFolder}
+    onChange={handleSetOutputFolder}
+    label="select search folder"
+  />
   <button on:click={searchFiles} style="justify-self:flex-end">
     <RefreshCw size="16" />
   </button>
@@ -172,10 +223,13 @@
     {/each}
   {/if}
 
-  <div class="flex-row-end action-row">
-    <button class="icon active" on:click={handleReplaceAll}>
-      <ArrowUpDown size={12} />
+  <div
+    style="display: flex; flex-direction: row; align-items: center; justify-content: space-between"
+  >
+    <button on:click={resetList} style="justify-self:flex-start">
+      <ListRestart size="16" />
     </button>
+    <button class="active" on:click={handleReplaceAll}> Relink Clips </button>
   </div>
 </div>
 
@@ -187,9 +241,6 @@
   input {
     width: 100%;
   }
-  button {
-    width: 32px;
-  }
 
   #search-folder {
     gap: 6px;
@@ -199,5 +250,7 @@
     font-size: 10px;
     overflow-x: hidden;
     text-overflow: ellipsis;
+    justify-content: space-between;
+    margin-bottom: 4px;
   }
 </style>

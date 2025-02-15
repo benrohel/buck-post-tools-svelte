@@ -1,4 +1,37 @@
-import { padLeft } from './ppro-utils';
+import { padLeft, openFolderDialog } from '../utils/utils';
+export { openFolderDialog };
+declare var JSON: any;
+declare const qe: undefined | any;
+
+//// UTILS
+const ensureDir = (filePath: string) => {
+  var destFile = new File(filePath);
+  var destFolder = destFile.parent;
+  if (!destFolder.exists) destFolder.create();
+};
+
+const updateEventPanel = (message: string) => {
+  app.setSDKEventMessage(message, 'info');
+  //app.setSDKEventMessage('Here is a warning.', 'warning');
+  //app.setSDKEventMessage('Here is an error.', 'error');  // Very annoying; use sparingly.
+};
+
+const getSep = () => {
+  if (Folder.fs === 'Macintosh') {
+    return '/';
+  } else {
+    return '\\';
+  }
+};
+
+const findInArray = (element: any, array: any[]) => {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i].match(element)) {
+      return true;
+    }
+  }
+  return false;
+};
 
 export const qeDomFunction = () => {
   if (typeof qe === 'undefined') {
@@ -37,6 +70,17 @@ const timeDisplayToFrameRate = (td: number): number => {
       return 0;
   }
 };
+
+export const getItemMetadata = (nodeId: string) => {
+  const item = getItemFromNodeId(app.project.rootItem, nodeId);
+  return JSON.stringify({ metadata: item.getProjectMetadata() });
+};
+
+export const getItemColumnsMetadata = (nodeId: string) => {
+  const item = getItemFromNodeId(app.project.rootItem, nodeId);
+  return item.getProjectColumnsMetadata();
+};
+
 const getProjectItemFromPath = (filepath: string) => {
   const clips = app.project.rootItem.findItemsMatchingMediaPath(filepath);
   return JSON.stringify({ clips: clips });
@@ -353,6 +397,27 @@ export const findAndReplace = (options: any) => {
   }
 };
 
+export const addPrefixOrSuffix = (options: any) => {
+  var selectedClips = [];
+  switch (options.scope) {
+    case 'project':
+      selectedClips = getProjectSelection();
+      break;
+    case 'timeline':
+      selectedClips = getAlltracksSelectedClips();
+      break;
+    default:
+      return;
+  }
+
+  for (var c = 0; c < selectedClips.length; c++) {
+    const newName = `${options.prefix ? options.prefix + '_' : ''}${
+      selectedClips[c].name
+    }${options.suffix ? '_' + options.suffix : ''}`;
+    selectedClips[c].name = newName;
+  }
+};
+
 export const renameShots = (options: any) => {
   var shots = getAlltracksSelectedClips();
   for (var s = 0; s < shots.length; s++) {
@@ -515,37 +580,38 @@ export const getSequencesMedias = (
   return JSON.stringify({ medias: reducedMedias });
 };
 
-export const openFolderDialog = (txt: string) => {
-  var newOutput = Folder.selectDialog(txt);
-  if (newOutput && newOutput.exists) {
-    return newOutput.fsName;
-  } else {
-    return undefined;
-  }
-};
-
 declare interface BinInput {
   name: string;
-  type: string;
   children: Array<BinInput>;
 }
 declare interface CreateBinInput {
   bins: Array<BinInput>;
-  parent?: ProjectItem;
+  parent: ProjectItem;
 }
+
+// export const createBins = (options: CreateBinInput) => {
+//   const bins = options.bins;
+//   alert(String(bins.length));
+//   let parent = options.parent ?? app.project.rootItem;
+//   for (var i = 0; i < bins.length; i++) {
+//     createBins({ bins: options.bins[i].children, parent: parent });
+//     let newParent = parent.createBin(bins[i].name);
+//     parent = newParent;
+//   }
+// };
 
 export const createBins = (options: CreateBinInput) => {
   const bins = options.bins;
+  let parent = options.parent ?? app.project.rootItem;
+
   for (var i = 0; i < bins.length; i++) {
-    let currentParent = app.project.rootItem;
-    if (options.parent) {
-      currentParent = options.parent;
+    // Create the current bin as a child of the parent
+    let newParent = parent.createBin(bins[i].name);
+
+    // If the current bin has children, call createBins recursively
+    if (bins[i].children) {
+      createBins({ bins: bins[i].children, parent: newParent });
     }
-    if (!(bins[i].type === 'directory')) {
-      continue;
-    }
-    let newParent = currentParent.createBin(bins[i].name);
-    createBins({ bins: options.bins[i].children, parent: newParent });
   }
 };
 
@@ -588,8 +654,10 @@ export const GetSequenceMarkers = (nodeId: string) => {
     }
     var firstMarker = {
       name: currentMarker.name,
-      start: currentMarker.start.seconds,
-      end: currentMarker.end.seconds,
+      startTicks: currentMarker.start.ticks,
+      endTicks: currentMarker.end.ticks,
+      startSeconds: currentMarker.start.seconds,
+      endSeconds: currentMarker.end.seconds,
       comments: currentMarker.comments,
       type: currentMarker.type,
       colorIndex: marker.getColorByIndex(),
@@ -599,8 +667,10 @@ export const GetSequenceMarkers = (nodeId: string) => {
       currentMarker = markers.getNextMarker(currentMarker);
       var newMarker = {
         name: currentMarker.name,
-        start: currentMarker.start.seconds,
-        end: currentMarker.end.seconds,
+        startTicks: currentMarker.start.ticks,
+        endTicks: currentMarker.end.ticks,
+        startSeconds: currentMarker.start.seconds,
+        endSeconds: currentMarker.end.seconds,
         comments: currentMarker.comments,
         type: currentMarker.type,
         colorIndex: currentMarker.getColorByIndex(),
@@ -609,8 +679,8 @@ export const GetSequenceMarkers = (nodeId: string) => {
     }
 
     return JSON.stringify({ markers: listMarkers });
-  } catch (e) {
-    return '';
+  } catch (e: any) {
+    return alert(e);
   }
 };
 
@@ -658,4 +728,208 @@ export const copySequenceSettings = (options: copySequenceSettingsProps) => {
   for (var j = 0; j < toSequences.length; j++) {
     toSequences[j]!.setSettings(fromSettings);
   }
+};
+declare interface ThumbnailOptions {
+  timeInSeconds: number;
+  filepath: string;
+}
+
+const markerMatch = (markerColor: any, selectedColors: Array<string>) => {
+  var markerColors = [
+    'Green',
+    'Red',
+    'Purple',
+    'Orange',
+    'Yellow',
+    'White',
+    'Blue',
+    'Cyan',
+  ];
+  var currentColor = markerColors[markerColor.getColorByIndex()];
+  if (findInArray(currentColor, selectedColors)) {
+    return true;
+  }
+  return false;
+};
+
+export const exportSequenceThumbnails = (markers: Array<ThumbnailOptions>) => {
+  app.enableQE();
+  let exportedPaths = [];
+  var activeSequence = qe.project.getActiveSequence(); // note:
+
+  for (var m = 0; m < markers.length; m++) {
+    var outputFile = new File(markers[m].filepath);
+    var tickTime = new Time();
+    tickTime.seconds = markers[m].timeInSeconds;
+    app.project.activeSequence.setPlayerPosition(tickTime.ticks);
+    activeSequence.exportFramePNG(tickTime.ticks, outputFile.fsName);
+    exportedPaths.push(outputFile.fsName);
+  }
+  return JSON.stringify({ paths: exportedPaths });
+};
+
+declare interface exportFramesForMarkersOptions {
+  colors: Array<string>;
+}
+
+export const exportFramesForMarkers = (
+  options: exportFramesForMarkersOptions
+) => {
+  var activeSequence = app.project.activeSequence;
+  if (activeSequence) {
+    var markers = activeSequence.markers;
+    var markerCount = markers.numMarkers;
+    if (markerCount) {
+      var previousMarker;
+      var currentMarker;
+
+      for (var i = 0; i < markerCount; i++) {
+        if (i === 0) {
+          currentMarker = markers.getFirstMarker();
+        } else {
+          currentMarker = markers.getNextMarker(currentMarker!);
+        }
+        if (currentMarker && markerMatch(currentMarker, options.colors)) {
+          activeSequence.setPlayerPosition(currentMarker.start.ticks);
+          previousMarker = currentMarker;
+          exportCurrentFrameAsPNG('toto');
+        }
+      }
+      return true;
+    } else {
+      updateEventPanel('No markers applied to ' + activeSequence.name + '.');
+      return false;
+    }
+  } else {
+    updateEventPanel('No active sequence.');
+    return false;
+  }
+};
+
+const exportCurrentFrameAsPNG = (outputFileName: string) => {
+  app.enableQE();
+  var activeSequence = qe.project.GetActiveSequence() as Sequence;
+  // note: make sure a sequence is active in PPro UI
+  if (activeSequence) {
+    var time = activeSequence.CTI.timecode; // CTI = Current Time Indicator.
+    activeSequence.exportFramePNG(time, outputFileName);
+  } else {
+    updateEventPanel('No active sequence.');
+  }
+};
+
+export const exportShotToPNG = (shot: any) => {
+  var seq = app.project.activeSequence;
+  seq.setPlayerPosition(shot.start.ticks);
+  exportCurrentFrameAsPNG(shot.name);
+};
+
+export const exportClipThumbnail = (ticks: string, outputPath: string) => {
+  app.enableQE();
+  var outputFile = new File(outputPath);
+
+  var qeSeq = qe.project.getActiveSequence() as Sequence;
+  var seq = app.project.activeSequence;
+  seq.setPlayerPosition(ticks);
+
+  if (seq) {
+    ensureDir(outputFile.absoluteURI);
+    var time = qeSeq.CTI.timecode;
+    qeSeq.exportFramePNG(time, outputFile.fsName);
+
+    return outputPath;
+  } else {
+    updateEventPanel('No active sequence.');
+  }
+};
+
+export const exportStills = (destination: string) => {
+  var clips = getAlltracksSelectedClips();
+  for (var c = 0; c < clips.length; c++) {
+    exportShotToPNG(clips[c]);
+  }
+  return true;
+};
+
+declare interface NewSequenceOptions {
+  sequenceName: string;
+  templatePath: string;
+  presetPath: string;
+  uuid?: string;
+}
+
+const getSequenceFromName = (id: string): Sequence => {
+  const sequences = app.project.sequences;
+  for (var s = 0; s < sequences.numSequences; s++) {
+    if (sequences[s].name === id) {
+      return sequences[s];
+    }
+  }
+  return null;
+};
+
+export const newSequenceFromPreset = ({
+  sequenceName,
+  templatePath,
+  presetPath,
+  uuid,
+}: NewSequenceOptions) => {
+  app.enableQE();
+  app.openDocument(templatePath);
+  var presetFile = new File(presetPath);
+  qe.project.newSequence(uuid, presetFile.fsName);
+  const newSeq = getSequenceFromName(uuid!);
+  newSeq.projectItem.name = sequenceName;
+
+  return newSeq.projectItem.nodeId;
+};
+
+declare interface InsertSequenceOptions {
+  toInsert: string;
+  inSequence: string;
+}
+
+export const InsertSequence = ({
+  toInsert,
+  inSequence,
+}: InsertSequenceOptions) => {
+  try {
+    const sequenceItemToInsert = getSequenceFromNodeId(toInsert);
+
+    const destSequence = getSequenceFromNodeId(inSequence);
+    if (sequenceItemToInsert && destSequence) {
+      var targetVTrack = destSequence.videoTracks[0];
+      if (targetVTrack) {
+        // If there are already clips in this track, append this one to the end. Otherwise, insert at start time.
+        if (targetVTrack.clips.numItems > 0) {
+          var lastClip = targetVTrack.clips[targetVTrack.clips.numItems - 1];
+          if (lastClip) {
+            targetVTrack.insertClip(
+              sequenceItemToInsert.projectItem,
+              lastClip.end.seconds
+            );
+          }
+        } else {
+          var timeAtZero = new Time();
+          timeAtZero.seconds = 0;
+          targetVTrack.insertClip(
+            sequenceItemToInsert.projectItem,
+            timeAtZero.ticks
+          );
+        }
+      }
+    }
+  } catch (e) {
+    alert('error building sequences');
+  }
+};
+
+export const exportSequenceXml = (filepath: string, sequenceId: string) => {
+  const seq = getSequenceFromNodeId(sequenceId);
+  if (!seq) {
+    alert('Could not find sequence with ID: ' + sequenceId);
+    return null;
+  }
+  seq.exportAsFinalCutProXML(filepath);
+  return filepath;
 };

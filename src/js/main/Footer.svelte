@@ -1,30 +1,27 @@
 <script lang="ts">
   import { Recycle } from "svelte-lucide";
 
+  export let authenticated: boolean = false;
   const refreshPage = () => {
     window.location.reload();
   };
 </script>
 
 <div class="footer">
-  <div style="margin-left:8px">©BUCK 2024</div>
+  <div>BUCK 2025</div>
   <div style="display:flex; flex-direction:row; align-items:center">
-    <!-- <div style="margin-right:8px;">
-      <Icon name="buck-logo" size="12" />
-    </div> -->
     <button
       class="icon"
-      style="margin-right:8px; cursor:pointer"
+      style="margin-right:8px; cursor:pointer; background-color:transparent"
       on:click={refreshPage}
-      on:keydown={refreshPage}
     >
-      <Recycle />
+      <Recycle color={authenticated ? "green" : "red"} />
     </button>
   </div>
 </div>
 
 <style lang="scss">
-  @import "../../js/variables.scss";
+  @use "../../js/variables.scss" as *;
   .footer {
     display: flex;
     flex-direction: row;

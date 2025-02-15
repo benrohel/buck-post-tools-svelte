@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  export let label: string = "";
+  import { fade } from 'svelte/transition';
+  export let label: string = '';
   export let onClick: Function = () => {};
-  export let buttonClass: string = "";
   export let disabled = false;
   export let outline = false;
   export let icon = false;
@@ -14,11 +13,11 @@
 
   const getClass = () => {
     if (outline) {
-      return "outline";
+      return 'outline';
     } else if (icon) {
-      return "icon-only";
+      return 'icon-only';
     }
-    return "";
+    return '';
   };
 </script>
 
@@ -33,11 +32,7 @@
 </button>
 
 <style lang="scss">
-  @import "../../variables.scss";
-
-  svg :global {
-    height: 100%;
-  }
+  @use '../../variables.scss' as *;
 
   .outline {
     background-color: transparent;

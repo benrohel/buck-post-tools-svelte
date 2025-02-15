@@ -1,19 +1,15 @@
 <script lang="ts">
   import { fs, path } from "../../lib/cep/node";
   import { onMount } from "svelte";
-  import { openFile } from "../../lib/utils/utils";
   import { fly } from "svelte/transition";
-  import { Download, ArrowUpDown, Eye } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
-  import { getShotById } from "buck5-javascript-client";
-  import { GetFileVersion } from "../../api/files/files";
+
   export let clip: any;
   export let id = 0;
   export let selected = false;
   export let onChange: Function;
   export let selectedVersion = "";
 
-  ``;
   const handleSelectVersion = async () => {
     if (onChange) {
       onChange(clip, selectedVersion);
@@ -66,7 +62,7 @@
         <h4>|</h4>
       </div>
       <div style="justify-self: start; display:flex">
-        {#if clip.replacements && clip.replacements.length > 1}
+        {#if clip.replacements && clip.replacements.length > 0}
           <div class="select-wrapper">
             <select
               bind:value={selectedVersion}
@@ -86,12 +82,7 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
-
-  .comments-container {
-    display: flex;
-    flex-direction: column;
-  }
+  @use "../../variables.scss" as *;
   .selected {
     background-color: $highlight;
   }
@@ -107,22 +98,8 @@
   #shot-label {
     text-align: start;
     color: $active;
-    max-width: 80px;
+
     margin-left: 6px;
     cursor: pointer;
-  }
-
-  .shot-tb {
-    background-size: 53px;
-    max-width: 53px;
-    max-height: 30px;
-    width: 42px;
-    height: 30px;
-    border-radius: 4px;
-    filter: br ightness(0.9);
-  }
-
-  .edit-version {
-    justify-self: start;
   }
 </style>

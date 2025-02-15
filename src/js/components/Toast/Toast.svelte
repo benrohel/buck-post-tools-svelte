@@ -1,14 +1,13 @@
-<script>
-  import { flip } from "svelte/animate";
-  import { fly } from "svelte/transition";
-  import { notifications } from "../../stores/notifications-store";
-
+<script lang="ts">
+  import { flip } from 'svelte/animate';
+  import { fly } from 'svelte/transition';
+  import { notifications } from '../../stores/notifications-store';
   export let themes = {
-    error: "ed553b",
-    success: "#3cae5c",
-    warning: "#fc7439",
-    info: "#ef4426",
-    default: "#aaaaaa",
+    error: 'ed553b',
+    success: '#3cae5c',
+    warning: '#fc7439',
+    info: '#ef4426',
+    default: '#aaaaaa',
   };
 </script>
 
@@ -29,7 +28,7 @@
 <style>
   .notifications {
     position: fixed;
-    bottom: 20px;
+    bottom: 12px;
     left: 0;
     right: 0;
     margin: 0 auto;
@@ -50,9 +49,9 @@
   }
 
   .content {
-    padding: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
     display: block;
     color: white;
     font-weight: 500;

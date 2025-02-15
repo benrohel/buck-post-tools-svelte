@@ -1,14 +1,18 @@
 <script lang="ts">
-  import { ArrowRight, Download, Upload } from 'svelte-lucide';
+  import { Download, Upload } from 'svelte-lucide';
   import {
     GetSequence,
     GetSelectedSequences,
     CopySequenceSettings,
   } from '../../api/sequence';
   import type { Sequence } from '../../api/sequence';
-  import { ArrowUp, ArrowDown } from 'lucide-svelte';
+
   let fromSequence: Sequence | null = null;
   let toSequences: any[] = [];
+
+  $: isReady = () => {
+    return fromSequence != null && toSequences.length > 0;
+  };
 
   const handleFromSequence = async () => {
     const seq = await GetSequence();
@@ -41,13 +45,13 @@
     <div>From: {fromSequence?.name ?? ''}</div>
   </div>
   <div class="flex-row-start">
-    <button class="active" on:click={handleToSequences}>
+    <button on:click={handleToSequences}>
       <Upload size={16} />
     </button>
     <div>To: {toSequences.map((s) => s.name).join(', ')}</div>
   </div>
   <div class="flex-row-end action-row">
-    <button class="active" on:click={handleApplySettings}>
+    <button class="active" on:click={handleApplySettings} disabled={!isReady()}>
       Apply Settings
     </button>
   </div>

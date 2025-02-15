@@ -14,10 +14,3 @@
     >Revert To Filename</button
   >
 </div>
-
-<style lang="scss">
-  .row {
-    width: 100%;
-    margin-right: 4px;
-  }
-</style>

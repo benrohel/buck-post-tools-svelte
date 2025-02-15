@@ -4,7 +4,6 @@
   import { fly } from "svelte/transition";
   import { Download, ArrowUpDown, Eye } from "svelte-lucide";
   import { evalES } from "../../lib/utils/bolt";
-  import { getShotById } from "buck5-javascript-client";
   import { GetFileVersion } from "../../api/files/files";
   export let clip: any;
   export let id = 0;
@@ -61,22 +60,22 @@
     openFile(selectedVersion.filepath);
   };
 
-  $: getSyncedColor = () => {
-    if (isSynced()) {
+  $: getSyncedColor = (): string => {
+    const fileVersion = GetFileVersion(clip.filepath)?.split("v")[1];
+    if (!fileVersion) {
+      return "color: #f6d55c";
+    }
+    const timelineVersion = parseInt(fileVersion);
+    if (selectedVersion.version == undefined) return "color: #f6d55c";
+    const intSelectedVersion = parseInt(
+      selectedVersion.version?.match(/\d+/)[0]
+    );
+    let isSynced = intSelectedVersion == timelineVersion;
+    if (isSynced) {
       return "color: #3caea3";
     } else {
       return "color: #f6d55c";
     }
-  };
-
-  $: isSynced = () => {
-    if (!clip.trackerClip) return false;
-    const compVersion = clip.trackerClip["values"]["Latest Comp"];
-    const fileVersion = GetFileVersion(clip.filepath)?.split("v")[1];
-    if (!fileVersion) return false;
-    const timelineVersion = parseInt(fileVersion);
-    initCard();
-    return compVersion == timelineVersion;
   };
 
   $: initCard = () => {
@@ -89,18 +88,21 @@
       publishedVersion = "";
     }
     console.log("init card", clip);
+
     editVersion = GetFileVersion(clip.filepath) ?? "";
   };
 
   $: editIsSelected = () => {
     if (selectedVersion) {
-      editVersion == selectedVersion.version ?? "";
+      return editVersion == selectedVersion.version;
+    } else {
+      return false;
     }
-    return editVersion == selectedVersion.version;
   };
 
   onMount(() => {
     initCard();
+    console.log("has version", clip.filepath.match(/v\d+/));
   });
 </script>
 
@@ -146,14 +148,14 @@
         <button
           class="icon active"
           on:click={handleReplaceClip}
-          disabled={editIsSelected()}
+          disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
         >
           <ArrowUpDown />
         </button>
         <button
           class="icon active"
           on:click={handleImportClip}
-          disabled={editIsSelected()}
+          disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
         >
           <Download />
         </button>
@@ -163,12 +165,8 @@
 </div>
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
 
-  .comments-container {
-    display: flex;
-    flex-direction: column;
-  }
   .selected {
     background-color: $highlight;
   }
@@ -184,19 +182,8 @@
   #shot-label {
     text-align: start;
     color: $active;
-    max-width: 80px;
     margin-left: 6px;
     cursor: pointer;
-  }
-
-  .shot-tb {
-    background-size: 53px;
-    max-width: 53px;
-    max-height: 30px;
-    width: 42px;
-    height: 30px;
-    border-radius: 4px;
-    filter: br ightness(0.9);
   }
 
   .edit-version {

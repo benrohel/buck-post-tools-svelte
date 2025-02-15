@@ -1,9 +1,9 @@
-import { listProjectShots } from "buck5-javascript-client";
+import { getProjects } from "buck-client";
 import { evalES } from "../lib/utils/bolt";
 
 export const GetProjectShots = async (key: string) => {
-  const items = await listProjectShots(key);
-  items.sort((a, b) => a.data.name.localeCompare(b.data.name));
+  const items = await getProjects(key);
+  items.sort((a: any, b: any) => a.data.name.localeCompare(b.data.name));
   return items || [];
 };
 

@@ -1,8 +1,15 @@
-<script lanf="ts">
-  export let items = [];
-  export let activeTabValue = 1;
+<script lang="ts">
+  interface TabItem {
+    value: number;
+    label: string;
+    icon?: any;
+    component?: any;
+  }
 
-  const handleClick = (tabValue) => () => (activeTabValue = tabValue);
+  export let items: TabItem[] = [];
+  export let activeTabValue: number = 1;
+
+  const handleClick = (tabValue: number) => () => (activeTabValue = tabValue);
 </script>
 
 <ul>
@@ -13,7 +20,7 @@
         on:keypress={handleClick(item.value)}
       >
         {#if item.icon}
-          <svelte:component this={item.icon} size="14" />
+          <svelte:component this={item.icon} size="12" />
         {:else}
           {item.label}
         {/if}
@@ -22,6 +29,7 @@
     </li>
   {/each}
 </ul>
+<div style="margin-top:4px"></div>
 {#each items as item}
   {#if activeTabValue == item.value}
     <div class="box">
@@ -31,7 +39,7 @@
 {/each}
 
 <style lang="scss">
-  @import "../../variables.scss";
+  @use "../../variables.scss" as *;
   .box {
     margin-bottom: 2px;
     border-radius: 0 0 2px 2px;

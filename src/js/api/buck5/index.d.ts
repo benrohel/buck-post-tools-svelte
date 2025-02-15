@@ -2,7 +2,7 @@ interface Header {
   [key: string]: string;
 }
 
-interface BuckRequestConfig {
+export interface BuckRequestConfig {
   method: 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH';
   request: string;
   headers?: Header;

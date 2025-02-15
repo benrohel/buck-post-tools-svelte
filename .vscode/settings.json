@@ -1,5 +1,8 @@
 {
   "prettier.tabWidth": 2,
   "prettier.useTabs": false,
-  "prettier.printWidth": 80
+  "prettier.printWidth": 80,
+  "svelte.plugin.svelte.compilerWarnings": {
+    "a11y-click-events-have-key-events": "ignore"
+  }
 }

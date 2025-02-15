@@ -1,10 +1,9 @@
 import { CEP_Config } from "vite-cep-plugin";
 import { version } from "./package.json";
 
-
 const config: CEP_Config = {
   version,
-  id: "com.buck-post-toools=svelte.cep",
+  id: "com.buck-post-toools.cep",
   displayName: "Buck Post Toools",
   symlink: "local",
   port: 3000,
@@ -13,15 +12,8 @@ const config: CEP_Config = {
   extensionManifestVersion: 6.0,
   requiredRuntimeVersion: 9.0,
   hosts: [
-    { name: "AEFT", version: "[0.0,99.9]" },
-    { name: "AME", version: "[0.0,99.9]" },
-    { name: "AUDT", version: "[0.0,99.9]" },
-    { name: "FLPR", version: "[0.0,99.9]" },
-    { name: "IDSN", version: "[0.0,99.9]" },
-    { name: "ILST", version: "[0.0,99.9]" },
-    { name: "KBRG", version: "[0.0,99.9]" },
-    { name: "PHXS", version: "[0.0,99.9]" },
     { name: "PPRO", version: "[0.0,99.9]" },
+    { name: "AEFT", version: "[0.0,99.9]" },
   ],
 
   type: "Panel",
@@ -42,7 +34,6 @@ const config: CEP_Config = {
       width: 600,
       height: 650,
     },
-
   ],
   build: {
     jsxBin: "off",
@@ -51,7 +42,7 @@ const config: CEP_Config = {
   zxp: {
     country: "US",
     province: "CA",
-    org: "MyCompany",
+    org: "buck",
     password: "mypassword",
     tsa: "http://timestamp.digicert.com/",
     sourceMap: false,

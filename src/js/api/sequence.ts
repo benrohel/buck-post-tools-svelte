@@ -1,3 +1,4 @@
+import upath from 'upath';
 import { evalES } from '../lib/utils/bolt';
 import { ClipType, setItemTimecodes } from './clip';
 
@@ -62,7 +63,6 @@ export const GetSequencedClips = async (
   return new Promise((resolve, reject) => {
     evalES(`getAllTracksClipsForNode("${sequence.nodeId}")`, false).then(
       (res: any) => {
-        console.log(res);
         if (!res) {
           reject('no clips');
         }
@@ -71,6 +71,7 @@ export const GetSequencedClips = async (
         const allPromises = aeClips.map((c) => {
           return setItemTimecodes(c);
         });
+
         Promise.all(allPromises).then((values) => {
           if (trackName) {
             const trackClips = values.filter((c: any) => {
@@ -85,34 +86,64 @@ export const GetSequencedClips = async (
   });
 };
 
-// export const GetSequenceThumbnails = async (nodeId: string = '', outputFolder: string = ''): Promise<boolean> => {
-//   const prodFolder = await GetProductionFolder();
-//   const seq = await GetSequence(nodeId);
-//   const markers = await GetSequenceMarkers(nodeId);
-//   if (!outputFolder) {
-//     outputFolder = upath.join(prodFolder, 'Edit', 'Render', 'Thumbnails');
-//   }
-//   if (markers) {
-//     const opt = markers.map((marker) => {
-//       const frameNumber = Math.round(marker.start * seq.framerate);
-//       const outputPath = upath.join(outputFolder, `${seq.name}_${marker.name}_${frameNumber}.png`);
-//       return { filepath: outputPath, timeInSeconds: marker.start };
-//     });
+interface TimeMarker extends Marker {
+  startTicks: number;
+  endTicks: number;
+  startSeconds: number;
+  endSeconds: number;
+}
 
-//     evalES(`exportSequenceThumbnails(${JSON.stringify(opt)})`, false).then((res:any) => {
-//       console.log(res);
-//     });
-//   }
+export const GetMarkersThumbnails = async (
+  nodeId: string = '',
+  outputFolder: string = '',
+  colorIndices: Array<number> = [0, 1, 2, 3, 4, 5, 6, 7]
+): Promise<boolean> => {
+  const seq = await GetSequence(nodeId);
+  const markers = await GetSequenceMarkers(nodeId);
+  if (!outputFolder) {
+    await evalES("alert('no output folder')");
+    return;
+  }
 
-//   return new Promise((resolve, reject) => {
-//     resolve(true);
-//   });
-// };
+  if (colorIndices.length == 0) {
+    colorIndices = [0, 1, 2, 3, 4, 5, 6, 7];
+  }
+
+  if (markers) {
+    console.log(markers);
+    console.log('color indices', colorIndices);
+    markers
+      .filter((m) => colorIndices.includes(m.colorIndex))
+      .forEach((marker) => {
+        console.log(marker);
+        const frameNumber = Math.round(marker.startSeconds * seq.framerate);
+        const outputPath = upath.join(
+          outputFolder,
+          `${seq.name}_${
+            marker.name ? marker.name + '_' : ''
+          }${frameNumber}.png`
+        );
+        evalES(
+          `exportClipThumbnail("${marker.startTicks}","${outputPath}")`,
+          false
+        ).then((res) => {
+          console.log(res);
+        });
+      });
+  }
+
+  return new Promise((resolve, reject) => {
+    resolve(true);
+  });
+};
 
 declare interface Marker {
   name: string;
-  start: number;
-  end: number;
+  startTicks: number;
+  endTicks: number;
+  startSeconds: number;
+  endSeconds: number;
+  colorIndex: number;
   type: string;
   comments: string;
 }
