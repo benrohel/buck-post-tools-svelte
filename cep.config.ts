@@ -3,8 +3,8 @@ import { version } from "./package.json";
 
 const config: CEP_Config = {
   version,
-  id: "com.buck-post-toools.cep",
-  displayName: "Buck Post Toools",
+  id: "co.buck-adobe-tools.cep",
+  displayName: "Buck Tools",
   symlink: "local",
   port: 3000,
   servePort: 5000,
@@ -29,7 +29,7 @@ const config: CEP_Config = {
     {
       mainPath: "./main/index.html",
       name: "main",
-      panelDisplayName: "Buck Post Toools",
+      panelDisplayName: "Buck Tools",
       autoVisible: true,
       width: 600,
       height: 650,
