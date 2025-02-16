@@ -4,7 +4,8 @@
   import ProjectStarter from "./ProjectStarter.svelte";
   import CopySequenceSettings from "./CopySequenceSettings.svelte";
   import AspectRatios from "./AspectRatios.svelte";
-
+  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
+  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
   const appId = getContext("appId") as string;
 
   const toolList = [
@@ -40,15 +41,28 @@
   $: tool = toolList.find((m) => m.value === selectedMode) ?? toolList[0];
 
   const handleRenameMode = (s: any) => {
-    selectedMode = s.target.value;
+    selectedMode = s;
   };
 
   onMount(async () => {
-    selectedMode = toolList[0].value;
+    selectedMode = toolList[0].label;
   });
 </script>
 
-<div style="display:flex; flex-direction:row">
+<div class="flex-row-end">
+  <Dropdown
+    placeholder={selectedMode ?? "Select Tool"}
+    onSelected={handleRenameMode}
+  >
+    {#each filteredToolList as tool, id}
+      <DropdownItem value={tool.label}>
+        {tool.label}
+      </DropdownItem>
+    {/each}
+  </Dropdown>
+</div>
+
+<!-- <div style="display:flex; flex-direction:row">
   <div class="select-wrapper" style="flex-grow:1;">
     <select bind:value={selectedMode} on:change={handleRenameMode}>
       {#each filteredToolList as tool, id}
@@ -58,7 +72,7 @@
       {/each}
     </select>
   </div>
-</div>
+</div> -->
 
 <svelte:component this={tool.component} />
 

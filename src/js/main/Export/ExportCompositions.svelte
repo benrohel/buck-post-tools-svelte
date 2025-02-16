@@ -8,14 +8,29 @@
   } from "../../stores/local-storage";
   import { sequenceOutputFolder } from "../../stores/local-storage";
   import { ArrowLeftRight, ListPlus } from "lucide-svelte";
+  import ModalSettings from "../../components/Modal/ModalSettings.svelte";
   import { onMount } from "svelte";
   import { fs, path } from "../../lib/cep/node";
-
-  $: presetList = () => {
-    if ($exportPresets) {
-      return $exportPresets.split(",");
+  import {
+    setPreferenceByKey,
+    getPreferenceByKey,
+    getPreferences,
+  } from "../../api/preferences";
+  import type { ExportNamePreset } from "../../api/preferences";
+  import Tooltip from "../../components/Tooltip/Tooltip.svelte";
+  import { tooltip } from "../../components/Tooltip/tooltip.js";
+  const presetList: () => Promise<ExportNamePreset[]> = async () => {
+    const presets = (await getPreferenceByKey(
+      "exportNamePresets"
+    )) as ExportNamePreset[];
+    if (presets) {
+      return new Promise((resolve) => {
+        resolve(presets);
+      });
     } else {
-      return [];
+      return new Promise((resolve) => {
+        resolve([]);
+      });
     }
   };
 
@@ -45,8 +60,9 @@
   let activePreset = $selectedExportPreset;
   let activeRenderSetting = "";
   let showBuildPreset = false;
+  let presetName = "";
   let prefix = "";
-  let suffix = "";
+  $: modalOpen = false;
   //@ts-ignore
   $: tokens = [];
   let selectedToken = "";
@@ -94,6 +110,23 @@
       return;
     }
   };
+
+  const handleSavePreset = async () => {
+    const namePresets = await getPreferenceByKey("exportNamePresets");
+    const newPreset = { name: presetName, template: previewString };
+
+    if (!namePresets) {
+      setPreferenceByKey("exportNamePresets", [newPreset]);
+      return;
+    } else {
+      const newPresets = [...namePresets, newPreset];
+      console.log("newPresets", newPresets);
+      console.log("name", name);
+      setPreferenceByKey("exportNamePresets", newPresets);
+    }
+    modalOpen = false;
+  };
+
   const handleSetOutputFolder = async (value: string) => {
     sequenceOutputFolder.set(value);
   };
@@ -143,6 +176,10 @@
     tokens = [...tokens, prefix];
   };
 
+  const closeModal = () => {
+    console.log("close modal outsie");
+    modalOpen = false;
+  };
   onMount(async () => {
     const renderSettings = JSON.parse(
       await evalES("getOutputModulesTemplates()")
@@ -163,27 +200,31 @@
     onChange={handleSetOutputFolder}
     label="Select Output Folder"
   />
-  {#if $exportPresets}
-    <div
-      style="display:flex; flex-direction:row; justify-content: space-between;"
-    >
-      <p>Select Name Preset</p>
-      <div class="select-wrapper">
-        <select
-          bind:value={activePreset}
-          on:change={handlePresetChange}
-          placeholder="Select Preset"
-        >
-          <option value="" disabled selected>Select Name Preset</option>
-          {#each presetList() as preset, id}
+
+  <div
+    style="display:flex; flex-direction:row; justify-content: space-between;"
+  >
+    <p>Select Name Preset</p>
+    <div class="select-wrapper">
+      <select
+        bind:value={activePreset}
+        on:change={handlePresetChange}
+        placeholder="Select Preset"
+      >
+        <option value="" disabled selected>Select Name Preset</option>
+        {#await presetList()}
+          <p>Loading...</p>
+        {:then namePresets}
+          {#each namePresets as preset, id}
             <option value={preset}>
-              {preset}
+              {preset.name}
             </option>
           {/each}
-        </select>
-      </div>
+        {/await}
+      </select>
     </div>
-  {/if}
+  </div>
+
   <div
     style="display:flex; flex-direction:row; justify-content: space-between;"
   >
@@ -196,7 +237,7 @@
       >
         <option value="" disabled selected>Select Render Settings</option>
         {#each renderSettingsList as preset, id}
-          <option value={preset}>
+          <option value={preset} use:tooltip title={"Add to Render Queue"}>
             {preset}
           </option>
         {/each}
@@ -225,9 +266,11 @@
     <div id="template-builder">
       <div
         class="row"
-        style="display:flex; flex-direction:justify-content:space-between; width:100%"
+        style="display:flex; flex-direction:justify-content:space-between; width:100%;gap:20px; align-items: center;"
       >
-        <div style="display: flex; flex-direction:row;">
+        <div
+          style="display: flex; flex-direction:row; align-items: center; gap:4px"
+        >
           <input type="text" placeholder="Custom String" bind:value={prefix} />
           <button on:click={handleAddWordToken}>
             <PlusSquare size="16" />
@@ -256,7 +299,11 @@
         class="flex-row-end action-row"
         style="position:absolute; bottom:4px; right:4px;"
       >
-        <button on:click={savePreset}>
+        <button
+          on:click={() => {
+            modalOpen = !modalOpen;
+          }}
+        >
           <ListPlus size={16} />
         </button>
       </div>
@@ -275,11 +322,38 @@
 </div>
 <div class="flex-row-end action-row">
   <button
+    use:tooltip
+    title={"Add to Render Queue"}
     class="active"
     on:click={addCompsToRenderQueue}
     disabled={!sequenceOutputFolder}>Add To Render Queue</button
   >
 </div>
+{#if modalOpen}
+  <ModalSettings name="Save Preset" onClose={closeModal}>
+    <div id="modal-content">
+      <div class="flex-row-start">
+        <label for="name">Preset name</label>
+        <input type="text" id="name" name="name" bind:value={presetName} />
+      </div>
+      <div class="row-preview">
+        <label for="prefix">Preview</label>
+        <p>
+          {previewString}
+        </p>
+      </div>
+      <div class="flex-row-end">
+        <button
+          class="active"
+          on:click={handleSavePreset}
+          disabled={!presetName}
+        >
+          Save Preset
+        </button>
+      </div>
+    </div>
+  </ModalSettings>
+{/if}
 
 <style lang="scss">
   @use "../../variables.scss" as *;
@@ -345,5 +419,15 @@
   .autocomplete-suggestion.active {
     background-color: $darker;
     color: $active;
+  }
+
+  #modal-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    // align-items: center;
+    justify-items: flex-start;
+    gap: 8px;
+    padding: 8px;
   }
 </style>

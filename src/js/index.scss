@@ -189,29 +189,37 @@ select {
   align-items: center;
   margin: 4px;
 }
+select option:hover,
+    select option:focus,
+    select option:active {
+        background: linear-gradient(#000000, #000000);
+        background-color: #000000 !important; /* for IE */
+        color: #ffed00 !important;
+    }
 
-option {
-  padding: 0 30px 0 10px;
-  display: flex;
-  align-items: flex-start;
-  background: $extra-dark;
-  border-top: #222 solid 1px;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  pointer-events: none;
-  order: 2;
-  z-index: 1;
-  transition: background 0.4s ease-in-out;
-  box-sizing: border-box;
-  overflow: hidden;
-  white-space: nowrap;
+  
+// option {
+//   padding: 0 30px 0 10px;
+//   display: flex;
+//   align-items: flex-start;
+//   background: $extra-dark;
+//   border-top: #222 solid 1px;
+//   position: absolute;
+//   top: 0;
+//   width: 100%;
+//   cursor: pointer;
+//   order: 2;
+//   z-index: 1;
+//   transition: background 0.4s ease-in-out;
+//   box-sizing: border-box;
+//   overflow: hidden;
+//   white-space: nowrap;
 
-}
+// }
 
-option:hover {
-  background: $darker
-}
+// option:hover {
+//   background: $darker
+// }
 
 .listItemAction {
   display: flex;
@@ -239,8 +247,6 @@ button {
   align-self: center;
   border-radius: 4px;
   border: 1px solid $active;
-  margin-top: 4px;
-  margin-bottom: 4px;
   font-size: 11px;
   cursor: pointer;
   opacity: 1;
@@ -256,8 +262,6 @@ button {
   align-self: center;
   border: 1px solid transparent;
   padding: 2px;
-  height: 20px;
-  
 }
 
 button.active {
@@ -275,6 +279,10 @@ button:hover {
   opacity: 1;
   background-color: $darker;
   border: 1px solid $active;
+}
+
+button.icon-only{
+  background-color: transparent;
 }
 
 .icon{
@@ -372,7 +380,7 @@ input {
   border-radius: 4px;
   border: 1px solid $border-dimmed;
   background: $extra-dark;
-  height: 20px;
+  max-height: 20px;
   min-height: 18px;
   color: $font;
   font-size: 12px;

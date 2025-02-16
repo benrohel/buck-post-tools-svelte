@@ -4,7 +4,8 @@
   import { getPresetFile } from "../../api/SQPreset";
   import { v4 as uuidv4 } from "uuid";
   import { fs } from "../../lib/cep/node";
-
+  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
+  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
   const appId: string = getContext("appId");
 
   const resolutions = [
@@ -102,19 +103,18 @@
     }
   };
 
-  const handleFramerateChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement;
-    framerate = target.value;
+  const handleFramerateChange = (value: string) => {
+    // const target = event.target as HTMLSelectElement;
+    framerate = value;
   };
 
-  const handleResolutionChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement;
-    resolution = target.value;
+  const handleResolutionChange = (value: string) => {
+    resolution = value;
   };
 
-  const handleTemplateChange = (event: Event) => {
-    const target = event.target as HTMLSelectElement;
-    template = target.value;
+  const handleTemplateChange = (value: string) => {
+    // const target = event.target as HTMLSelectElement;
+    template = value;
   };
 
   const handleSequenceNameChange = (event: Event) => {
@@ -126,6 +126,7 @@
     const target = event.target as HTMLInputElement;
     duration = parseInt(target.value);
   };
+
   $: console.log(framerate, resolution, sequenceName);
 
   onMount(async () => {});
@@ -134,42 +135,45 @@
 <div style="display:flex; flex-direction:column; text-align:center">
   {#if appId === "AEFT"}
     <div class="flex-row-start">
-      <label for="prefix">Template: </label>
-      <div class="select-wrapper">
-        <select bind:value={template} on:change={handleTemplateChange}>
-          {#each templates as template}
-            <option value={template.value}>
-              {template.label}
-            </option>
-          {/each}
-        </select>
-      </div>
+      <Dropdown
+        placeholder={template ?? "Select Template"}
+        label="Template"
+        onSelected={handleTemplateChange}
+      >
+        {#each templates as template}
+          <DropdownItem value={template.value}>
+            {template.label}
+          </DropdownItem>
+        {/each}
+      </Dropdown>
     </div>
   {/if}
   {#if template === "Shot" || appId === "PPRO"}
     <div class="flex-row-start">
-      <label for="prefix">Resolution: </label>
-      <div class="select-wrapper">
-        <select bind:value={resolution} on:change={handleResolutionChange}>
-          {#each resolutions as resolution}
-            <option value={resolution.value}>
-              {resolution.label}
-            </option>
-          {/each}
-        </select>
-      </div>
+      <Dropdown
+        placeholder={resolution ?? "Select Resolution"}
+        label="Resolutions"
+        onSelected={handleResolutionChange}
+      >
+        {#each resolutions as resolution}
+          <DropdownItem value={resolution.value}>
+            {resolution.label}
+          </DropdownItem>
+        {/each}
+      </Dropdown>
     </div>
     <div class="flex-row-start">
-      <label for="prefix">Framerate: </label>
-      <div class="select-wrapper">
-        <select bind:value={framerate} on:change={handleFramerateChange}>
-          {#each framerates as framerate}
-            <option value={framerate.value}>
-              {framerate.label}
-            </option>
-          {/each}
-        </select>
-      </div>
+      <Dropdown
+        placeholder={framerate ?? "Select Framerate"}
+        label="Framerate"
+        onSelected={handleFramerateChange}
+      >
+        {#each framerates as framerate}
+          <DropdownItem value={framerate.value}>
+            {framerate.label}
+          </DropdownItem>
+        {/each}
+      </Dropdown>
     </div>
   {/if}
   {#if template === "Shot" && appId === "AEFT"}
