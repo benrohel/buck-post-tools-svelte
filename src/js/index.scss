@@ -403,7 +403,7 @@ input {
   justify-content: flex-end;
   align-items: center;
   gap: 4px;
-  margin: 4px 4px 0px 0px;
+  margin: 4px 4px 4px 0px;
 }
 
 .flex-row-start{
@@ -412,9 +412,18 @@ input {
   align-items: center;
   justify-content: flex-start;
   gap: 4px;
-  margin: 4px 4px 0px 0px
+  margin: 4px 0px 4px 4px
 }
 
+.flex-row-between{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 4px 4px 4px 0px;
+ 
+}
 .action-row{
   background-color: transparent;
 }

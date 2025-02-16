@@ -7,11 +7,12 @@
 
   export let label = "";
   export let placeholder = "Make Selection";
+  export let defaultValue: any;
   export let disabled = false;
   export let onSelected: Function;
 
   let isMenuVisible = writable(false);
-  let selectedValue = writable("");
+  export let selectedValue = writable(null);
 
   setContext("selected", selectedValue);
   setContext("visible", isMenuVisible);
@@ -32,6 +33,9 @@
 
   onMount(() => {
     $isMenuVisible = false;
+    if (defaultValue) {
+      selectedValue.set(defaultValue);
+    }
   });
 </script>
 
@@ -74,7 +78,7 @@
 
   .dropdown-menu {
     cursor: pointer;
-    width: 100%;
+    width: auto;
     max-height: 20px;
     background-color: $extra-dark;
     border: 1px solid $dimmed-font-color;
@@ -96,10 +100,8 @@
     position: absolute;
     background-color: $extra-dark;
     z-index: 2;
-    width: 100%;
+    width: auto;
     border: 1px solid $dimmed-font-color;
     border-radius: 4px;
-    transform: translateY(-1px);
-    width: 100%;
   }
 </style>

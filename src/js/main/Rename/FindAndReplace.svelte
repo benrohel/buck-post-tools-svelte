@@ -27,21 +27,16 @@
   };
 </script>
 
-<div>
-  <div class="row">
-    <div class="row">
-      <input type="text" placeholder="Find" bind:value={find} />
-      <button on:click={handleSwapText} tabindex="-1">
-        <ArrowLeftRight size="16" />
-      </button>
-      <input type="text" placeholder="Replace" bind:value={replace} />
-    </div>
-  </div>
-  <div class="flex-row-end action-row">
-    <button class="active" on:click={handleFindAndReplace}>
-      Replace Text
-    </button>
-  </div>
+<div class="row">
+  <input type="text" placeholder="Find" bind:value={find} />
+  <button on:click={handleSwapText} tabindex="-1">
+    <ArrowLeftRight size="16" />
+  </button>
+  <input type="text" placeholder="Replace" bind:value={replace} />
+</div>
+
+<div class="flex-row-end">
+  <button class="active" on:click={handleFindAndReplace}> Replace Text </button>
 </div>
 
 <style lang="scss">

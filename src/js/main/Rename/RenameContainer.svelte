@@ -6,6 +6,9 @@
   import RevertToFilename from "./RevertToFilename.svelte";
   import ReplaceAndRelink from "./ReplaceAndRelink.svelte";
 
+  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
+  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+
   const appId = getContext("appId");
 
   const renameModes = [
@@ -32,30 +35,32 @@
     },
   ];
 
-  let selectedMode = "";
+  let selectedMode: any = "";
 
   $: mode = renameModes.find((m) => m.value === selectedMode) ?? renameModes[0];
 
   const handleRenameMode = (s: any) => {
-    selectedMode = s.target.value;
+    selectedMode = s;
   };
 
   onMount(async () => {
-    selectedMode = renameModes[0].value;
+    selectedMode = renameModes[0];
   });
 </script>
 
-<div style="display:flex; flex-direction:row">
-  <div class="select-wrapper" style="flex-grow:1;">
-    <select bind:value={selectedMode} on:change={handleRenameMode}>
-      {#each renameModes as mode, id}
-        <option value={mode.value}>
-          {mode.label}
-        </option>
-      {/each}
-    </select>
-  </div>
+<div class="flex-row-end">
+  <Dropdown
+    placeholder={mode.label ?? "Select Tool"}
+    onSelected={handleRenameMode}
+  >
+    {#each renameModes as mode, id}
+      <DropdownItem value={mode.value}>
+        {mode.label}
+      </DropdownItem>
+    {/each}
+  </Dropdown>
 </div>
+
 <svelte:component this={mode.component} />
 
 <style lang="scss">

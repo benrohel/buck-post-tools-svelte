@@ -14,7 +14,6 @@
 
   let selectedValue = getContext("selected");
   let visible = getContext("visible");
-  let multiselect = getContext("multiselect") as Boolean;
 </script>
 
 <div class="option-container">
@@ -32,6 +31,7 @@
   @use "../../variables.scss" as *;
 
   .option {
+    width: auto;
     cursor: pointer;
     white-space: nowrap;
     display: flex;
@@ -40,8 +40,10 @@
     gap: 8px;
     height: 20px;
     max-height: 20px;
-    margin-left: 8px;
+    margin-left: 4px;
+    margin-right: 4px;
   }
+
   .option-container:hover {
     color: white;
     background-color: $darker;

@@ -2,10 +2,7 @@
   import { ChevronDown, ChevronUp, PlusSquare } from "svelte-lucide";
   import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
   import { evalES } from "../../lib/utils/bolt";
-  import {
-    exportPresets,
-    selectedExportPreset,
-  } from "../../stores/local-storage";
+
   import { sequenceOutputFolder } from "../../stores/local-storage";
   import { ArrowLeftRight, ListPlus } from "lucide-svelte";
   import ModalSettings from "../../components/Modal/ModalSettings.svelte";
@@ -19,6 +16,9 @@
   import type { ExportNamePreset } from "../../api/preferences";
   import Tooltip from "../../components/Tooltip/Tooltip.svelte";
   import { tooltip } from "../../components/Tooltip/tooltip.js";
+  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
+  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+
   const presetList: () => Promise<ExportNamePreset[]> = async () => {
     const presets = (await getPreferenceByKey(
       "exportNamePresets"
@@ -57,7 +57,7 @@
     },
   ];
 
-  let activePreset = $selectedExportPreset;
+  let activePreset = {} as ExportNamePreset;
   let activeRenderSetting = "";
   let showBuildPreset = false;
   let presetName = "";
@@ -74,8 +74,8 @@
       const tempString = `${tokens.join("_")}`;
       return tempString.replace(/_\/_/g, "/");
     } else {
-      if ($selectedExportPreset) {
-        return $selectedExportPreset.replace(/_\/_/g, "/");
+      if (activePreset && activePreset.template) {
+        return activePreset.template.replace(/_\/_/g, "/");
       }
       return "";
     }
@@ -86,11 +86,11 @@
   $: console.log("previewString", previewString);
 
   const handlePresetChange = (e: any) => {
-    selectedExportPreset.set(e.target.value);
+    activePreset = e;
   };
 
   const handleRenderSettingChange = (e: any) => {
-    activeRenderSetting = e.target.value;
+    activeRenderSetting = e;
   };
 
   const removeToken = (token: number) => {
@@ -99,16 +99,6 @@
 
   const handleAddToken = (e: any) => {
     tokens = [...tokens, e.target.value];
-  };
-
-  const savePreset = () => {
-    if (!$exportPresets) {
-      exportPresets.set(previewString);
-      return;
-    } else {
-      exportPresets.set($exportPresets + "," + previewString);
-      return;
-    }
   };
 
   const handleSavePreset = async () => {
@@ -201,32 +191,41 @@
     label="Select Output Folder"
   />
 
-  <div
-    style="display:flex; flex-direction:row; justify-content: space-between;"
-  >
-    <p>Select Name Preset</p>
-    <div class="select-wrapper">
-      <select
-        bind:value={activePreset}
-        on:change={handlePresetChange}
-        placeholder="Select Preset"
+  {#await presetList()}
+    <p>Loading...</p>
+  {:then namePresets}
+    <div class="flex-row-between">
+      <Dropdown
+        defaultValue={namePresets[0]}
+        label="Select Name Preset"
+        placeholder={activePreset.name ?? "Select Preset"}
+        onSelected={handlePresetChange}
       >
-        <option value="" disabled selected>Select Name Preset</option>
-        {#await presetList()}
-          <p>Loading...</p>
-        {:then namePresets}
-          {#each namePresets as preset, id}
-            <option value={preset}>
-              {preset.name}
-            </option>
-          {/each}
-        {/await}
-      </select>
+        {#each namePresets as preset, id}
+          <DropdownItem value={preset}>
+            {preset.name}
+          </DropdownItem>
+        {/each}
+      </Dropdown>
     </div>
-  </div>
+  {/await}
 
+  <div class="flex-row-between">
+    <Dropdown
+      defaultValue={renderSettingsList[0]}
+      label="Select Output Module"
+      placeholder={activeRenderSetting ?? "Select Output MOdule"}
+      onSelected={handleRenderSettingChange}
+    >
+      {#each renderSettingsList as preset, id}
+        <DropdownItem value={preset}>
+          {preset}
+        </DropdownItem>
+      {/each}
+    </Dropdown>
+  </div>
   <div
-    style="display:flex; flex-direction:row; justify-content: space-between;"
+    style="display:flex; flex-direction:row; justify-content: space-between; margin-top: 4px;margin-bottom: 4px;"
   >
     <p>Select Output Module</p>
     <div class="select-wrapper">

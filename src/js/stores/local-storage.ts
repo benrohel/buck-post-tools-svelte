@@ -136,7 +136,7 @@ exportPresets.subscribe((value) => {
 
 // Selected Export Preset
 const storedSelectedExportPreset = safeload("selectedExportPresets");
-export const selectedExportPreset = writable<string | null>(
+export const selectedExportPreset = writable<any | null>(
   //@ts-ignore
   JSON.parse(
     storedSelectedExportPreset
@@ -146,7 +146,7 @@ export const selectedExportPreset = writable<string | null>(
 );
 selectedExportPreset.subscribe((value) => {
   if (value === "") {
-    return "";
+    return {};
   } else {
     localStorage.setItem("selectedExportPresets", JSON.stringify(value));
   }
