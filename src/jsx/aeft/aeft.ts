@@ -165,22 +165,25 @@ export const renameToFile = () => {
 };
 
 export const getSelectedClips = () => {
-  var clips = app.project.selection;
+  var clipsSelection = app.project.selection;
+  var clips: any = [];
+
+  for (var c = 0; c < clipsSelection.length; c++) {
+    var clip = clipsSelection[c];
+    if (clip instanceof FootageItem) {
+      clips.push({
+        name: clip.name,
+        filepath: clip.file?.fsName ?? '',
+        nodeId: clip.id,
+      });
+    }
+  }
+
   if (clips.length === 0) {
     alert('No clips selected');
     return null;
   }
 
-  clips = clips
-    //@ts-ignore
-    .filter((clip: any) => clip instanceof FootageItem)
-    .map((clip: any) => {
-      return {
-        name: clip.name,
-        filepath: clip.file.fsName,
-        nodeId: clip.id,
-      };
-    });
   return JSON.stringify(clips);
 };
 

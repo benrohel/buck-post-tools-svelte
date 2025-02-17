@@ -504,7 +504,6 @@ input {
   font-size: 12px;
   align-self: flex-start;
   align-items: center;
-
   display: flex;
   flex-direction: row;
   gap: 8px;
@@ -513,7 +512,7 @@ input {
 
 .row-preview p {
   background-color: $darker;
-  color: $active;
+  color: white;
   padding-left: 4px;
   padding-right: 4px;
 }
@@ -626,7 +625,7 @@ input {
   // --spinner-width
   // --value-container-overflow: scroll;
   //  --value-container-padding:2px
-  --width: auto;
+  // --width: auto;
 }
 
 .svelte-select-list {

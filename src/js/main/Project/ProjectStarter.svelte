@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { onMount, getContext } from "svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import { getPresetFile } from "../../api/SQPreset";
-  import { v4 as uuidv4 } from "uuid";
-  import { fs } from "../../lib/cep/node";
-  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
-  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
-  import Select from "svelte-select";
-  import { getProjectTemplate } from "../../api/buck-libray";
-  import { buck5Server } from "../../stores/server-store";
-  const appId: string = getContext("appId");
+  import { onMount, getContext } from 'svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import { getPresetFile } from '../../api/SQPreset';
+  import { v4 as uuidv4 } from 'uuid';
+  import { fs } from '../../lib/cep/node';
+  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
+  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
+  import Select from 'svelte-select';
+  import { getProjectTemplate } from '../../api/buck-libray';
+  import { buck5Server } from '../../stores/server-store';
+  const appId: string = getContext('appId');
 
   const resolutions = [
-    { label: "2880x2880", value: "2880x2880" },
-    { label: "1920x1080", value: "1920x1080" },
-    { label: "1080x1920", value: "1080x1920" },
-    { label: "1920x1920", value: "1920x1920" },
-    { label: "1080x1080", value: "1080x1080" },
-    { label: "1350x1080", value: "1350x1080" },
+    { label: '2880x2880', value: '2880x2880' },
+    { label: '1920x1080', value: '1920x1080' },
+    { label: '1080x1920', value: '1080x1920' },
+    { label: '1920x1920', value: '1920x1920' },
+    { label: '1080x1080', value: '1080x1080' },
+    { label: '1350x1080', value: '1350x1080' },
   ];
 
   interface Template {
@@ -27,9 +27,9 @@
   }
 
   const templateList = [
-    { label: "Shot", value: "Shot", apps: ["AEFT"] },
-    { label: "Edit", value: "Edit", apps: ["AEFT", "PPRO"] },
-    { label: "Conform", value: "Conform", apps: ["PPRO"] },
+    { label: 'Shot', value: 'Shot', apps: ['AEFT'] },
+    { label: 'Edit', value: 'Edit', apps: ['AEFT', 'PPRO'] },
+    { label: 'Conform', value: 'Conform', apps: ['PPRO'] },
   ];
 
   $: getTemplates = () => {
@@ -45,17 +45,17 @@
   $: console.log(templates);
 
   const framerates = [
-    { label: "23.976", value: "23.976" },
-    { label: "24", value: "24" },
-    { label: "25", value: "25" },
-    { label: "29.97", value: "29.97" },
-    { label: "30", value: "30" },
-    { label: "59.94", value: "59.94" },
+    { label: '23.976', value: '23.976' },
+    { label: '24', value: '24' },
+    { label: '25', value: '25' },
+    { label: '29.97', value: '29.97' },
+    { label: '30', value: '30' },
+    { label: '59.94', value: '59.94' },
   ];
 
-  let sequenceName = "Master";
-  let framerate = "24";
-  let resolution = "1920x1080";
+  let sequenceName = 'Master';
+  let framerate = '24';
+  let resolution = '1920x1080';
   let duration = 240;
   let template = templateList[0];
 
@@ -63,19 +63,19 @@
   $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
 
   $: console.log(
-    "file template path:",
+    'file template path:',
     getProjectTemplate(appId, template.value)
   );
 
   const handleStartProject = async () => {
-    const [width, height] = resolution.split("x");
+    const [width, height] = resolution.split('x');
     const option = {
       width,
       height,
       framerate: framerate,
     };
 
-    if (appId === "PPRO") {
+    if (appId === 'PPRO') {
       const sqp = await getPresetFile(
         option.width,
         option.height,
@@ -95,7 +95,7 @@
         );
         fs.unlinkSync(sqp);
       }
-    } else if (appId === "AEFT") {
+    } else if (appId === 'AEFT') {
       const aeOptions = {
         presetPath: aeTemplatePath,
         width: parseInt(option.width),
@@ -132,7 +132,7 @@
   $: console.log(framerate, resolution, sequenceName);
 
   onMount(async () => {
-    if (appId === "AEFT") {
+    if (appId === 'AEFT') {
       template = templateList[0];
     } else {
       template = templateList[1];
@@ -144,10 +144,11 @@
   <div>You need to be connected to Buck server to use this feature.</div>
 {:else}
   <div style="display:flex; flex-direction:column; text-align:center">
-    {#if appId === "AEFT"}
+    {#if appId === 'AEFT'}
       <div class="flex-row-start">
         <p class="select-label">Template:</p>
         <Select
+          --width="auto"
           listOffset={2}
           label="label"
           itemId="value"
@@ -161,10 +162,11 @@
         />
       </div>
     {/if}
-    {#if template.value === "Shot" || appId === "PPRO"}
+    {#if template.value === 'Shot' || appId === 'PPRO'}
       <div class="flex-row-start">
         <p class="select-label">Resolutions:</p>
         <Select
+          --width="auto"
           listOffset={2}
           label="label"
           itemId="value"
@@ -180,6 +182,7 @@
       <div class="flex-row-start">
         <p class="select-label">Framerates:</p>
         <Select
+          --width="auto"
           listOffset={2}
           label="label"
           itemId="value"
@@ -193,7 +196,7 @@
         />
       </div>
     {/if}
-    {#if template.value === "Shot" && appId === "AEFT"}
+    {#if template.value === 'Shot' && appId === 'AEFT'}
       <div class="flex-row-start">
         <label for="duration">Duration (in frames): </label>
         <input
@@ -208,7 +211,7 @@
 
     <div class="flex-row-start">
       <label for="sequenceName"
-        >{appId === "AEFT" ? "Composition " : "Sequence "}Name:
+        >{appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
       </label>
       <input
         type="text"

@@ -1,80 +1,120 @@
 <script lang="ts">
-  import { ChevronDown, ChevronUp, PlusSquare } from "svelte-lucide";
-  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import { sequenceOutputFolder } from "../../stores/local-storage";
-  import { ListPlus } from "lucide-svelte";
-  import ModalSettings from "../../components/Modal/ModalSettings.svelte";
-  import { onMount } from "svelte";
-  import { fs, path } from "../../lib/cep/node";
+  import { ChevronDown, ChevronUp, PlusSquare } from 'svelte-lucide';
+  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import { sequenceOutputFolder } from '../../stores/local-storage';
+  import { ListPlus } from 'lucide-svelte';
+  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
+  import { onMount } from 'svelte';
+  import { fs, path } from '../../lib/cep/node';
   import {
     setPreferenceByKey,
     getPreferenceByKey,
-  } from "../../api/preferences";
-  import type { ExportNamePreset } from "../../api/preferences";
+  } from '../../api/preferences';
+  import type { ExportNamePreset } from '../../api/preferences';
   //@ts-ignore
-  import { tooltip } from "../../components/Tooltip/tooltip.js";
-  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
-  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
-  import Select from "svelte-select";
+  import { tooltip } from '../../components/Tooltip/tooltip.js';
+  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
+  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
+  import Select from 'svelte-select';
+
+  const tokenList = [
+    {
+      value: 'compName',
+      label: 'Comp Name',
+    },
+    {
+      value: 'projectVersion',
+      label: 'Project Version',
+    },
+    {
+      value: 'version',
+      label: 'Version',
+    },
+    {
+      label: 'frameNumber',
+      value: 'frameNumber',
+    },
+    {
+      value: '/',
+      label: 'folder',
+    },
+  ];
+  const buck5Tokens = [
+    'shots',
+    '/',
+    'sequence',
+    '/',
+    'compName',
+    '/',
+    'Comp',
+    '/',
+    'ae',
+    '/',
+    'Render',
+    '/',
+    'compName',
+    'Comp',
+    'version',
+  ];
+  const buck3Tokens = [
+    'compName',
+    '/',
+    'Render',
+    '/',
+    '2d',
+    '/',
+    'compName',
+    '2d',
+    'version',
+  ];
+
+  const defaultTemplates = [
+    {
+      name: 'Buck 5',
+      template: buck5Tokens.join('_'),
+    },
+    {
+      name: 'Buck 3',
+      template: buck3Tokens.join('_'),
+    },
+  ];
 
   const presetList: () => Promise<ExportNamePreset[]> = async () => {
     const presets = (await getPreferenceByKey(
-      "exportNamePresets"
+      'exportNamePresets'
     )) as ExportNamePreset[];
     if (presets) {
       return new Promise((resolve) => {
-        resolve(presets);
+        resolve([...defaultTemplates, ...presets]);
       });
     } else {
       return new Promise((resolve) => {
-        resolve([]);
+        resolve(defaultTemplates);
       });
     }
   };
 
-  const tokenList = [
-    {
-      value: "compName",
-      label: "Comp Name",
-    },
-    {
-      value: "projectVersion",
-      label: "Project Version",
-    },
-    {
-      value: "version",
-      label: "Version",
-    },
-    {
-      label: "frameNumber",
-      value: "frameNumber",
-    },
-    {
-      value: "/",
-      label: "folder",
-    },
-  ];
   let exportNamePresets = [] as ExportNamePreset[];
   let activePreset = {} as ExportNamePreset;
-  let activeRenderSetting = "";
+  let activeRenderSetting = '';
   let showBuildPreset = false;
-  let presetName = "";
-  let prefix = "";
+  let presetName = '';
+  let prefix = '';
   $: modalOpen = false;
   //@ts-ignore
   $: tokens = [];
-  let selectedToken = "";
+  let selectedToken = '';
   let version = 0;
   let renderSettingsList: string[] = [];
 
   $: getPreviewString = () => {
     if (showBuildPreset) {
-      const tempString = `${tokens.join("_")}`;
-      return tempString.replace(/_\/_/g, "/");
+      const tempString = `${tokens.join('_')}`;
+      return tempString.replace(/_\/_/g, '/');
     } else {
       if (activePreset && activePreset.template) {
-        return activePreset.template.replace(/_\/_/g, "/");
+        return activePreset.template.replace(/_\/_/g, '/');
       }
     }
   };
@@ -83,7 +123,7 @@
 
   const handlePresetChange = (e: any) => {
     activePreset = e.detail;
-    console.log("activePreset", activePreset);
+    console.log('activePreset', activePreset);
   };
 
   const handleRenderSettingChange = (e: any) => {
@@ -99,16 +139,16 @@
   };
 
   const handleSavePreset = async () => {
-    const namePresets = await getPreferenceByKey("exportNamePresets");
+    const namePresets = await getPreferenceByKey('exportNamePresets');
     const newPreset = { name: presetName, template: previewString };
 
     if (!namePresets) {
-      setPreferenceByKey("exportNamePresets", [newPreset]);
+      setPreferenceByKey('exportNamePresets', [newPreset]);
       return;
     } else {
       const newPresets = [...namePresets, newPreset];
 
-      setPreferenceByKey("exportNamePresets", newPresets);
+      setPreferenceByKey('exportNamePresets', newPresets);
       await presetList();
       activePreset = newPreset;
     }
@@ -127,13 +167,13 @@
     projectVersion: string;
   }
   const buildRenderPath = (compData: CompRenderData) => {
-    const projectVersionString = compData.projectVersion.padStart(3, "0");
+    const projectVersionString = compData.projectVersion.padStart(3, '0');
     const dataString = previewString
       .replace(/projectName/g, compData.projectName)
       .replace(/compName/g, compData.compName)
       .replace(/projectVersion/g, projectVersionString)
-      .replace(/version/g, `v${version.toString().padStart(3, "0")}`)
-      .replace(/frameNumber/g, "[####]");
+      .replace(/version/g, `v${version.toString().padStart(3, '0')}`)
+      .replace(/frameNumber/g, '[####]');
 
     return `${$sequenceOutputFolder}/${dataString}`;
   };
@@ -153,7 +193,7 @@
   };
 
   const addCompsToRenderQueue = async () => {
-    const comps = JSON.parse(await evalES("getSelectedCompsForRender()"))
+    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
       .comps as CompRenderData[];
 
     comps.forEach((element: any) => {
@@ -167,10 +207,10 @@
 
   const loadRenderPresets = async () => {
     const renderSettings = JSON.parse(
-      await evalES("getOutputModulesTemplates()")
+      await evalES('getOutputModulesTemplates()')
     );
     renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith("_")
+      (p: string) => !p.startsWith('_')
     );
 
     activeRenderSetting = renderSettings[0];
@@ -178,15 +218,15 @@
   };
 
   const closeModal = () => {
-    console.log("close modal outsie");
+    console.log('close modal outsie');
     modalOpen = false;
   };
   onMount(async () => {
     const renderSettings = JSON.parse(
-      await evalES("getOutputModulesTemplates()")
+      await evalES('getOutputModulesTemplates()')
     );
     renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith("_")
+      (p: string) => !p.startsWith('_')
     );
 
     activeRenderSetting = renderSettings[0];
@@ -194,13 +234,13 @@
     activePreset = exportNamePresets[0];
   });
   let namePresetFocus = false;
-  $: namePresetFilter = "";
+  $: namePresetFilter = '';
   let renderPresetFocus = false;
-  $: renderPresetFilter = "";
+  $: renderPresetFilter = '';
   let tokenSelectFocus = false;
-  $: tokenFilter = "";
+  $: tokenFilter = '';
 
-  $: console.log("tokens", tokenList);
+  $: console.log('tokens', tokenList);
 </script>
 
 <div>
@@ -213,6 +253,7 @@
 <div class="flex-row-between">
   <p class="select-label">Select Name Preset:</p>
   <Select
+    --width="auto"
     listOffset={2}
     label="name"
     itemId="template"
@@ -230,6 +271,7 @@
 <div class="flex-row-between">
   <p class="select-label">Select Output Module:</p>
   <Select
+    --width="auto"
     listOffset={2}
     items={renderSettingsList}
     placeholder="Select Output Module"
@@ -276,7 +318,7 @@
           </button>
         </div>
         <Select
-          --width=""
+          --width="100%"
           listOffset={2}
           label="label"
           itemId="value"
@@ -326,7 +368,7 @@
 <div class="flex-row-end action-row">
   <button
     use:tooltip
-    title={"Add to Render Queue"}
+    title={'Add to Render Queue'}
     class="active"
     on:click={addCompsToRenderQueue}
     disabled={!$sequenceOutputFolder}>Add To Render Queue</button
@@ -359,7 +401,7 @@
 {/if}
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   #template-builder {
     display: flex;

@@ -1,16 +1,17 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import Button from "../../components/Button/Button.svelte";
-  let prefix = "SH";
-  let start = "10";
-  let increment = "10";
-  let padding = "0000";
+  import { onMount } from 'svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import Button from '../../components/Button/Button.svelte';
+  import { appId } from '../../lib/utils/cep';
+  let prefix = 'SH';
+  let start = '10';
+  let increment = '10';
+  let padding = '0000';
 
   $: getOutputName = () => {
     const pad = padding.length;
-    console.log("pad", pad);
-    const paddedStr = start.toString().padStart(pad, "0");
+    console.log('pad', pad);
+    const paddedStr = start.toString().padStart(pad, '0');
     return `${prefix}${paddedStr}`;
   };
 
@@ -30,6 +31,9 @@
   onMount(async () => {});
 </script>
 
+{#if appId === 'AEFT'}
+  <div>scope = Composition</div>
+{/if}
 <div style="display:flex; flex-direction:column">
   <div class="row">
     <label for="prefix">Prefix</label>
@@ -59,7 +63,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
   .row {
     width: 50%;
     gap: 8px;
