@@ -65,6 +65,7 @@
         {#if clip.replacements && clip.replacements.length > 0}
           <div class="select-wrapper">
             <select
+              style="height: 18px"
               bind:value={selectedVersion}
               on:change={handleSelectVersion}
             >

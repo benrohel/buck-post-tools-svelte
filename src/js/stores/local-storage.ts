@@ -88,13 +88,13 @@ codaTable.subscribe((value) => {
 
 // StillOutput Folder
 const storedStillOutputFolder = safeload("stillfolder");
-export const StillOutputFolder = writable<string | null>(
+export const stillOutputFolder = writable<string | null>(
   //@ts-ignore
   JSON.parse(
     storedStillOutputFolder ? localStorage.getItem("stillfolder") : null
   )
 );
-StillOutputFolder.subscribe((value) => {
+stillOutputFolder.subscribe((value) => {
   if (value === "") {
     return;
   } else {

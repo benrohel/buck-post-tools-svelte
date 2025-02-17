@@ -136,6 +136,7 @@
   {#if appId === "AEFT"}
     <div class="flex-row-start">
       <Dropdown
+        defaultValue="Shot"
         placeholder={template ?? "Select Template"}
         label="Template"
         onSelected={handleTemplateChange}
@@ -151,6 +152,7 @@
   {#if template === "Shot" || appId === "PPRO"}
     <div class="flex-row-start">
       <Dropdown
+        defaultValue="1920x1080"
         placeholder={resolution ?? "Select Resolution"}
         label="Resolutions"
         onSelected={handleResolutionChange}
@@ -164,6 +166,7 @@
     </div>
     <div class="flex-row-start">
       <Dropdown
+        defaultValue="24"
         placeholder={framerate ?? "Select Framerate"}
         label="Framerate"
         onSelected={handleFramerateChange}
@@ -205,6 +208,3 @@
     <button class="active" on:click={handleStartProject}>Start Project</button>
   </div>
 </div>
-
-<style lang="scss">
-</style>

@@ -1389,6 +1389,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/core@npm:^1.5.0, @floating-ui/core@npm:^1.6.0":
+  version: 1.6.9
+  resolution: "@floating-ui/core@npm:1.6.9"
+  dependencies:
+    "@floating-ui/utils": "npm:^0.2.9"
+  checksum: 77debdfc26bc36c6f5ae1f26ab3c15468215738b3f5682af4e1915602fa21ba33ad210273f31c9d2da1c531409929e1afb1138b1608c6b54a0f5853ee84c340d
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.5.3":
+  version: 1.6.13
+  resolution: "@floating-ui/dom@npm:1.6.13"
+  dependencies:
+    "@floating-ui/core": "npm:^1.6.0"
+    "@floating-ui/utils": "npm:^0.2.9"
+  checksum: 272242d2eb6238ffcee0cb1f3c66e0eafae804d5d7b449db5ecf904bc37d31ad96cf575a9e650b93c1190f64f49a684b1559d10e05ed3ec210628b19116991a9
+  languageName: node
+  linkType: hard
+
+"@floating-ui/utils@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "@floating-ui/utils@npm:0.2.9"
+  checksum: 48bbed10f91cb7863a796cc0d0e917c78d11aeb89f98d03fc38d79e7eb792224a79f538ed8a2d5d5584511d4ca6354ef35f1712659fd569868e342df4398ad6f
+  languageName: node
+  linkType: hard
+
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -2948,6 +2974,7 @@ __metadata:
     svelte-icons: "npm:^2.1.0"
     svelte-lucide: "npm:^0.8.2"
     svelte-preprocess: "npm:^4.10.7"
+    svelte-select: "npm:^5.8.3"
     types-for-adobe: "npm:^7.0.11"
     types-for-adobe-extras: "npm:^0.0.1"
     typescript: "npm:^4.6.4"
@@ -5430,6 +5457,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"svelte-floating-ui@npm:1.5.8":
+  version: 1.5.8
+  resolution: "svelte-floating-ui@npm:1.5.8"
+  dependencies:
+    "@floating-ui/core": "npm:^1.5.0"
+    "@floating-ui/dom": "npm:^1.5.3"
+  checksum: 63f2a7aadc7b2f8bb0736e034a4e1344918139d9572d852a8b34841691b99fbb62f066f17dff22fcb04e24b18ce2767dfa858eb7bc925036af0c9b1a70d4b135
+  languageName: node
+  linkType: hard
+
 "svelte-hmr@npm:^0.15.1":
   version: 0.15.3
   resolution: "svelte-hmr@npm:0.15.3"
@@ -5501,6 +5538,15 @@ __metadata:
     typescript:
       optional: true
   checksum: aa90206063270bc3a33b0228315c1cae1609897c785a05cfaacd361bf1b55b9e1ff2f3a52cd22a21a587b9fe0305d2e6bee1ce17940c8d09fe4c5beb2eaef68b
+  languageName: node
+  linkType: hard
+
+"svelte-select@npm:^5.8.3":
+  version: 5.8.3
+  resolution: "svelte-select@npm:5.8.3"
+  dependencies:
+    svelte-floating-ui: "npm:1.5.8"
+  checksum: 723072f3ac2d2f2bc4207add378c125ed60bd1296f0debdf99545bfba8c21667836e77bc0344493a7ac0508ffdec2a379b0763fdce7c7249e763dc16267506fd
   languageName: node
   linkType: hard
 

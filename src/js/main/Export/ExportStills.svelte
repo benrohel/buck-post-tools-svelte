@@ -1,36 +1,36 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { GetThumbnail } from '../../api/clip';
+  import { onMount } from "svelte";
+  import { GetThumbnail } from "../../api/clip";
   import {
     GetMarkersThumbnails,
     GetSequence,
     GetSequencedClips,
-  } from '../../api/sequence';
-  import { StillOutputFolder } from '../../stores/local-storage';
-  import { notifications } from '../../stores/notifications-store';
-  import { evalES } from '../../lib/utils/bolt';
-  import { openFile } from '../../lib/utils/utils';
-  import { FolderInput } from 'svelte-lucide';
-  import MarkerRow from '../../components/Markers/MarkersSelect.svelte';
-  import type MarkerColor from '../../components/Markers/MarkersSelect.svelte';
+  } from "../../api/sequence";
+  import { stillOutputFolder } from "../../stores/local-storage";
+  import { notifications } from "../../stores/notifications-store";
+  import { evalES } from "../../lib/utils/bolt";
+  import { openFile } from "../../lib/utils/utils";
+  import { FolderInput } from "svelte-lucide";
+  import MarkerRow from "../../components/Markers/MarkersSelect.svelte";
+  import type MarkerColor from "../../components/Markers/MarkersSelect.svelte";
   const stillExportModes = [
     {
-      label: 'shots',
-      value: 'shots',
+      label: "shots",
+      value: "shots",
     },
-    { label: 'markers', value: 'markers' },
+    { label: "markers", value: "markers" },
   ];
 
   let markerColors: MarkerColor[] = [];
-  let outputFolder = '';
-  let selectedExportMode = '';
-  let refTrack = 'shots';
+  let outputFolder = "";
+  let selectedExportMode = "";
+  let refTrack = "shots";
   let done = false;
 
   const handelSetOutputFolder = async () => {
     let folderPath = await evalES(`openFolderDialog("Select Output Folder")`);
     outputFolder = String(folderPath);
-    StillOutputFolder.set(outputFolder);
+    stillOutputFolder.set(outputFolder);
   };
 
   const handleOpenFolder = () => {
@@ -50,7 +50,7 @@
     done = false;
     const seq = await GetSequence();
 
-    if (selectedExportMode === 'shots') {
+    if (selectedExportMode === "shots") {
       if (seq) {
         const sequenceClips = await GetSequencedClips(seq, refTrack);
         sequenceClips.forEach((clip) => {
@@ -59,24 +59,25 @@
           });
         });
         done = true;
-        notifications.success('Stills Export Done', 2000);
+        notifications.success("Stills Export Done", 2000);
       }
-    } else if (selectedExportMode === 'markers') {
+    } else if (selectedExportMode === "markers") {
       await GetMarkersThumbnails(
         seq.nodeId,
         outputFolder,
         markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
       ).then(() => {
-        console.log('done');
+        console.log("done");
       });
       done = true;
-      notifications.success('Stills Export Done', 2000);
+      notifications.success("Stills Export Done", 2000);
     }
   };
+  $: focus = false;
 
   onMount(async () => {
     selectedExportMode = stillExportModes[0].value;
-    outputFolder = $StillOutputFolder;
+    outputFolder = $stillOutputFolder ?? "";
   });
 </script>
 
@@ -95,7 +96,7 @@
       </select>
     </div>
   </div>
-  {#if selectedExportMode === 'markers'}
+  {#if selectedExportMode === "markers"}
     <div class="row">
       <p>Filter:</p>
       <MarkerRow onChange={handleMarkerChange} />
@@ -109,13 +110,14 @@
   <button on:click={handelSetOutputFolder}>
     <FolderInput size="16" strokeWidth={1} />
   </button>
-  <input type="text" bind:value={$StillOutputFolder} class="folder-input" />
+  <input type="text" bind:value={$stillOutputFolder} class="folder-input" />
 </div>
 <div class="flex-row-end action-row">
   <button
     class="active"
     on:click={handleSubmitExport}
-    disabled={outputFolder.length === 0}>Export Stills</button
+    disabled={$stillOutputFolder && $stillOutputFolder.length === 0}
+    >Export Stills</button
   >
 </div>
 

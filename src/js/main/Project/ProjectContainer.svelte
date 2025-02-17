@@ -4,8 +4,8 @@
   import ProjectStarter from "./ProjectStarter.svelte";
   import CopySequenceSettings from "./CopySequenceSettings.svelte";
   import AspectRatios from "./AspectRatios.svelte";
-  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
-  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+
+  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
   const appId = getContext("appId") as string;
 
   const toolList = [
@@ -34,47 +34,15 @@
     // },
   ];
 
-  let selectedMode = "";
-
+  let selectedMode = toolList[0];
   let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
-
-  $: tool = toolList.find((m) => m.value === selectedMode) ?? toolList[0];
-
-  const handleRenameMode = (s: any) => {
-    selectedMode = s;
-  };
-
-  onMount(async () => {
-    selectedMode = toolList[0].label;
-  });
+  const handleOnMenuChange = (value: any) => (selectedMode = value);
 </script>
 
-<div class="flex-row-end">
-  <Dropdown
-    placeholder={selectedMode ?? "Select Tool"}
-    onSelected={handleRenameMode}
-  >
-    {#each filteredToolList as tool, id}
-      <DropdownItem value={tool.label}>
-        {tool.label}
-      </DropdownItem>
-    {/each}
-  </Dropdown>
-</div>
+<MenuSelect
+  items={filteredToolList}
+  bind:value={selectedMode}
+  onChange={handleOnMenuChange}
+/>
 
-<!-- <div style="display:flex; flex-direction:row">
-  <div class="select-wrapper" style="flex-grow:1;">
-    <select bind:value={selectedMode} on:change={handleRenameMode}>
-      {#each filteredToolList as tool, id}
-        <option value={tool.value}>
-          {tool.label}
-        </option>
-      {/each}
-    </select>
-  </div>
-</div> -->
-
-<svelte:component this={tool.component} />
-
-<style lang="scss">
-</style>
+<svelte:component this={selectedMode.component} />

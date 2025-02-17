@@ -203,7 +203,7 @@
   <SelectFolder
     defaultFolder={rootFolder}
     onChange={handleSetOutputFolder}
-    label="select search folder"
+    label="Select Search Folder"
   />
   <button on:click={searchFiles} style="justify-self:flex-end">
     <RefreshCw size="16" />

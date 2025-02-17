@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { ChevronDown } from 'svelte-lucide';
-  import { clickOutside } from '../../lib/utils/index';
+  import { onMount } from "svelte";
+  import { ChevronDown } from "svelte-lucide";
+  import { clickOutside } from "../../lib/utils/index";
   interface MultiSelectOption {
     value: string;
     label: string;
@@ -16,16 +16,16 @@
 
   export let options: MultiSelectOption[] = [];
   export let showCheckbox = false;
-  export let filter = '';
+  export let filter = "";
   export let onSelectionChange: Function;
   export let showFilter = false;
-  export let title = 'Select an option';
+  export let title = "Select an option";
 
   $: filteredOptions = getFilteredOptions();
 
   let expanded = true;
   let multiselect: HTMLDivElement;
-  $: selectBox = document.getElementById('select-box') as HTMLDivElement;
+  $: selectBox = document.getElementById("select-box") as HTMLDivElement;
   $: showingChekBox = showCheckbox;
 
   function toggleSelect(option: MultiSelectOption) {
@@ -48,12 +48,12 @@
   }
 
   function showCheckboxes() {
-    var checkboxes = document.getElementById('checkboxes');
+    var checkboxes = document.getElementById("checkboxes");
     if (!expanded) {
-      checkboxes.style.display = 'block';
+      checkboxes.style.display = "block";
       expanded = true;
     } else {
-      checkboxes.style.display = 'none';
+      checkboxes.style.display = "none";
       expanded = false;
     }
   }
@@ -68,12 +68,12 @@
     if (expanded) {
       showCheckboxes();
     }
-    console.log('click outside');
+    console.log("click outside");
   };
 
   onMount(() => {
-    multiselect = document.getElementById('multiselect') as HTMLDivElement;
-    selectBox = document.getElementById('select-box') as HTMLDivElement;
+    multiselect = document.getElementById("multiselect") as HTMLDivElement;
+    selectBox = document.getElementById("select-box") as HTMLDivElement;
     filteredOptions = getFilteredOptions();
   });
 </script>
@@ -125,7 +125,7 @@
 </div>
 
 <style lang="scss">
-  @use '../../variables.scss' as *;
+  @use "../../variables.scss" as *;
   .multiselect {
     position: relative;
     z-index: 1000;
@@ -144,14 +144,14 @@
   #checkboxes {
     display: none;
     position: absolute;
-    top: 24px;
-    left: 0;
+    top: 30px;
+    left: 4px;
     width: 100%;
   }
 
   #checkboxes ul {
     list-style: none;
-    background-color: $darker;
+    background-color: $extra-dark;
     padding-inline-start: 8px;
     border-radius: 2px;
     margin-block-start: 0%;
@@ -179,7 +179,7 @@
     border: 1px solid $dimmed-font-color;
     border-radius: 4px;
     padding-left: 4px;
-    background-color: $darkest;
+    background-color: $extra-dark;
     height: 20px;
   }
 
@@ -220,7 +220,7 @@
   //   cursor: not-allowed;
   // }
 
-  input[type='checkbox'] {
+  input[type="checkbox"] {
     box-sizing: border-box;
     min-width: 12px;
     max-width: 12px;
@@ -234,7 +234,7 @@
     border: 1px solid $dimmed-font-color;
   }
 
-  input[type='checkbox']:checked {
+  input[type="checkbox"]:checked {
     background-color: #1473e6;
   }
 </style>

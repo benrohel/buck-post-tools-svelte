@@ -47,6 +47,8 @@
     },
   ];
 
+  let collections = ["banana", "apple", "orange", "grape", "strawberry"];
+
   onMount(async () => {
     if (window.cep) {
       subscribeBackgroundColor((c: string) => (backgroundColor = c));

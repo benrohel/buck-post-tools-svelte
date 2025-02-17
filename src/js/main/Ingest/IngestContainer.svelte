@@ -19,16 +19,14 @@
     ExternalLink,
   } from "svelte-lucide";
   import { onMount, getContext } from "svelte";
+  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
 
   const appId = getContext("appId");
+
+  const ingestModes = [{ label: "Version Up", value: "versionup" }];
+
   $: sequenceClips = [] as any[];
   $: clips = [] as any[];
-
-  let openSettings = false;
-
-  $: trackerLogo = () => {
-    return AquariumLogo;
-  };
 
   const getPProClips = async () => {
     sequenceClips = [];
@@ -216,6 +214,7 @@
   };
 </script>
 
+<MenuSelect items={ingestModes} value={ingestModes[0]} onChange={() => {}} />
 <div class="ingest-container">
   <div
     class="ingest-shot-row"

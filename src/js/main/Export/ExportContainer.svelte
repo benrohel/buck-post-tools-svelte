@@ -6,9 +6,20 @@
   import ExportCompositions from "./ExportCompositions.svelte";
   import Dropdown from "../../components/Dropdown/Dropdown.svelte";
   import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+  import Select from "svelte-select";
+  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
+  import filter from "svelte-select/filter";
+  import fi from "date-fns/locale/fi";
   const appId = getContext("appId") as string;
 
-  const exportModes = [
+  interface SelectToolItem {
+    value: string;
+    label: string;
+    component: any;
+    apps: string[];
+  }
+
+  const exportModes: SelectToolItem[] = [
     {
       value: "xml",
       label: "Sequence to Xml",
@@ -30,33 +41,19 @@
     // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
 
-  $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
-  let selectedExportMode = "";
-  $: mode =
-    exportModes.find((m) => m.value === selectedExportMode) ?? exportModes[0];
-
-  const handleExportMode = (s: any) => {
-    selectedExportMode = s;
+  const handleOnChange = (value: SelectToolItem) => {
+    selectedExportMode = value;
   };
 
-  onMount(async () => {
-    selectedExportMode =
-      appId === "PPRO" ? exportModes[0].value : "selectedComps";
-  });
+  $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
+  let selectedExportMode: SelectToolItem =
+    appId === "PPRO" ? exportModes[0] : exportModes[2];
 </script>
 
-<div class="flex-row-end">
-  <Dropdown
-    defaultValue={filteredModes[0].value}
-    placeholder={mode.label ?? "Select Tool"}
-    onSelected={handleExportMode}
-  >
-    {#each filteredModes as mode, id}
-      <DropdownItem value={mode.value}>
-        {mode.label}
-      </DropdownItem>
-    {/each}
-  </Dropdown>
-</div>
+<MenuSelect
+  items={filteredModes}
+  bind:value={selectedExportMode}
+  onChange={handleOnChange}
+/>
 
-<svelte:component this={mode.component} />
+<svelte:component this={selectedExportMode.component} />

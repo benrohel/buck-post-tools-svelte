@@ -2,22 +2,21 @@
   import { ChevronDown, ChevronUp, PlusSquare } from "svelte-lucide";
   import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
   import { evalES } from "../../lib/utils/bolt";
-
   import { sequenceOutputFolder } from "../../stores/local-storage";
-  import { ArrowLeftRight, ListPlus } from "lucide-svelte";
+  import { ListPlus } from "lucide-svelte";
   import ModalSettings from "../../components/Modal/ModalSettings.svelte";
   import { onMount } from "svelte";
   import { fs, path } from "../../lib/cep/node";
   import {
     setPreferenceByKey,
     getPreferenceByKey,
-    getPreferences,
   } from "../../api/preferences";
   import type { ExportNamePreset } from "../../api/preferences";
-  import Tooltip from "../../components/Tooltip/Tooltip.svelte";
+  //@ts-ignore
   import { tooltip } from "../../components/Tooltip/tooltip.js";
   import Dropdown from "../../components/Dropdown/Dropdown.svelte";
   import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+  import Select from "svelte-select";
 
   const presetList: () => Promise<ExportNamePreset[]> = async () => {
     const presets = (await getPreferenceByKey(
@@ -56,7 +55,7 @@
       label: "folder",
     },
   ];
-
+  let exportNamePresets = [] as ExportNamePreset[];
   let activePreset = {} as ExportNamePreset;
   let activeRenderSetting = "";
   let showBuildPreset = false;
@@ -77,20 +76,18 @@
       if (activePreset && activePreset.template) {
         return activePreset.template.replace(/_\/_/g, "/");
       }
-      return "";
     }
   };
 
   $: previewString = getPreviewString();
-  $: console.log("tokens", tokens);
-  $: console.log("previewString", previewString);
 
   const handlePresetChange = (e: any) => {
-    activePreset = e;
+    activePreset = e.detail;
+    console.log("activePreset", activePreset);
   };
 
   const handleRenderSettingChange = (e: any) => {
-    activeRenderSetting = e;
+    activeRenderSetting = e.deatil;
   };
 
   const removeToken = (token: number) => {
@@ -98,7 +95,7 @@
   };
 
   const handleAddToken = (e: any) => {
-    tokens = [...tokens, e.target.value];
+    tokens = [...tokens, e.detail.value];
   };
 
   const handleSavePreset = async () => {
@@ -110,10 +107,12 @@
       return;
     } else {
       const newPresets = [...namePresets, newPreset];
-      console.log("newPresets", newPresets);
-      console.log("name", name);
+
       setPreferenceByKey("exportNamePresets", newPresets);
+      await presetList();
+      activePreset = newPreset;
     }
+
     modalOpen = false;
   };
 
@@ -166,6 +165,18 @@
     tokens = [...tokens, prefix];
   };
 
+  const loadRenderPresets = async () => {
+    const renderSettings = JSON.parse(
+      await evalES("getOutputModulesTemplates()")
+    );
+    renderSettingsList = renderSettings.filter(
+      (p: string) => !p.startsWith("_")
+    );
+
+    activeRenderSetting = renderSettings[0];
+    return renderSettings;
+  };
+
   const closeModal = () => {
     console.log("close modal outsie");
     modalOpen = false;
@@ -177,11 +188,17 @@
     renderSettingsList = renderSettings.filter(
       (p: string) => !p.startsWith("_")
     );
-    // renderSettingsList = renderSettings.filter(
-    //   (p: string) => !p.startsWith('_')
-    // );
+
     activeRenderSetting = renderSettings[0];
+    exportNamePresets = await presetList();
+    activePreset = exportNamePresets[0];
   });
+  let namePresetFocus = false;
+  $: namePresetFilter = "";
+  let renderPresetFocus = false;
+  $: renderPresetFilter = "";
+  let tokenSelectFocus = false;
+  $: tokenFilter = "";
 </script>
 
 <div>
@@ -190,74 +207,54 @@
     onChange={handleSetOutputFolder}
     label="Select Output Folder"
   />
+</div>
+<div class="flex-row-between">
+  <p class="select-label">Select Name Preset:</p>
+  <Select
+    listOffset={2}
+    label="name"
+    itemId="template"
+    items={exportNamePresets}
+    placeholder="Select Name Preset"
+    showChevron
+    clearable={false}
+    bind:value={activePreset}
+    bind:focused={namePresetFocus}
+    bind:listOpen={namePresetFocus}
+    bind:filterText={namePresetFilter}
+    on:change={handlePresetChange}
+  />
+</div>
+<div class="flex-row-between">
+  <p class="select-label">Select Output Module:</p>
+  <Select
+    listOffset={2}
+    items={renderSettingsList}
+    placeholder="Select Output Module"
+    showChevron
+    clearable={false}
+    bind:focused={renderPresetFocus}
+    bind:listOpen={renderPresetFocus}
+    bind:filterText={renderPresetFilter}
+    on:change={handleRenderSettingChange}
+    bind:value={activeRenderSetting}
+  />
+</div>
 
-  {#await presetList()}
-    <p>Loading...</p>
-  {:then namePresets}
-    <div class="flex-row-between">
-      <Dropdown
-        defaultValue={namePresets[0]}
-        label="Select Name Preset"
-        placeholder={activePreset.name ?? "Select Preset"}
-        onSelected={handlePresetChange}
-      >
-        {#each namePresets as preset, id}
-          <DropdownItem value={preset}>
-            {preset.name}
-          </DropdownItem>
-        {/each}
-      </Dropdown>
-    </div>
-  {/await}
-
-  <div class="flex-row-between">
-    <Dropdown
-      defaultValue={renderSettingsList[0]}
-      label="Select Output Module"
-      placeholder={activeRenderSetting ?? "Select Output MOdule"}
-      onSelected={handleRenderSettingChange}
-    >
-      {#each renderSettingsList as preset, id}
-        <DropdownItem value={preset}>
-          {preset}
-        </DropdownItem>
-      {/each}
-    </Dropdown>
-  </div>
-  <div
-    style="display:flex; flex-direction:row; justify-content: space-between; margin-top: 4px;margin-bottom: 4px;"
+<div class="flex-row-end action-row">
+  <p>Build Export Name Preset</p>
+  <button
+    class="outline"
+    on:click={() => {
+      showBuildPreset = !showBuildPreset;
+    }}
   >
-    <p>Select Output Module</p>
-    <div class="select-wrapper">
-      <select
-        bind:value={activeRenderSetting}
-        on:change={handleRenderSettingChange}
-        placeholder="Select Preset"
-      >
-        <option value="" disabled selected>Select Render Settings</option>
-        {#each renderSettingsList as preset, id}
-          <option value={preset} use:tooltip title={"Add to Render Queue"}>
-            {preset}
-          </option>
-        {/each}
-      </select>
-    </div>
-  </div>
-  <div class="flex-row-end action-row">
-    <p>Build Export Name Preset</p>
-    <button
-      class="outline"
-      on:click={() => {
-        showBuildPreset = !showBuildPreset;
-      }}
-    >
-      {#if showBuildPreset}
-        <ChevronUp size={16} />
-      {:else}
-        <ChevronDown size={16} />
-      {/if}
-    </button>
-  </div>
+    {#if showBuildPreset}
+      <ChevronUp size={16} />
+    {:else}
+      <ChevronDown size={16} />
+    {/if}
+  </button>
 </div>
 
 <div class="autocomplete">
@@ -275,16 +272,18 @@
             <PlusSquare size="16" />
           </button>
         </div>
-        <div class="select-wrapper" style="flex-grow:1;">
-          <select bind:value={selectedToken} on:change={handleAddToken}>
-            <option value="" disabled selected>Select Token</option>
-            {#each tokenList as token, id}
-              <option value={token.value}>
-                {token.label}
-              </option>
-            {/each}
-          </select>
-        </div>
+
+        <Select
+          listOffset={2}
+          items={tokenList}
+          placeholder="SelectToken"
+          showChevron
+          clearable={false}
+          bind:focused={tokenSelectFocus}
+          bind:listOpen={tokenSelectFocus}
+          bind:filterText={tokenFilter}
+          on:change={handleAddToken}
+        />
       </div>
       <div id="token-list">
         {#each tokens as token, id}
@@ -428,5 +427,11 @@
     justify-items: flex-start;
     gap: 8px;
     padding: 8px;
+  }
+
+  .select-label {
+    flex-grow: 1;
+    width: 100%;
+    text-align: justify;
   }
 </style>
