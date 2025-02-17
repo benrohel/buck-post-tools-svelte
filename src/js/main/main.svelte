@@ -47,15 +47,15 @@
     },
   ];
 
-  let collections = ["banana", "apple", "orange", "grape", "strawberry"];
+  let authenticated = false;
 
   onMount(async () => {
     if (window.cep) {
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
-      // await connectToDaemon();
-      // if (client) {
-      //   authenticated = (await getAuthAuthenticated()).data.user ? true : false;
-      // }
+      await connectToDaemon();
+      if (client) {
+        authenticated = (await getAuthAuthenticated()).data.user ? true : false;
+      }
     }
   });
 </script>
@@ -63,7 +63,7 @@
 <div class="app" style="background-color: {backgroundColor};">
   <Tabs {items} />
   <Toast />
-  <Footer authenticated={false} />
+  <Footer {authenticated} />
 </div>
 
 <style>

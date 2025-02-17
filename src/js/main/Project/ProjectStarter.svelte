@@ -6,6 +6,9 @@
   import { fs } from "../../lib/cep/node";
   import Dropdown from "../../components/Dropdown/Dropdown.svelte";
   import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
+  import Select from "svelte-select";
+  import { getProjectTemplate } from "../../api/buck-libray";
+  import { buck5Server } from "../../stores/server-store";
   const appId: string = getContext("appId");
 
   const resolutions = [
@@ -54,10 +57,15 @@
   let framerate = "24";
   let resolution = "1920x1080";
   let duration = 240;
-  let template = templateList[1].value;
+  let template = templateList[0];
 
   $: aeTemplatePath = `/buck/globalprefs/SHARED/AFTER_EFFECTS/templates/default${template}Template.aep`;
   $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
+
+  $: console.log(
+    "file template path:",
+    getProjectTemplate(appId, template.value)
+  );
 
   const handleStartProject = async () => {
     const [width, height] = resolution.split("x");
@@ -108,15 +116,6 @@
     framerate = value;
   };
 
-  const handleResolutionChange = (value: string) => {
-    resolution = value;
-  };
-
-  const handleTemplateChange = (value: string) => {
-    // const target = event.target as HTMLSelectElement;
-    template = value;
-  };
-
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     sequenceName = target.value;
@@ -127,84 +126,102 @@
     duration = parseInt(target.value);
   };
 
+  $: templateFocus = false;
+  $: resolutionFocus = false;
+  $: framerateFocus = false;
   $: console.log(framerate, resolution, sequenceName);
 
-  onMount(async () => {});
+  onMount(async () => {
+    if (appId === "AEFT") {
+      template = templateList[0];
+    } else {
+      template = templateList[1];
+    }
+  });
 </script>
 
-<div style="display:flex; flex-direction:column; text-align:center">
-  {#if appId === "AEFT"}
+{#if !$buck5Server}
+  <div>You need to be connected to Buck server to use this feature.</div>
+{:else}
+  <div style="display:flex; flex-direction:column; text-align:center">
+    {#if appId === "AEFT"}
+      <div class="flex-row-start">
+        <p class="select-label">Template:</p>
+        <Select
+          listOffset={2}
+          label="label"
+          itemId="value"
+          items={templates}
+          placeholder="Template"
+          showChevron
+          clearable={false}
+          bind:value={template}
+          bind:focused={templateFocus}
+          bind:listOpen={templateFocus}
+        />
+      </div>
+    {/if}
+    {#if template.value === "Shot" || appId === "PPRO"}
+      <div class="flex-row-start">
+        <p class="select-label">Resolutions:</p>
+        <Select
+          listOffset={2}
+          label="label"
+          itemId="value"
+          items={resolutions}
+          placeholder="Template"
+          showChevron
+          clearable={false}
+          bind:value={resolution}
+          bind:focused={resolutionFocus}
+          bind:listOpen={resolutionFocus}
+        />
+      </div>
+      <div class="flex-row-start">
+        <p class="select-label">Framerates:</p>
+        <Select
+          listOffset={2}
+          label="label"
+          itemId="value"
+          items={framerates}
+          placeholder="Framerate"
+          showChevron
+          clearable={false}
+          bind:value={framerate}
+          bind:focused={framerateFocus}
+          bind:listOpen={framerateFocus}
+        />
+      </div>
+    {/if}
+    {#if template.value === "Shot" && appId === "AEFT"}
+      <div class="flex-row-start">
+        <label for="duration">Duration (in frames): </label>
+        <input
+          type="number"
+          placeholder="240"
+          bind:value={duration}
+          on:change={handleDurationChange}
+          style="max-width:60px;"
+        />
+      </div>
+    {/if}
+
     <div class="flex-row-start">
-      <Dropdown
-        defaultValue="Shot"
-        placeholder={template ?? "Select Template"}
-        label="Template"
-        onSelected={handleTemplateChange}
-      >
-        {#each templates as template}
-          <DropdownItem value={template.value}>
-            {template.label}
-          </DropdownItem>
-        {/each}
-      </Dropdown>
-    </div>
-  {/if}
-  {#if template === "Shot" || appId === "PPRO"}
-    <div class="flex-row-start">
-      <Dropdown
-        defaultValue="1920x1080"
-        placeholder={resolution ?? "Select Resolution"}
-        label="Resolutions"
-        onSelected={handleResolutionChange}
-      >
-        {#each resolutions as resolution}
-          <DropdownItem value={resolution.value}>
-            {resolution.label}
-          </DropdownItem>
-        {/each}
-      </Dropdown>
-    </div>
-    <div class="flex-row-start">
-      <Dropdown
-        defaultValue="24"
-        placeholder={framerate ?? "Select Framerate"}
-        label="Framerate"
-        onSelected={handleFramerateChange}
-      >
-        {#each framerates as framerate}
-          <DropdownItem value={framerate.value}>
-            {framerate.label}
-          </DropdownItem>
-        {/each}
-      </Dropdown>
-    </div>
-  {/if}
-  {#if template === "Shot" && appId === "AEFT"}
-    <div class="flex-row-start">
-      <label for="duration">Duration (in frames): </label>
+      <label for="sequenceName"
+        >{appId === "AEFT" ? "Composition " : "Sequence "}Name:
+      </label>
       <input
-        type="number"
-        placeholder="240"
-        bind:value={duration}
-        on:change={handleDurationChange}
+        type="text"
+        placeholder="master"
+        bind:value={sequenceName}
+        style="flex-grow:1;"
+        on:change={handleSequenceNameChange}
       />
     </div>
-  {/if}
 
-  <div class="flex-row-start">
-    <label for="sequenceName"
-      >{appId === "AEFT" ? "Composition " : "Sequence "}Name:
-    </label>
-    <input
-      type="text"
-      placeholder="master"
-      bind:value={sequenceName}
-      style="flex-grow:1;"
-      on:change={handleSequenceNameChange}
-    />
+    <div class="flex-row-end">
+      <button class="active" on:click={handleStartProject}>Start Project</button
+      >
+    </div>
   </div>
-
-  <div class="flex-row-end">
-    <button class="active" on:click={handleStartProject}>Start Project</button>
-  </div>
-</div>
+{/if}

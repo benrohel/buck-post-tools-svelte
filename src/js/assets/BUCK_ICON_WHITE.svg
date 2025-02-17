@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="100%"
+  height="100%" viewBox="0 0 360 360" version="1.1" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
+  style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+  <g id="Wordmark-Flattened" serif:id="Wordmark Flattened">
+    <path
+      d="M265,340l-245,-0l0,-150l245,-0c41.421,-0 75,33.579 75,75c0,41.421 -33.579,75 -75,75m-245,-320l186.686,-0c-22.325,17.383 -36.686,44.514 -36.686,75c0,30.486 14.361,57.617 36.686,75l-186.686,-0l0,-150Zm320,75c0,41.421 -33.579,75 -75,75c-41.421,-0 -75,-33.579 -75,-75c0,-41.421 33.579,-75 75,-75c41.421,-0 75,33.579 75,75m-32.53,85c31.274,-15.656 52.705,-48.063 52.529,-85.458c-0.247,-52.367 -43.116,-94.542 -95.483,-94.542l-254.516,-0c-5.523,-0 -10,4.478 -10,10l-0,340c-0,5.523 4.477,10 10,10l255,-0c52.467,-0 95,-42.533 95,-95c0,-37.201 -21.384,-69.408 -52.53,-85"
+      style="fill:#fff;fill-rule:nonzero;" />
+  </g>
+</svg>

@@ -199,6 +199,8 @@
   $: renderPresetFilter = "";
   let tokenSelectFocus = false;
   $: tokenFilter = "";
+
+  $: console.log("tokens", tokenList);
 </script>
 
 <div>
@@ -233,10 +235,11 @@
     placeholder="Select Output Module"
     showChevron
     clearable={false}
+    listAutoWidth={false}
+    justValue
     bind:focused={renderPresetFocus}
     bind:listOpen={renderPresetFocus}
     bind:filterText={renderPresetFilter}
-    on:change={handleRenderSettingChange}
     bind:value={activeRenderSetting}
   />
 </div>
@@ -272,11 +275,13 @@
             <PlusSquare size="16" />
           </button>
         </div>
-
         <Select
+          --width=""
           listOffset={2}
+          label="label"
+          itemId="value"
           items={tokenList}
-          placeholder="SelectToken"
+          placeholder="Select Token"
           showChevron
           clearable={false}
           bind:focused={tokenSelectFocus}
@@ -324,7 +329,7 @@
     title={"Add to Render Queue"}
     class="active"
     on:click={addCompsToRenderQueue}
-    disabled={!sequenceOutputFolder}>Add To Render Queue</button
+    disabled={!$sequenceOutputFolder}>Add To Render Queue</button
   >
 </div>
 {#if modalOpen}

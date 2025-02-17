@@ -626,10 +626,14 @@ input {
   // --spinner-width
   // --value-container-overflow: scroll;
   //  --value-container-padding:2px
-  // --width
+  --width: auto;
 }
 
 .svelte-select-list {
   left: 0;
   top: 26px;
+}
+
+.select-label {
+  margin: 0px;
 }
