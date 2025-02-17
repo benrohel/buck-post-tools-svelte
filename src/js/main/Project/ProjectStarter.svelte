@@ -9,6 +9,7 @@
   import Select from 'svelte-select';
   import { getProjectTemplate } from '../../api/buck-libray';
   import { buck5Server } from '../../stores/server-store';
+  import te from 'date-fns/locale/te';
   const appId: string = getContext('appId');
 
   const resolutions = [
@@ -42,7 +43,7 @@
   };
 
   $: templates = getTemplates();
-  $: console.log(templates);
+  $: console.log(resolution);
 
   const framerates = [
     { label: '23.976', value: '23.976' },
@@ -55,12 +56,12 @@
 
   let sequenceName = 'Master';
   let framerate = '24';
-  let resolution = '1920x1080';
+  let resolution = resolutions[1];
   let duration = 240;
   let template = templateList[0];
 
-  $: aeTemplatePath = `/buck/globalprefs/SHARED/AFTER_EFFECTS/templates/default${template}Template.aep`;
-  $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
+  // $: aeTemplatePath = `/buck/globalprefs/SHARED/AFTER_EFFECTS/templates/default${template}Template.aep`;
+  // $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
 
   $: console.log(
     'file template path:',
@@ -68,12 +69,14 @@
   );
 
   const handleStartProject = async () => {
-    const [width, height] = resolution.split('x');
+    const [width, height] = resolution.value.split('x');
     const option = {
       width,
       height,
       framerate: framerate,
     };
+
+    const templateFile = getProjectTemplate(appId, template.value);
 
     if (appId === 'PPRO') {
       const sqp = await getPresetFile(
@@ -84,7 +87,7 @@
       if (sqp) {
         const sequenceOptions = {
           sequenceName: sequenceName,
-          templatePath: pproTemplatePath,
+          templatePath: templateFile,
           presetPath: sqp,
           uuid: uuidv4(),
         };
@@ -97,7 +100,7 @@
       }
     } else if (appId === 'AEFT') {
       const aeOptions = {
-        presetPath: aeTemplatePath,
+        presetPath: templateFile,
         width: parseInt(option.width),
         height: parseInt(option.height),
         framerate: parseFloat(option.framerate),
@@ -168,6 +171,7 @@
         <Select
           --width="auto"
           listOffset={2}
+          justValue={true}
           label="label"
           itemId="value"
           items={resolutions}
