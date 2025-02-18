@@ -3,13 +3,13 @@
   import { evalES } from '../../lib/utils/bolt';
   import { getPresetFile } from '../../api/SQPreset';
   import { v4 as uuidv4 } from 'uuid';
-  import { fs } from '../../lib/cep/node';
-  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
-  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
+  import { fs, path } from '../../lib/cep/node';
+  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
   import Select from 'svelte-select';
   import { getProjectTemplate } from '../../api/buck-libray';
   import { buck5Server } from '../../stores/server-store';
   import te from 'date-fns/locale/te';
+  import fr from 'date-fns/locale/fr';
   const appId: string = getContext('appId');
 
   const resolutions = [
@@ -45,35 +45,35 @@
   $: templates = getTemplates();
   $: console.log(resolution);
 
-  const framerates = [
-    { label: '23.976', value: '23.976' },
-    { label: '24', value: '24' },
-    { label: '25', value: '25' },
-    { label: '29.97', value: '29.97' },
-    { label: '30', value: '30' },
-    { label: '59.94', value: '59.94' },
-  ];
+  const framerates = ['23.976', '24', '25', '29.97', '30', '59.94'];
 
   let sequenceName = 'Master';
-  let framerate = '24';
+  let projectName = 'Master';
+  let framerate = { label: '24', value: '24' };
   let resolution = resolutions[1];
   let duration = 240;
   let template = templateList[0];
-
-  // $: aeTemplatePath = `/buck/globalprefs/SHARED/AFTER_EFFECTS/templates/default${template}Template.aep`;
-  // $: pproTemplatePath = `/buck/globalprefs/SHARED/PREMIERE/templates/default${template}Template.prproj`;
+  let rootFolder = '';
 
   $: console.log(
     'file template path:',
     getProjectTemplate(appId, template.value)
   );
 
+  $: console.log(framerate);
+
+  const handleSetOutputFolder = async (folderPath: string) => {
+    if (folderPath) {
+      rootFolder = folderPath;
+    }
+  };
+
   const handleStartProject = async () => {
     const [width, height] = resolution.value.split('x');
     const option = {
       width,
       height,
-      framerate: framerate,
+      framerate: framerate.value,
     };
 
     const templateFile = getProjectTemplate(appId, template.value);
@@ -90,6 +90,7 @@
           templatePath: templateFile,
           presetPath: sqp,
           uuid: uuidv4(),
+          projectFile: path.posix.join(rootFolder, `${projectName}.prproj`),
         };
 
         await evalES(
@@ -106,6 +107,10 @@
         framerate: parseFloat(option.framerate),
         duration: duration,
         name: sequenceName,
+        projectFile: path.posix.join(
+          rootFolder,
+          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
+        ),
       };
       await evalES(
         `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
@@ -114,14 +119,14 @@
     }
   };
 
-  const handleFramerateChange = (value: string) => {
-    // const target = event.target as HTMLSelectElement;
-    framerate = value;
-  };
-
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     sequenceName = target.value;
+  };
+
+  const handleProjectNameChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    projectName = target.value;
   };
 
   const handleDurationChange = (event: Event) => {
@@ -147,6 +152,22 @@
   <div>You need to be connected to Buck server to use this feature.</div>
 {:else}
   <div style="display:flex; flex-direction:column; text-align:center">
+    <SelectFolder
+      defaultFolder={rootFolder}
+      onChange={handleSetOutputFolder}
+      message="Select Project Save Location"
+      label="Select Project Save Location"
+    />
+    <div class="flex-row-start">
+      <label for="projectName">Project Name: </label>
+      <input
+        type="text"
+        placeholder="master"
+        bind:value={projectName}
+        style="flex-grow:1;"
+        on:change={handleProjectNameChange}
+      />
+    </div>
     {#if appId === 'AEFT'}
       <div class="flex-row-start">
         <p class="select-label">Template:</p>
@@ -188,8 +209,7 @@
         <Select
           --width="auto"
           listOffset={2}
-          label="label"
-          itemId="value"
+          justValue={true}
           items={framerates}
           placeholder="Framerate"
           showChevron
@@ -227,7 +247,10 @@
     </div>
 
     <div class="flex-row-end">
-      <button class="active" on:click={handleStartProject}>Start Project</button
+      <button
+        class="active"
+        on:click={handleStartProject}
+        disabled={rootFolder.length < 10}>Start Project</button
       >
     </div>
   </div>

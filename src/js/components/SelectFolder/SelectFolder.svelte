@@ -1,21 +1,18 @@
 <script lang="ts">
-  import { FolderSearch } from "svelte-lucide";
-  import { evalES } from "../../lib/utils/bolt";
-  import { onMount } from "svelte";
+  import { FolderSearch } from 'svelte-lucide';
+  import { evalES } from '../../lib/utils/bolt';
 
   export let onChange: Function;
-  export let defaultFolder = "";
-  export let label = "Select Folder";
+  export let defaultFolder = '';
+  export let label = 'Select Folder';
+  export let message = 'Select Folder';
 
   let rootFolder = defaultFolder;
   const handleSetOutputFolder = async () => {
-    console.log("Selecting Folder triggered");
-    const folderPath = await evalES(
-      `openFolderDialog("Select New Root Folder.")`
-    );
+    const folderPath = await evalES(`openFolderDialog("${message}")`, false);
     if (folderPath) {
-      onChange(folderPath);
       rootFolder = folderPath;
+      onChange(folderPath);
     }
   };
 </script>
@@ -35,7 +32,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   #select-folder-container {
     display: flex;

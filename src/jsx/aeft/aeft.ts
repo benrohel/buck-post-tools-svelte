@@ -38,6 +38,7 @@ declare interface INewSequenceOptions {
   framerate: number;
   duration: number;
   name: string;
+  projectFile: string;
 }
 export const newSequenceFromPreset = (options: INewSequenceOptions) => {
   var templateFile = new File(options.presetPath);
@@ -58,22 +59,8 @@ export const newSequenceFromPreset = (options: INewSequenceOptions) => {
   comp.frameRate = options.framerate;
   comp.duration = options.duration / options.framerate;
   comp.name = options.name;
-
-  // var newComp = app.project.items.addComp(
-  //   options.name,
-  //   options.width,
-  //   options.height,
-  //   1,
-  //   options.duration / options.framerate,
-  //   options.framerate
-  // );
-
-  var folder = findFolderByName('01_Master');
-  // if (folder) {
-  //   newComp.parentFolder = folder;
-  // }
-
-  return comp.id;
+  app.project.save(new File(options.projectFile));
+  return true;
 };
 
 // Renamer

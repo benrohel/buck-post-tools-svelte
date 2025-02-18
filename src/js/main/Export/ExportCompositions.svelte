@@ -97,7 +97,7 @@
 
   let exportNamePresets = [] as ExportNamePreset[];
   let activePreset = {} as ExportNamePreset;
-  let activeRenderSetting = '';
+  let activeRenderSetting: any = {};
   let showBuildPreset = false;
   let presetName = '';
   let prefix = '';
@@ -167,7 +167,9 @@
     projectVersion: string;
   }
   const buildRenderPath = (compData: CompRenderData) => {
-    const projectVersionString = compData.projectVersion.padStart(3, '0');
+    const projectVersionString = compData.projectVersion
+      ? compData.projectVersion.padStart(3, '0')
+      : '001';
     const dataString = previewString
       .replace(/projectName/g, compData.projectName)
       .replace(/compName/g, compData.compName)
@@ -175,7 +177,7 @@
       .replace(/version/g, `v${version.toString().padStart(3, '0')}`)
       .replace(/frameNumber/g, '[####]');
 
-    return `${$sequenceOutputFolder}/${dataString}`;
+    return path.posix.join($sequenceOutputFolder, dataString);
   };
 
   const addToRenderQueue = async (comp: CompRenderData) => {
@@ -183,7 +185,7 @@
     const options = {
       compId: comp.nodeId,
       filepath: renderPath,
-      presetNAme: activeRenderSetting,
+      presetName: activeRenderSetting.value,
     };
 
     fs.existsSync(path.dirname(renderPath)) ||
