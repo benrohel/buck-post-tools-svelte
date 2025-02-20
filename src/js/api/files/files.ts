@@ -1,6 +1,6 @@
-import { match } from "assert";
-import { fs, path } from "../../lib/cep/node";
-import { ca, fi } from "date-fns/locale";
+import { match } from 'assert';
+import { fs, path } from '../../lib/cep/node';
+import { ca, fi } from 'date-fns/locale';
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -28,7 +28,7 @@ export const GetSystemFileVersionsWithShotName = (
   const ext = extMatch ? extMatch[1] : null;
   const sourceRegex = /(?<name>\w+)_v(?<version>\d+)(?<suffix>.+)/;
   const matchRegex = /(?<name>\w+)_v(?<version>\d+)(?<suffix>.+)/;
-  let sourceSuffix = "";
+  let sourceSuffix = '';
   const sourceSuffixResult = matchRegex.exec(
     path.basename(path.basename(filepath))
   )?.groups;
@@ -39,7 +39,7 @@ export const GetSystemFileVersionsWithShotName = (
   let versions: string[] = [];
   const sourceFolderStructure = filepath.split(/_v\d+/)[0];
 
-  console.log("SOURCE FOLDER STRUCTURE", sourceFolderStructure);
+  console.log('SOURCE FOLDER STRUCTURE', sourceFolderStructure);
 
   try {
     for (const file of readAllFiles(path.dirname(dir))) {
@@ -51,7 +51,12 @@ export const GetSystemFileVersionsWithShotName = (
       if (
         matchExt &&
         suffix === sourceSuffix &&
-        targeteFolderStructure === sourceFolderStructure
+        targeteFolderStructure === sourceFolderStructure &&
+        path
+          .basename(file)
+          .toLowerCase()
+          .replace(/v\d+/, '')
+          .match(path.basename(filepath).toLowerCase().replace(/v\d+/, ''))
       )
         versions.push(file);
     }
@@ -63,8 +68,8 @@ export const GetSystemFileVersionsWithShotName = (
 
     const versionsMapped = versions.map((v) => {
       const match = v.match(versionRegex);
-      const version = match ? match[2] : "";
-      const name = match ? match[1] : "";
+      const version = match ? match[2] : '';
+      const name = match ? match[1] : '';
       // let displayName =match && variation ? `${variation} | ${version}` : `${version}`;
       let displayName = `${version}`;
 
@@ -98,7 +103,7 @@ export const GetSystemFileVersions = (
     const version = match ? match[2] : null;
     const name = match ? match[1] : null;
     const variation = name
-      ? name.toLowerCase().replace(shotName.toLowerCase(), "").replace("_", "")
+      ? name.toLowerCase().replace(shotName.toLowerCase(), '').replace('_', '')
       : null;
     const displayName = match ? `${variation} | ${version}` : null;
     return {
@@ -127,12 +132,12 @@ export const GetRenamedFiles = async (
   to: string
 ) => {
   let renamedFile = path.basename(filepath).replace(from, to);
-  renamedFile = renamedFile.replaceAll(/v\d+/g, "");
+  renamedFile = renamedFile.replaceAll(/v\d+/g, '');
   const files = fs.readdirSync(rootFolder);
   let renamedFiles: string[] = [];
 
   for (const file of readAllFiles(rootFolder)) {
-    let trimmedFileName = path.basename(file).replaceAll(/v\d+/g, "");
+    let trimmedFileName = path.basename(file).replaceAll(/v\d+/g, '');
     if (trimmedFileName.match(renamedFile)) {
       renamedFiles.push(file);
     }
@@ -144,7 +149,7 @@ export const FindFileWithoutVersion = (filepath: string): string | null => {
   const versionRegex = /_(v\d+)/i;
   const dir = path.dirname(filepath);
   const filename = path.basename(filepath);
-  const baseName = filename.replace(versionRegex, "");
+  const baseName = filename.replace(versionRegex, '');
   const files = fs.readdirSync(dir);
 
   for (const file of files) {
