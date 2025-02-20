@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { Recycle } from 'svelte-lucide';
-  import { Server, RefreshCw } from 'lucide-svelte';
-  import { buck5Server } from '../stores/server-store';
-  import aquariumLogo from '../assets/aquarium-logo.svg';
-  import buckLogo from '../assets/BUCK_ICON_WHITE.svg';
+  import { Recycle } from "svelte-lucide";
+  import { Server, RefreshCw } from "lucide-svelte";
+  import { buck5Server } from "../stores/server-store";
+  import aquariumLogo from "../assets/aquarium-logo.svg";
+  import pkg from "../../../package.json";
+  import buckLogo from "../assets/BUCK_ICON_WHITE.svg";
   export let authenticated: boolean = false;
+
   const refreshPage = () => {
     window.location.reload();
   };
@@ -14,16 +16,16 @@
   <div style="display:flex; flex-direction:row; align-items:center; gap:4px">
     <div
       style={authenticated
-        ? 'opacity:1;width:16px; height:16px;'
-        : 'opacity:0.3;width:16px; height:16px'}
+        ? "opacity:1;width:16px; height:16px;"
+        : "opacity:0.3;width:16px; height:16px"}
     >
       <img src={buckLogo} alt="Buck5 Logo" />
     </div>
-    <div style={$buck5Server ? 'color:green' : 'color:red;'}>
+    <div style={$buck5Server ? "color:green" : "color:red;"}>
       <Server strokeWidth={4} />
     </div>
   </div>
-  <div id="buck-version" style="font-size:10px">BUCK 2025 v1.0.0-beta</div>
+  <div id="buck-version" style="font-size:10px">BUCK 2025 {pkg.version}</div>
   <button
     class="icon"
     style="margin-right:8px; cursor:pointer; background-color:transparent"
@@ -34,7 +36,7 @@
 </div>
 
 <style lang="scss">
-  @use '../../js/variables.scss' as *;
+  @use "../../js/variables.scss" as *;
   .footer {
     display: flex;
     flex-direction: row;

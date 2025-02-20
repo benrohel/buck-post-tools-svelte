@@ -9,8 +9,8 @@ const config: CEP_Config = {
   port: 3000,
   servePort: 5000,
   startingDebugPort: 8860,
-  extensionManifestVersion: 11.0,
-  requiredRuntimeVersion: 11.0,
+  extensionManifestVersion: 6.0,
+  requiredRuntimeVersion: 9.0,
   hosts: [
     { name: "PPRO", version: "[0.0,99.9]" },
     { name: "AEFT", version: "[0.0,99.9]" },
