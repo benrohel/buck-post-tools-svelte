@@ -14,59 +14,69 @@
   import type { ExportNamePreset } from '../../api/preferences';
   //@ts-ignore
   import { tooltip } from '../../components/Tooltip/tooltip.js';
-  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
-  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
+
   import Select from 'svelte-select';
 
   const tokenList = [
     {
-      value: 'compName',
+      value: '{compName}',
       label: 'Comp Name',
     },
     {
-      value: 'projectVersion',
+      value: '{projectVersion}',
       label: 'Project Version',
     },
     {
-      value: 'version',
+      value: '{version}',
       label: 'Version',
     },
     {
       label: 'frameNumber',
-      value: 'frameNumber',
+      value: '{frameNumber}',
     },
     {
-      value: '/',
+      value: '{task}',
+      label: 'Task',
+    },
+    {
+      value: '{/}',
       label: 'folder',
     },
+  ];
+
+  const tasks = [
+    { label: '2d', value: '2d' },
+    { label: 'Animation', value: 'Animation' },
+    { label: 'Comp', value: 'Comp' },
   ];
   const buck5Tokens = [
     'shots',
     '/',
-    'sequence',
+    '{sequence}',
     '/',
-    'compName',
+    '{compName}',
     '/',
-    'Comp',
+    '{task}',
     '/',
     'ae',
     '/',
     'Render',
     '/',
-    'compName',
-    'Comp',
-    'version',
+    '{compName}',
+    '{task}',
+    '{version}',
   ];
+
   const buck3Tokens = [
-    'compName',
+    '{compName}',
     '/',
     'Render',
     '/',
-    '2d',
+    '{2d}',
     '/',
-    'compName',
-    '2d',
-    'version',
+    '{compName}',
+    '{2d}',
+    '{version}',
   ];
 
   const defaultTemplates = [
@@ -95,28 +105,58 @@
     }
   };
 
+  let pStyle = `"width:auto;
+    overflow:auto;
+    word-break:break-all;
+    justify-content:left;
+    text-align:start";`;
+
   let exportNamePresets = [] as ExportNamePreset[];
   let activePreset = {} as ExportNamePreset;
   let activeRenderSetting: any = {};
   let showBuildPreset = false;
   let presetName = '';
   let prefix = '';
+
+  $: selectedTask = tasks[0];
   $: modalOpen = false;
   //@ts-ignore
   $: tokens = [];
-  let selectedToken = '';
   let version = 0;
   let renderSettingsList: string[] = [];
 
-  $: getPreviewString = () => {
+  $: getHtmlString = () => {
+    let tempString = '';
     if (showBuildPreset) {
-      const tempString = `${tokens.join('_')}`;
-      return tempString.replace(/_\/_/g, '/');
+      tempString = `${tokens.join('_')}`;
+      tempString.replace(/_\/_/g, '/');
     } else {
       if (activePreset && activePreset.template) {
-        return activePreset.template.replace(/_\/_/g, '/');
+        tempString = activePreset.template;
       }
     }
+    const spanString = tempString
+      .replace(/_\/_/g, '/')
+      .replace(/{/g, '<span style="color:#086ce7">{')
+      .replace(/}/g, '}</span>');
+    return `<p style=${pStyle}>${spanString}</p>`;
+  };
+
+  $: htmlString = getHtmlString();
+
+  $: getPreviewString = () => {
+    let tempString = '';
+    if (showBuildPreset) {
+      tempString = `${tokens.join('_')}`;
+      tempString.replace(/_\/_/g, '/');
+    } else {
+      if (activePreset && activePreset.template) {
+        tempString = activePreset.template;
+      }
+    }
+    const spanString = tempString.replace(/_\/_/g, '/');
+
+    return spanString;
   };
 
   $: previewString = getPreviewString();
@@ -124,6 +164,11 @@
   const handlePresetChange = (e: any) => {
     activePreset = e.detail;
     console.log('activePreset', activePreset);
+  };
+
+  const handleTaskChange = (e: any) => {
+    selectedTask = e.detail;
+    console.log('task', selectedTask);
   };
 
   const handleRenderSettingChange = (e: any) => {
@@ -167,15 +212,18 @@
     projectVersion: string;
   }
   const buildRenderPath = (compData: CompRenderData) => {
+    console.log('compData', compData);
     const projectVersionString = compData.projectVersion
       ? compData.projectVersion.padStart(3, '0')
       : '001';
     const dataString = previewString
-      .replace(/projectName/g, compData.projectName)
-      .replace(/compName/g, compData.compName)
-      .replace(/projectVersion/g, projectVersionString)
-      .replace(/version/g, `v${version.toString().padStart(3, '0')}`)
-      .replace(/frameNumber/g, '[####]');
+      .replace(/{projectName}/g, compData.projectName)
+      .replace(/{sequence}/g, 'sequence')
+      .replace(/{compName}/g, compData.compName)
+      .replace(/{task}/g, selectedTask.value ?? '')
+      .replace(/{projectVersion}/g, projectVersionString)
+      .replace(/{version}/g, `v${version.toString().padStart(3, '0')}`)
+      .replace(/{frameNumber}/g, '[####]');
 
     return path.posix.join($sequenceOutputFolder, dataString);
   };
@@ -241,8 +289,7 @@
   $: renderPresetFilter = '';
   let tokenSelectFocus = false;
   $: tokenFilter = '';
-
-  $: console.log('tokens', tokenList);
+  let selectTaskFocus = false;
 </script>
 
 <div>
@@ -270,6 +317,25 @@
     on:change={handlePresetChange}
   />
 </div>
+{#if activePreset.name === 'Buck 5'}
+  <div class="flex-row-between">
+    <p class="select-label">Select Task:</p>
+    <Select
+      --width="auto"
+      listOffset={2}
+      items={tasks}
+      itemId="value"
+      label="label"
+      placeholder="Select Task"
+      showChevron
+      clearable={false}
+      bind:value={selectedTask}
+      bind:focused={selectTaskFocus}
+      bind:listOpen={selectTaskFocus}
+      on:change={handleTaskChange}
+    />
+  </div>
+{/if}
 <div class="flex-row-between">
   <p class="select-label">Select Output Module:</p>
   <Select
@@ -363,13 +429,12 @@
 </div>
 <div class="row-preview">
   <label for="prefix">Preview</label>
-  <p>
-    {previewString}
-  </p>
+
+  {@html htmlString}
 </div>
+
 <div class="flex-row-end action-row">
   <button
-    use:tooltip
     title={'Add to Render Queue'}
     class="active"
     on:click={addCompsToRenderQueue}
@@ -482,5 +547,9 @@
     flex-grow: 1;
     width: 100%;
     text-align: justify;
+  }
+
+  .token {
+    color: $active;
   }
 </style>
