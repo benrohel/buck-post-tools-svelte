@@ -55,8 +55,8 @@ export const GetSystemFileVersionsWithShotName = (
         path
           .basename(file)
           .toLowerCase()
-          .replace(/v\d+/, '')
-          .match(path.basename(filepath).toLowerCase().replace(/v\d+/, ''))
+          .replace(/v\d+/g, '')
+          .match(path.basename(filepath).toLowerCase().replace(/v\d+/g, ''))
       )
         versions.push(file);
     }
