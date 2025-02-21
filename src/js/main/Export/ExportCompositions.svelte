@@ -39,7 +39,7 @@
       label: 'Task',
     },
     {
-      value: '{/}',
+      value: '/',
       label: 'folder',
     },
   ];
@@ -106,6 +106,8 @@
   };
 
   let pStyle = `"width:auto;
+  background-color:#1d1d1e;
+  color:#adadad;
     overflow:auto;
     word-break:break-all;
     justify-content:left;
@@ -129,7 +131,7 @@
     let tempString = '';
     if (showBuildPreset) {
       tempString = `${tokens.join('_')}`;
-      tempString.replace(/_\/_/g, '/');
+      tempString.replace(/_{\/}_/g, '/');
     } else {
       if (activePreset && activePreset.template) {
         tempString = activePreset.template;
@@ -137,7 +139,7 @@
     }
     const spanString = tempString
       .replace(/_\/_/g, '/')
-      .replace(/{/g, '<span style="color:#086ce7">{')
+      .replace(/{/g, '<span style="color:white">{')
       .replace(/}/g, '}</span>');
     return `<p style=${pStyle}>${spanString}</p>`;
   };
@@ -148,7 +150,7 @@
     let tempString = '';
     if (showBuildPreset) {
       tempString = `${tokens.join('_')}`;
-      tempString.replace(/_\/_/g, '/');
+      tempString.replace(/_{\/}_/g, '/');
     } else {
       if (activePreset && activePreset.template) {
         tempString = activePreset.template;
@@ -212,10 +214,9 @@
     projectVersion: string;
   }
   const buildRenderPath = (compData: CompRenderData) => {
-    console.log('compData', compData);
     const projectVersionString = compData.projectVersion
-      ? compData.projectVersion.padStart(3, '0')
-      : '001';
+      ? 'v' + compData.projectVersion.padStart(3, '0')
+      : 'v001';
     const dataString = previewString
       .replace(/{projectName}/g, compData.projectName)
       .replace(/{sequence}/g, 'sequence')
@@ -230,6 +231,7 @@
 
   const addToRenderQueue = async (comp: CompRenderData) => {
     const renderPath = buildRenderPath(comp);
+    console.log('renderPath', renderPath);
     const options = {
       compId: comp.nodeId,
       filepath: renderPath,
@@ -253,18 +255,6 @@
 
   const handleAddWordToken = (e: Event) => {
     tokens = [...tokens, prefix];
-  };
-
-  const loadRenderPresets = async () => {
-    const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
-    );
-    renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith('_')
-    );
-
-    activeRenderSetting = renderSettings[0];
-    return renderSettings;
   };
 
   const closeModal = () => {
