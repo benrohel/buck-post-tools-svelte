@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { XCircle } from "svelte-lucide";
-  export let label: string = "";
-  export let color: string = "#232323";
+  import { XCircle } from 'lucide-svelte';
+  export let label: string = '';
+  export let color: string = '#232323';
   export let closable: boolean = false;
   export let outline: boolean = false;
   export let visible = true;
 
   let rootElement: HTMLElement;
   $: rootElement &&
-    rootElement.style.setProperty("--chip-background", `${color}`);
+    rootElement.style.setProperty('--chip-background', `${color}`);
 
   const close = () => {
     visible = false;
@@ -18,7 +18,7 @@
 <div
   class="chip"
   bind:this={rootElement}
-  style={`display:${visible ? "flex" : "none"}`}
+  style={`display:${visible ? 'flex' : 'none'}`}
 >
   <div id="chip-icon">
     <slot name="icon" />
@@ -32,7 +32,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
   :root {
     --chip-background: inherit;
   }

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { ChevronDown, ChevronUp, PlusSquare } from 'svelte-lucide';
   import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { sequenceOutputFolder } from '../../stores/local-storage';
-  import { ListPlus } from 'lucide-svelte';
+  import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { onMount } from 'svelte';
   import { fs, path } from '../../lib/cep/node';
@@ -372,7 +371,7 @@
         >
           <input type="text" placeholder="Custom String" bind:value={prefix} />
           <button on:click={handleAddWordToken}>
-            <PlusSquare size="16" />
+            <SquarePlus size="16" />
           </button>
         </div>
         <Select

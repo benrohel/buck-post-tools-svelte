@@ -15,7 +15,7 @@
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
-  } from 'svelte-lucide';
+  } from 'lucide-svelte';
   import { onMount, getContext } from 'svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
 

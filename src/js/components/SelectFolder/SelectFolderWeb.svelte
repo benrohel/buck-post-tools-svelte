@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FolderSearch } from 'svelte-lucide';
+  import { FolderSearch } from 'lucide-svelte';
   export let onChange: Function;
   export let defaultFolder = '';
   export let label = 'Select Folder';

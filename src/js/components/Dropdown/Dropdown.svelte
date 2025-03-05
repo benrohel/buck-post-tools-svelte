@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import { clickOutside } from "./ClickOutside";
-  import { onMount, setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import { ChevronDown } from "svelte-lucide";
+  import { fade } from 'svelte/transition';
+  import { clickOutside } from './ClickOutside';
+  import { onMount, setContext } from 'svelte';
+  import { writable } from 'svelte/store';
+  import { ChevronDown } from 'lucide-svelte';
 
-  export let label = "";
-  export let placeholder = "Make Selection";
+  export let label = '';
+  export let placeholder = 'Make Selection';
   export let defaultValue: any;
   export let disabled = false;
   export let onSelected: Function;
@@ -14,8 +14,8 @@
   let isMenuVisible = writable(false);
   export let selectedValue = writable(null);
 
-  setContext("selected", selectedValue);
-  setContext("visible", isMenuVisible);
+  setContext('selected', selectedValue);
+  setContext('visible', isMenuVisible);
 
   const toggleMenu = () => {
     $isMenuVisible = !$isMenuVisible;
@@ -45,7 +45,7 @@
   </div>
 {/if}
 <div
-  class={disabled ? "dropdown disabled" : "dropdown"}
+  class={disabled ? 'dropdown disabled' : 'dropdown'}
   use:clickOutside
   on:click_outside={handleClickOutside}
 >
@@ -64,7 +64,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   .dropdown {
     position: relative;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, ExternalLink } from 'svelte-lucide';
+  import { Check, ExternalLink } from 'lucide-svelte';
   import { sessionProject, trackerType } from '../../stores/local-storage';
   import { openUrl } from '../../lib/utils/utils';
 

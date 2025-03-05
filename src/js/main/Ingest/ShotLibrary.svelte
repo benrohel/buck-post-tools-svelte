@@ -17,7 +17,7 @@
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
-  } from 'svelte-lucide';
+  } from 'lucide-svelte';
   import { onMount, getContext } from 'svelte';
   import { GetFilesLibrary } from '../../api/files/files';
   import FileTable from './FileTable.svelte';

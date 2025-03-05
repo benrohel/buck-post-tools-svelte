@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Download, Upload } from 'svelte-lucide';
+  import { Download, Upload } from 'lucide-svelte';
   import {
     GetSequence,
     GetSelectedSequences,

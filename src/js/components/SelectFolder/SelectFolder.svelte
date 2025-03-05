@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FolderSearch } from 'svelte-lucide';
+  import { FolderSearch } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
 
   export let onChange: Function;
