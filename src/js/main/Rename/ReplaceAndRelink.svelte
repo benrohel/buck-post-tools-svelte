@@ -4,25 +4,26 @@
     FolderSearch,
     RefreshCw,
     ListRestart,
-  } from "lucide-svelte";
-  import { evalES } from "../../lib/utils/bolt";
-  import { GetRenamedFiles } from "../../api/files/files";
-  import { GetSystemFileVersionsWithShotName } from "../../api/files/files";
-  import { GetActiveSequence, GetSequencedClips } from "../../api/edit";
-  import ClipCardReplace from "../../components/ClipCard/ClipCardReplace.svelte";
-  import { fs } from "../../lib/cep/node";
-  import SelectFolder from "../../components/SelectFolder/SelectFolder.svelte";
-  import { onMount, getContext } from "svelte";
+  } from 'lucide-svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import { GetRenamedFiles } from '../../api/files/files';
+  import { GetSystemFileVersionsWithShotName } from '../../api/files/files';
+  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
+  import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
+  import { fs } from '../../lib/cep/node';
+  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
+  import { onMount, getContext } from 'svelte';
+  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
 
-  const appId = getContext("appId");
-  let find = "";
-  let replace = "";
+  const appId = getContext('appId');
+  let find = '';
+  let replace = '';
   $: sequenceClips = [] as any[];
-  let rootFolder = "";
+  let rootFolder = '';
 
   const getAeClips = async () => {
     const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
-    console.log("selectedClips", selectedClips);
+    console.log('selectedClips', selectedClips);
     const systemClips = selectedClips.map((clip: any) => {
       const fileVersion = GetSystemFileVersionsWithShotName(
         clip.filepath,
@@ -45,7 +46,7 @@
       };
     });
     sequenceClips = [...systemClips];
-    console.log("sequenceClips", sequenceClips);
+    console.log('sequenceClips', sequenceClips);
   };
 
   const getPProClips = async () => {
@@ -75,15 +76,15 @@
         };
       });
     sequenceClips = [...systemClips];
-    console.log("sequenceClips", sequenceClips);
+    console.log('sequenceClips', sequenceClips);
   };
 
   const getClips = async () => {
     switch (appId) {
-      case "AEFT":
+      case 'AEFT':
         await getAeClips();
         break;
-      case "PPRO":
+      case 'PPRO':
         await getPProClips();
         break;
       default:
@@ -98,7 +99,7 @@
 
   const handleFindAndReplace = async () => {
     const options = {
-      scope: "project",
+      scope: 'project',
       from: find,
       to: replace,
     };
@@ -111,7 +112,7 @@
   };
 
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
-    console.log("replace clip", clip, selectedVersion);
+    console.log('replace clip', clip, selectedVersion);
     let importOptions = {
       nodeId: clip.nodeId,
       oldPath: clip.filepath,
@@ -140,7 +141,7 @@
   };
 
   const handleReplaceAll = () => {
-    console.log("replace all");
+    console.log('replace all');
     sequenceClips.forEach((clip: any) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
@@ -175,7 +176,7 @@
       file.selectedVersion = file.replacements[0];
     }
     sequenceClips = [...currentFiles];
-    console.log("res", sequenceClips);
+    console.log('res', sequenceClips);
   };
 
   const handleSetOutputFolder = async (folderPath: string) => {
@@ -199,6 +200,8 @@
     <input type="text" placeholder="Replace" bind:value={replace} />
   </div>
 </div>
+<FolderSelctWeb onChange={handleSetOutputFolder} />
+
 <div id="search-folder">
   <SelectFolder
     defaultFolder={rootFolder}

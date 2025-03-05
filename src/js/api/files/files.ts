@@ -1,6 +1,7 @@
 import { match } from 'assert';
 import { fs, path } from '../../lib/cep/node';
 import { ca, fi } from 'date-fns/locale';
+import { posix } from 'path';
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -153,10 +154,140 @@ export const FindFileWithoutVersion = (filepath: string): string | null => {
   const files = fs.readdirSync(dir);
 
   for (const file of files) {
+    console.log('FILE', path.basename(file));
+
     if (file.startsWith(baseName)) {
       return path.join(dir, file);
     }
   }
 
   return null;
+};
+
+export const collectFilesByExtensions = (
+  dir: string,
+  extensions: string[]
+): Record<string, { file: string; frameRange: string }[]> => {
+  const result: Record<string, { file: string; frameRange: string }[]> = {};
+
+  function collectFiles(currentDir: string) {
+    const files = fs.readdirSync(currentDir, { withFileTypes: true });
+    const imageSequenceRegex = /(\d+)\.(jpg|jpeg|png|exr)$/i;
+
+    for (const file of files) {
+      if (file.name.startsWith('.')) {
+        continue; // Skip files starting with "."
+      }
+      const fullPath = path.join(currentDir, file.name);
+
+      if (file.isDirectory()) {
+        collectFiles(fullPath);
+      } else {
+        const ext = path.extname(file.name).toLowerCase();
+        if (extensions.includes(ext)) {
+          if (!result[currentDir]) {
+            result[currentDir] = [];
+          }
+
+          const match = file.name.match(imageSequenceRegex);
+
+          if (match) {
+            const baseName = file.name.match(/^(.*?)\./)[1];
+            const existingSequence = result[currentDir].find((item) =>
+              path.basename(item.file).startsWith(baseName)
+            );
+
+            if (existingSequence) {
+              const frameNumber = parseInt(match[1], 10);
+              const frameRange = existingSequence.frameRange.split('-');
+              const startFrame = parseInt(frameRange[0], 10);
+              const endFrame = parseInt(frameRange[1], 10);
+
+              existingSequence.frameRange = `${Math.min(
+                startFrame,
+                frameNumber
+              )}-${Math.max(endFrame, frameNumber)}`;
+            } else {
+              result[currentDir].push({
+                file: fullPath,
+                frameRange: `${match[1]}-${match[1]}`,
+              });
+            }
+          } else {
+            result[currentDir].push({
+              file: fullPath,
+              frameRange: '',
+            });
+          }
+        }
+      }
+    }
+  }
+
+  collectFiles(dir);
+  return result;
+};
+
+export const groupFilesBySubFolders = (
+  rootFolder: string,
+  collectedFiles: Record<string, { file: string; frameRange: string }[]>
+): Record<string, any> => {
+  const groupedResult: Record<string, any> = {};
+
+  function addToGroup(
+    group: Record<string, any>,
+    relativePath: string[],
+    files: { file: string; frameRange: string }[]
+  ) {
+    const [current, ...rest] = relativePath;
+
+    if (!group[current]) {
+      group[current] = rest.length === 0 ? files : {};
+    }
+
+    if (rest.length > 0) {
+      addToGroup(group[current], rest, files);
+    }
+  }
+
+  for (const [folder, files] of Object.entries(collectedFiles)) {
+    const relativePath = path.relative(rootFolder, folder).split(path.sep);
+    addToGroup(groupedResult, relativePath, files);
+  }
+
+  return groupedResult;
+};
+
+const extensions = [
+  '.jpg',
+  '.png',
+  '.jpeg',
+  '.tiff',
+  '.exr',
+  '.dpx',
+  '.mov',
+  'mp4',
+  '.psd',
+];
+export const GetFilesLibrary = (dir: string): Array<any> => {
+  const productionRegex = /^(.*?)Production/;
+  if (!fs.existsSync(dir)) return [];
+  const posixRoot = path.posix.normalize(dir);
+  const rootFolder = posixRoot.match(productionRegex)[0];
+  const shotsFolder = path.join(rootFolder, 'shots');
+  const assetsFolder = path.join(rootFolder, 'Assets');
+
+  const flatShots = collectFilesByExtensions(shotsFolder, extensions);
+  // const shots = groupFilesBySubFolders(rootFolder, flatShots);
+  const flatAssets = collectFilesByExtensions(assetsFolder, extensions);
+  const assets = groupFilesBySubFolders(rootFolder, flatAssets);
+
+  // Convert the shots and assets objects to arrays
+  const shotsArray = Object.entries(flatShots)
+    .map(([key, value]) => value)
+    .flat();
+  const assetsArray = Object.entries(flatAssets)
+    .map(([key, value]) => value)
+    .flat();
+  return [...shotsArray, ...assetsArray];
 };

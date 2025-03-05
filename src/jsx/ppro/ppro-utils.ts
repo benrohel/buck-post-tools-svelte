@@ -14,7 +14,7 @@ export const deleteItem = (item: ProjectItem) => {
   if (item.type === 2 /* BIN */) {
     item.deleteBin();
   } else {
-    const tmpBin = app.project.rootItem.createBin("tmp");
+    const tmpBin = app.project.rootItem.createBin('tmp');
     item.moveBin(tmpBin);
     tmpBin.deleteBin();
   }
@@ -30,7 +30,7 @@ export const getChildByName = (item: ProjectItem, name: string) => {
 };
 
 export const getParentItem = (item: ProjectItem) => {
-  const dir = item.treePath.split("\\");
+  const dir = item.treePath.split('\\');
   if (dir.length < 2) {
     return app.project.rootItem;
   }
@@ -159,8 +159,8 @@ export const qeGetClipAt = (track: Track, index: number) => {
   for (let i = 0; i < track.numItems; i++) {
     const item = track.getItemAt(i);
     //@ts-ignore
-    const type = item.type as "Empty" | "Clip";
-    if (type === "Clip") {
+    const type = item.type as 'Empty' | 'Clip';
+    if (type === 'Clip') {
       curClipIndex++;
       if (curClipIndex === index) {
         return item;
@@ -172,9 +172,9 @@ export const qeGetClipAt = (track: Track, index: number) => {
 // Metadata Helpers
 
 export const getPrMetadata = (projectItem: ProjectItem, fields: string[]) => {
-  let PProMetaURI = "http://ns.adobe.com/premierePrivateProjectMetaData/1.0/";
+  let PProMetaURI = 'http://ns.adobe.com/premierePrivateProjectMetaData/1.0/';
   if (ExternalObject.AdobeXMPScript === undefined) {
-    ExternalObject.AdobeXMPScript = new ExternalObject("lib:AdobeXMPScript");
+    ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
   }
   if (!app.isDocumentOpen() || !ExternalObject.AdobeXMPScript || !XMPMeta) {
     return {};
@@ -213,3 +213,10 @@ export const fillMogrtText = (
 export const dbToDec = (x: number) => Math.pow(10, (x - 15) / 20);
 
 export const decToDb = (x: number) => 20 * Math.log(x) * Math.LOG10E + 15;
+
+export const getProjectFile = () => {
+  if (app.project && app.project.path === null) {
+    return null;
+  }
+  return app.project.path;
+};

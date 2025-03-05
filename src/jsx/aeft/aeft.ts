@@ -1,9 +1,11 @@
+import { Key } from 'lucide-svelte';
 import { padLeft, openFolderDialog, forEach } from '../utils/utils';
 import {
   findCompByName,
   findFolderByName,
   getOutputModulesTemplates,
   getSelectedCompsForRender,
+  getProjectFile,
 } from './aeft-utils';
 export {
   openFolderDialog,
@@ -11,6 +13,7 @@ export {
   getSelectedCompsForRender,
   findCompByName,
   findFolderByName,
+  getProjectFile,
 };
 
 export const helloWorld = () => {
@@ -248,4 +251,55 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
     om.applyTemplate(presetName);
   }
   om.file = renderFile;
+};
+
+// Nuke Trackers
+
+interface TrackerPoint {
+  x: number[];
+  y: number[];
+}
+interface Tracker {
+  x: number[];
+  y: number[];
+  name: string;
+  xpos: number;
+  ypos: number;
+}
+
+interface TrackersData {
+  [key: string]: Tracker;
+}
+
+const createNukeTracker = (name: string, pointsData: TrackerPoint) => {
+  var comp = app.project.activeItem;
+  if (!comp || !(comp instanceof CompItem)) {
+    alert('Please select a composition');
+    return;
+  }
+
+  var nullLayer = comp.layers.addNull();
+  nullLayer.name = name;
+  var numberOfFrames = pointsData.x.length;
+
+  // Loop through the array and set a position keyframe on each frame
+  for (var i = 0; i < numberOfFrames; i++) {
+    var frame = i * comp.frameDuration;
+    nullLayer
+      .property('Position')
+      // @ts-ignore
+      .setValueAtTime(frame, [
+        pointsData.x[i],
+        comp.height - pointsData.y[i],
+        0,
+      ]);
+  }
+};
+
+export const buildCornerPinFromNuke = (trackingData: TrackersData) => {
+  var keys = ['to1', 'to2', 'to3', 'to4'];
+  for (var i = 0; i < keys.length; i++) {
+    var currentTracker = trackingData[keys[i]];
+    createNukeTracker(keys[i], currentTracker);
+  }
 };

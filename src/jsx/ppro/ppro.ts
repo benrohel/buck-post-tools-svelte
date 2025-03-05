@@ -1,5 +1,8 @@
 import { padLeft, openFolderDialog } from '../utils/utils';
 export { openFolderDialog };
+
+import { getProjectFile } from './ppro-utils';
+export { getProjectFile };
 declare var JSON: any;
 declare const qe: undefined | any;
 

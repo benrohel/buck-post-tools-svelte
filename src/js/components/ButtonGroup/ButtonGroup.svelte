@@ -7,12 +7,7 @@
 
   export let items: ButtonGroupItem[] = [];
   export let onSelectionChange: Function;
-
-  let selected = 0;
-
-  onMount(() => {
-    selected = 0;
-  });
+  export let selected = 0;
 </script>
 
 <div class="button-group">

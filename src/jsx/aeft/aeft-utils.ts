@@ -158,3 +158,10 @@ export const getToken = (token: string, comp: CompItem) => {
       return '';
   }
 };
+
+export const getProjectFile = () => {
+  if (app.project && app.project.file === null) {
+    return null;
+  }
+  return app.project.file;
+};
