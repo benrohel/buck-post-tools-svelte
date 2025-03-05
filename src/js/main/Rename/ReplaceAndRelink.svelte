@@ -124,6 +124,7 @@
       return;
     }
     const res = await evalES(`replaceMedia(${JSON.stringify(importOptions)})`);
+    console.log('replace clip result: ', res);
     const updatedClip = JSON.parse(res);
 
     sequenceClips = sequenceClips.map((c: any) => {
@@ -186,6 +187,8 @@
     }
   };
 
+  $: console.log(rootFolder);
+
   onMount(async () => {
     await getClips();
   });
@@ -200,14 +203,14 @@
     <input type="text" placeholder="Replace" bind:value={replace} />
   </div>
 </div>
-<FolderSelctWeb onChange={handleSetOutputFolder} />
 
 <div id="search-folder">
-  <SelectFolder
+  <FolderSelctWeb bind:value={rootFolder} />
+  <!-- <SelectFolder
     defaultFolder={rootFolder}
     onChange={handleSetOutputFolder}
     label="Select Search Folder"
-  />
+  /> -->
   <button on:click={searchFiles} style="justify-self:flex-end">
     <RefreshCw size="16" />
   </button>

@@ -1,23 +1,24 @@
 <script lang="ts">
   import { FolderSearch } from 'lucide-svelte';
-  export let onChange: Function;
+  import { fs, path } from '../../lib/cep/node';
+  import { evalES } from '../../lib/utils/bolt';
+  // export let onChange: Function;
   export let defaultFolder = '';
   export let label = 'Select Folder';
-  export let message = 'Select Folder';
-
-  let rootFolder = defaultFolder;
+  export let value = defaultFolder;
 
   const handleSetOutputFolder = async () => {
-    const folderPath = window.cep.fs.showOpenDialog(false, true)[0];
-    console.log(rootFolder);
-    if (folderPath) {
-      rootFolder = folderPath;
-      onChange(folderPath);
+    let folderPath = window.cep.fs.showOpenDialog(false, true).data[0];
+    folderPath = folderPath.replace('file://', '');
+    // const folderPath = await evalES(`openFolderDialog("${message}")`, false);
+
+    if (folderPath && fs.statSync(folderPath).isDirectory()) {
+      value = folderPath;
+    } else {
+      await evalES(`alert("You must choose a directory")`, false);
     }
   };
 </script>
-
-<button on:click={handleSetOutputFolder}>{message}</button>
 
 <div class="select-folder">
   <button on:click={handleSetOutputFolder} style="height: 18px;">
@@ -28,7 +29,7 @@
     id="folder-path"
     style="flex-grow: 1; border: none; background-color: transparent;"
     type="text"
-    bind:value={rootFolder}
+    bind:value
     placeholder={label}
   />
 </div>

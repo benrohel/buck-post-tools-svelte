@@ -181,6 +181,7 @@ interface IReplaceMediaOptions {
   nodeId: number;
   oldPath: string;
   newPath: string;
+  isSequence: boolean;
 }
 export const replaceMedia = function (options: IReplaceMediaOptions) {
   var currentClip = getItemFromNodeId(options.nodeId);
@@ -189,7 +190,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
   var nFile = new File(options.newPath);
 
   if (currentClip instanceof FootageItem && pFile.exists && nFile.exists) {
-    if (pFile.fsName.match(/\.\d+|_\d+/)) {
+    if (options.isSequence) {
       currentClip.replaceWithSequence(nFile, true);
     } else {
       currentClip.replace(nFile);

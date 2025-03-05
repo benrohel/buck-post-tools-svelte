@@ -10,15 +10,17 @@
     PencilRuler,
     WrapText,
     ArrowRightFromLine,
+    Code,
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
   import RenameContainer from './Rename/RenameContainer.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
-  // import SettingsContainer from './Settings/SettingsContainer.svelte';
+  import ToolsContainer from './Tools/ToolsContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
+  import Tools from './Project/Tools.svelte';
 
   let backgroundColor: string = '#282c34';
   setContext('appId', appId);
@@ -44,6 +46,12 @@
       value: 4,
       component: ExportContainer,
       icon: ArrowRightFromLine,
+    },
+    {
+      label: 'Tools',
+      value: 5,
+      component: ToolsContainer,
+      icon: Code,
     },
   ];
 

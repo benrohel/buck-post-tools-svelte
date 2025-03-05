@@ -81,7 +81,7 @@
 </div>
 
 <style lang="scss">
-  @import '../../variables.scss';
+  @use '../../variables.scss' as *;
 
   .container {
     margin-top: 8px;
