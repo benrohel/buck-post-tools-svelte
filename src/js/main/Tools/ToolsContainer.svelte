@@ -1,7 +1,38 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  
   import NukeToAe from './NukeToAE.svelte';
+  import {getScriptsList} from '../../api/scripts/tools-scripts';
+
+  import ToolCard from '../../components/ClipCard/ToolCard.svelte';
+  
+ interface ToolData {
+  name: string;
+  version: string;
+  description: string;
+  filepath: string;
+  author?: string;
+  icon?: string;
+}
+
+  interface ToolItem {
+    [key: string]: ToolData;
+  }
+  import toolList from "./tools.json";
+  const tools  = toolList as ToolItem;
+
+
+
+  const appId = getContext('appId') as string;
+
+  console.log(getScriptsList(appId));
+
+  $: toolArray = ()=> {return Object.keys(tools).map((k)=>{
+      return {value: tools[k], label: k}
+    })};
+  
+
+    $:console.log(toolArray())
 
   interface SelectToolItem {
     value: string;
@@ -10,7 +41,6 @@
     apps: string[];
   }
 
-  const appId = getContext('appId') as string;
 
   const renameModes = [
     {
@@ -21,16 +51,13 @@
     },
   ];
 
-  $: filteredModes = renameModes.filter((m) => m.apps.includes(appId));
-  let selectedMode: SelectToolItem =
-    appId === 'PPRO' ? renameModes[0] : renameModes[0];
-  const handleOnMenuChange = (value: any) => (selectedMode = value);
+ 
+ 
 </script>
 
-<MenuSelect
-  items={filteredModes}
-  bind:value={selectedMode}
-  onChange={handleOnMenuChange}
-/>
+<div>
+  {#each toolArray() as tool}
+   <ToolCard scripTool={tool.value}/>
+  {/each}
 
-<svelte:component this={selectedMode.component} />
+</div>

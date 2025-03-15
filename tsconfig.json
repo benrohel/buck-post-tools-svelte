@@ -18,7 +18,9 @@
     "jsx": "preserve",
     "strictNullChecks": false,
     "paths": {
-      "@esTypes/*": ["./src/jsx"]
+      "@esTypes/*": ["./src/jsx"],
+      "@/components": ["./src/js/components"],
+      "@/lib": ["./src/js/lib"],
     }
   },
   "include": ["./src", "./src/js/api/buck5/index.d.ts"],
