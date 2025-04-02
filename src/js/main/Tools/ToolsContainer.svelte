@@ -13,6 +13,7 @@
   filepath: string;
   author?: string;
   icon?: string;
+  apps?: string[];
 }
 
   interface ToolItem {
@@ -27,7 +28,7 @@
 
   console.log(getScriptsList(appId));
 
-  $: toolArray = ()=> {return Object.keys(tools).map((k)=>{
+  $: toolArray = ()=> {return Object.keys(tools).filter((t)=>{return tools[t].apps.includes(appId)}).map((k)=>{
       return {value: tools[k], label: k}
     })};
   
