@@ -5,6 +5,8 @@
   import ClipCard from '../../components/ClipCard/ClipCard.svelte';
   import { Shots } from '../../api/buck5/buck5-api';
   import { sessionProject, storedProject } from '../../stores/local-storage';
+  import { showWarnings } from '../../stores/settings-store';
+  import { sequenceClips } from '../../stores/clips-strore';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
@@ -16,18 +18,19 @@
     ArrowUpDown,
     ExternalLink,
     SearchCheck,
+    TriangleAlert,
   } from 'lucide-svelte';
-  import { getContext } from 'svelte';
+  import { getContext, onMount, setContext } from 'svelte';
+  import { SyncLoader } from 'svelte-loading-spinners';
 
   const appId = getContext('appId');
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
+  let isLoading = false;
 
-  $: sequenceClips = [] as any[];
   $: clips = [] as any[];
 
   const getPProClips = async () => {
-    sequenceClips = [];
     const seq = await GetActiveSequence();
     const pproClips = await GetSequencedClips(seq.id);
     const systemClips = pproClips
@@ -54,7 +57,7 @@
         };
       });
 
-    sequenceClips = [...systemClips];
+    return systemClips;
   };
 
   const getAeClips = async () => {
@@ -89,20 +92,25 @@
           selectedVersion: fileVersion[0],
         };
       });
-    sequenceClips = [...systemClips];
+    return systemClips;
   };
 
   const getClips = async () => {
+    let loadedClips = [];
+
+    isLoading = true;
     switch (appId) {
       case 'PPRO':
-        await getPProClips();
+        loadedClips = await getPProClips();
         break;
       case 'AEFT':
-        await getAeClips();
+        loadedClips = await getAeClips();
         break;
       default:
         break;
     }
+    sequenceClips.set(loadedClips);
+    isLoading = false;
   };
 
   const handleClipSelect = (task: any) => {
@@ -132,7 +140,7 @@
       },
     };
 
-    sequenceClips = sequenceClips.map((c) => {
+    sequenceClips.update((c: any) => {
       if (c.nodeId === clip.nodeId) {
         return {
           ...c,
@@ -163,22 +171,22 @@
   };
 
   const handleReplaceAll = () => {
-    sequenceClips.forEach((clip) => {
+    $sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
   };
   const handleImportAll = () => {
-    sequenceClips.forEach((clip) => {
+    $sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
   };
 
   const handleClipOnChange = async (clip: any, version: any) => {
-    const foundClipIndex = sequenceClips.findIndex((c) => {
+    const foundClipIndex = $sequenceClips.findIndex((c) => {
       return c.nodeId === clip.nodeId;
     });
 
-    sequenceClips[foundClipIndex] = {
+    $sequenceClips[foundClipIndex] = {
       ...clip,
       selectedVersion: version,
     };
@@ -188,7 +196,7 @@
     if (!clips) {
       return;
     }
-    const clipsToUpdates = sequenceClips.filter((clip) => {
+    const clipsToUpdates = $sequenceClips.filter((clip) => {
       return clip.versions.length > 0;
     });
     clipsToUpdates.forEach((clip) => {
@@ -211,6 +219,18 @@
       openUrl(`http://buck.aquarium.app/${$sessionProject}`);
     }
   };
+
+  const handleShowWarnings = () => {
+    $showWarnings = !$showWarnings;
+
+    console.log('showWarnings', $showWarnings);
+  };
+
+  $: console.log(sequenceClips);
+
+  onMount(() => {
+    // getClips();
+  });
 </script>
 
 <div class="ingest-container">
@@ -240,6 +260,12 @@
     <div
       style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
     >
+      <button
+        class={$showWarnings ? 'icon error' : 'icon active'}
+        on:click={handleShowWarnings}
+      >
+        <TriangleAlert color="#1d1d1e" />
+      </button>
       <button class="icon active" on:click={handleReplaceAll}>
         <ArrowUpDown size="20" />
       </button>
@@ -247,8 +273,15 @@
         <Download />
       </button>
     </div>
+    {#if isLoading}
+      <div
+        style="display:flex; flex-direction:row; justify-content:center; align-items:center; padding: 8px;"
+      >
+        <SyncLoader color="#adadad" size="28" />
+      </div>
+    {/if}
     <div id="card-list">
-      {#each sequenceClips as clip, id}
+      {#each $sequenceClips as clip, id}
         {#key clip.nodeId}
           <ClipCard
             {clip}

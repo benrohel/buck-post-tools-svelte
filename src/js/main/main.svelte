@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, setContext } from 'svelte';
+  import { onMount } from 'svelte';
   import { appId } from '../lib/utils/cep';
   import { subscribeBackgroundColor } from '../lib/utils/bolt';
   import '../index.scss';
@@ -23,9 +23,6 @@
   import Tools from './Project/Tools.svelte';
 
   let backgroundColor: string = '#282c34';
-  setContext('appId', appId);
-
-  $: console.log('appId', appId);
 
   let items = [
     {

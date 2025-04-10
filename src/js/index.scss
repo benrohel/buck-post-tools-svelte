@@ -1,4 +1,5 @@
 @use "./variables.scss" as *;
+
 html {
   margin: 0;
   font-family: Helvetica;
@@ -6,6 +7,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   background-color: $darkest;
 }
+
 body {
   margin: 0;
   font-family: Helvetica;
@@ -41,16 +43,19 @@ hr {
   appearance: none;
   background: transparent;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
   padding: 2.25em 1.6875em;
   appearance: none;
 }
+
 ::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 5px;
   appearance: none;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: $dark;
   appearance: none;
@@ -179,11 +184,13 @@ select {
   align-items: center;
   margin: 4px;
 }
+
 select option:hover,
 select option:focus,
 select option:active {
   background: linear-gradient(#000000, #000000);
-  background-color: #000000 !important; /* for IE */
+  background-color: #000000 !important;
+  /* for IE */
   color: #ffed00 !important;
 }
 
@@ -291,6 +298,10 @@ button:active {
   background: $warning;
 }
 
+.error {
+  background: $error;
+}
+
 .primary {
   background: $active;
 }
@@ -369,12 +380,18 @@ input {
 }
 
 .noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Old versions of Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
@@ -404,6 +421,7 @@ input {
   gap: 4px;
   margin: 4px 4px 4px 0px;
 }
+
 .action-row {
   background-color: transparent;
 }
@@ -435,6 +453,7 @@ input {
   width: 100%;
   margin-bottom: 4px;
 }
+
 // Tooltip
 /*This would all go into the global.css file*/
 [data-tooltip] {
@@ -494,6 +513,7 @@ input {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
 [data-tooltip="false"]:hover:before,
 [data-tooltip="false"]:hover:after {
   visibility: hidden;

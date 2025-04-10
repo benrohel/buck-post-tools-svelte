@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, getContext } from 'svelte';
   import { openFile } from '../../lib/utils/utils';
   import { fly } from 'svelte/transition';
   import { Download, ArrowUpDown, Eye } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { GetFileVersion } from '../../api/files/files';
   import { checkVideoFileUpdate } from '../../api/video/video';
+  import { showWarnings } from '../../stores/settings-store';
   import Tooltip from '../Tooltip/Tooltip.svelte';
   export let clip: any;
   export let id = 0;
@@ -96,7 +97,7 @@
     if (isSynced) {
       color = 'color: #3caea3';
     }
-    if (!isVideoMatch) {
+    if (!isVideoMatch && $showWarnings) {
       color = 'color: #ed553b';
     }
     return color;
@@ -113,7 +114,9 @@
     }
     console.log('init card', clip);
     editVersion = GetFileVersion(clip.filepath) ?? '';
-    handleCheckNewVersion();
+    if ($showWarnings) {
+      handleCheckNewVersion();
+    }
   };
 
   $: editIsSelected = () => {
@@ -137,7 +140,9 @@
 >
   <div class="ingest-shot-row">
     {#if clip}
-      <div style="display:flex; flex-direction:row ; align-items:center">
+      <div
+        style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
+      >
         <button class="icon" on:click={handleOpenFile}>
           <Eye />
         </button>
@@ -146,7 +151,7 @@
           class="clip-name-header noselect"
           style={getSyncedColor()}
         >
-          {#if videoDifferences.length > 0}
+          {#if videoDifferences.length > 0 && $showWarnings}
             <Tooltip
               title={videoDifferences.length > 0
                 ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
@@ -182,7 +187,7 @@
       >
         <div class="tooltip-container">
           <button
-            class={isVideoMatch ? 'icon active' : 'icon warning'}
+            class={$showWarnings ? 'icon warning' : 'icon active'}
             on:click={handleReplaceClip}
             disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
           >
