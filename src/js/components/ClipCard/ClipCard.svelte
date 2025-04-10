@@ -140,9 +140,7 @@
 >
   <div class="ingest-shot-row">
     {#if clip}
-      <div
-        style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
-      >
+      <div style="display:flex; flex-direction:row ; align-items:center;">
         <button class="icon" on:click={handleOpenFile}>
           <Eye />
         </button>
@@ -187,7 +185,9 @@
       >
         <div class="tooltip-container">
           <button
-            class={$showWarnings ? 'icon warning' : 'icon active'}
+            class={$showWarnings && !isVideoMatch
+              ? 'icon error'
+              : 'icon active'}
             on:click={handleReplaceClip}
             disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
           >
@@ -230,10 +230,6 @@
 
   .edit-version {
     cursor: pointer;
-  }
-
-  .warning {
-    background-color: #ed553b;
   }
 
   .tooltip-container {

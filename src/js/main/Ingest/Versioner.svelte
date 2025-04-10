@@ -6,7 +6,7 @@
   import { Shots } from '../../api/buck5/buck5-api';
   import { sessionProject, storedProject } from '../../stores/local-storage';
   import { showWarnings } from '../../stores/settings-store';
-  import { sequenceClips } from '../../stores/clips-strore';
+  import { getClips } from '../../api/clip';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
@@ -23,95 +23,11 @@
   import { getContext, onMount, setContext } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
 
-  const appId = getContext('appId');
-
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
 
   $: clips = [] as any[];
-
-  const getPProClips = async () => {
-    const seq = await GetActiveSequence();
-    const pproClips = await GetSequencedClips(seq.id);
-    const systemClips = pproClips
-      .filter((clip) => clip.filepath !== '')
-      .filter((clip) => clip.selected)
-      .map((clip) => {
-        const fileVersion = GetSystemFileVersionsWithShotName(
-          clip.filepath,
-          clip.shotName,
-        );
-        fileVersion.sort((a, b) => {
-          if (a.version > b.version) {
-            return -1;
-          } else if (a.version < b.version) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
-        return {
-          ...clip,
-          versions: fileVersion,
-          selectedVersion: fileVersion[0],
-        };
-      });
-
-    return systemClips;
-  };
-
-  const getAeClips = async () => {
-    const selectedClips = JSON.parse(
-      await evalES(`getSelectedClips()`, false),
-    ) as any[];
-    const systemClips = selectedClips
-      .map((clip) => {
-        return {
-          ...clip,
-          shotName: clip.name.split('_')[0],
-        };
-      })
-      .map((clip) => {
-        const fileVersion = GetSystemFileVersionsWithShotName(
-          clip.filepath,
-          clip.shotName,
-        );
-        fileVersion.sort((a, b) => {
-          if (a.version > b.version) {
-            return -1;
-          } else if (a.version < b.version) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
-
-        return {
-          ...clip,
-          versions: fileVersion,
-          selectedVersion: fileVersion[0],
-        };
-      });
-    return systemClips;
-  };
-
-  const getClips = async () => {
-    let loadedClips = [];
-
-    isLoading = true;
-    switch (appId) {
-      case 'PPRO':
-        loadedClips = await getPProClips();
-        break;
-      case 'AEFT':
-        loadedClips = await getAeClips();
-        break;
-      default:
-        break;
-    }
-    sequenceClips.set(loadedClips);
-    isLoading = false;
-  };
+  $: sequenceClips = [] as any[];
 
   const handleClipSelect = (task: any) => {
     console.log(task);
@@ -140,7 +56,7 @@
       },
     };
 
-    sequenceClips.update((c: any) => {
+    sequenceClips = sequenceClips.map((c: any) => {
       if (c.nodeId === clip.nodeId) {
         return {
           ...c,
@@ -171,32 +87,38 @@
   };
 
   const handleReplaceAll = () => {
-    $sequenceClips.forEach((clip) => {
+    sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
   };
   const handleImportAll = () => {
-    $sequenceClips.forEach((clip) => {
+    sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
   };
 
   const handleClipOnChange = async (clip: any, version: any) => {
-    const foundClipIndex = $sequenceClips.findIndex((c) => {
+    const foundClipIndex = sequenceClips.findIndex((c) => {
       return c.nodeId === clip.nodeId;
     });
 
-    $sequenceClips[foundClipIndex] = {
-      ...clip,
-      selectedVersion: version,
-    };
+    sequenceClips = sequenceClips.map((c: any) => {
+      if (c.nodeId === clip.nodeId) {
+        return {
+          ...c,
+          selectedVersion: version,
+        };
+      } else {
+        return c;
+      }
+    });
   };
 
   const handleUpdateEditClips = async () => {
     if (!clips) {
       return;
     }
-    const clipsToUpdates = $sequenceClips.filter((clip) => {
+    const clipsToUpdates = sequenceClips.filter((clip) => {
       return clip.versions.length > 0;
     });
     clipsToUpdates.forEach((clip) => {
@@ -226,10 +148,12 @@
     console.log('showWarnings', $showWarnings);
   };
 
-  $: console.log(sequenceClips);
+  const handleReloadClips = async () => {
+    sequenceClips = await getClips();
+  };
 
-  onMount(() => {
-    // getClips();
+  onMount(async () => {
+    sequenceClips = await getClips();
   });
 </script>
 
@@ -241,7 +165,7 @@
     <div
       style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
     >
-      <button class="icon" style="margin-left:4px" on:click={getClips}>
+      <button class="icon" style="margin-left:4px" on:click={handleReloadClips}>
         <RefreshCw />
       </button>
       <p class="clip-name-header">NAME</p>
@@ -281,7 +205,7 @@
       </div>
     {/if}
     <div id="card-list">
-      {#each $sequenceClips as clip, id}
+      {#each sequenceClips as clip, id}
         {#key clip.nodeId}
           <ClipCard
             {clip}

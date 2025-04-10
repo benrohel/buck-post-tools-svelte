@@ -14,83 +14,13 @@
   import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
   import { onMount, getContext } from 'svelte';
   import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+  import { getClips } from '../../api/clip';
 
   const appId = getContext('appId');
   let find = '';
   let replace = '';
   $: sequenceClips = [] as any[];
   let rootFolder = '';
-
-  const getAeClips = async () => {
-    const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
-    console.log('selectedClips', selectedClips);
-    const systemClips = selectedClips.map((clip: any) => {
-      const fileVersion = GetSystemFileVersionsWithShotName(
-        clip.filepath,
-        clip.shotName
-      );
-      fileVersion.sort((a, b) => {
-        if (a.version > b.version) {
-          return -1;
-        } else if (a.version < b.version) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
-
-      return {
-        ...clip,
-        versions: fileVersion,
-        selectedVersion: fileVersion[0],
-      };
-    });
-    sequenceClips = [...systemClips];
-    console.log('sequenceClips', sequenceClips);
-  };
-
-  const getPProClips = async () => {
-    const seq = await GetActiveSequence();
-    const pproClips = await GetSequencedClips(seq.id);
-    const systemClips = pproClips
-      .filter((clip) => clip.selected)
-      .map((clip) => {
-        const fileVersion = GetSystemFileVersionsWithShotName(
-          clip.filepath,
-          clip.shotName
-        );
-        fileVersion.sort((a, b) => {
-          if (a.version > b.version) {
-            return -1;
-          } else if (a.version < b.version) {
-            return 1;
-          } else {
-            return 0;
-          }
-        });
-
-        return {
-          ...clip,
-          versions: fileVersion,
-          selectedVersion: fileVersion[0],
-        };
-      });
-    sequenceClips = [...systemClips];
-    console.log('sequenceClips', sequenceClips);
-  };
-
-  const getClips = async () => {
-    switch (appId) {
-      case 'AEFT':
-        await getAeClips();
-        break;
-      case 'PPRO':
-        await getPProClips();
-        break;
-      default:
-        break;
-    }
-  };
 
   const resetList = () => {
     getClips();
@@ -170,7 +100,7 @@
         file.filepath,
         rootFolder,
         find,
-        replace
+        replace,
       );
 
       file.replacements = res.reverse();
