@@ -1,5 +1,6 @@
 <script lang="ts">
   import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
+  import { checkVideoFileUpdate } from '../../api/video/video';
   import { openUrl } from '../../lib/utils/utils';
   import ClipCard from '../../components/ClipCard/ClipCard.svelte';
   import { Shots } from '../../api/buck5/buck5-api';
@@ -11,13 +12,12 @@
   import { evalES } from '../../lib/utils/bolt';
   import {
     Download,
-    Check,
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
+    SearchCheck,
   } from 'lucide-svelte';
-  import { onMount, getContext } from 'svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { getContext } from 'svelte';
 
   const appId = getContext('appId');
 
@@ -36,7 +36,7 @@
       .map((clip) => {
         const fileVersion = GetSystemFileVersionsWithShotName(
           clip.filepath,
-          clip.shotName
+          clip.shotName,
         );
         fileVersion.sort((a, b) => {
           if (a.version > b.version) {
@@ -59,7 +59,7 @@
 
   const getAeClips = async () => {
     const selectedClips = JSON.parse(
-      await evalES(`getSelectedClips()`, false)
+      await evalES(`getSelectedClips()`, false),
     ) as any[];
     const systemClips = selectedClips
       .map((clip) => {
@@ -71,7 +71,7 @@
       .map((clip) => {
         const fileVersion = GetSystemFileVersionsWithShotName(
           clip.filepath,
-          clip.shotName
+          clip.shotName,
         );
         fileVersion.sort((a, b) => {
           if (a.version > b.version) {
@@ -116,6 +116,7 @@
       newPath: selectedVersion.filepath,
       isSequence: false,
     };
+
     const res = await evalES(`replaceMedia(${JSON.stringify(importOptions)})`);
     const updatedClip = JSON.parse(res);
 

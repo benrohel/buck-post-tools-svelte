@@ -5,6 +5,8 @@
   import { Download, ArrowUpDown, Eye } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { GetFileVersion } from '../../api/files/files';
+  import { checkVideoFileUpdate } from '../../api/video/video';
+  import Tooltip from '../Tooltip/Tooltip.svelte';
   export let clip: any;
   export let id = 0;
   export let selected = false;
@@ -16,6 +18,8 @@
   let selectedVersion: any = {};
   let publishedVersion = '';
   let editVersion = '';
+  $: isVideoMatch = false;
+  let videoDifferences: any[] = [];
 
   export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
 
@@ -34,6 +38,7 @@
   const handleSelectVersion = async () => {
     if (onChange) {
       onChange(clip, selectedVersion);
+      handleCheckNewVersion();
     }
   };
 
@@ -60,6 +65,22 @@
     openFile(selectedVersion.filepath);
   };
 
+  const handleCheckNewVersion = async () => {
+    if (!clip.selectedVersion?.filepath) return;
+    const result = await checkVideoFileUpdate(
+      clip.filepath,
+      clip.selectedVersion.filepath,
+    );
+    if (result.length > 0) {
+      console.log(`Clip ${clip.shotName} is different: ${result}`);
+      videoDifferences = result;
+      isVideoMatch = false; // Set to false if there are differences
+    } else {
+      isVideoMatch = true;
+      videoDifferences = [];
+    }
+  };
+
   $: getSyncedColor = (): string => {
     const fileVersion = GetFileVersion(clip.filepath)?.split('v')[1];
     if (!fileVersion) {
@@ -68,14 +89,17 @@
     const timelineVersion = parseInt(fileVersion);
     if (selectedVersion.version == undefined) return 'color: #f6d55c';
     const intSelectedVersion = parseInt(
-      selectedVersion.version?.match(/\d+/)[0]
+      selectedVersion.version?.match(/\d+/)[0],
     );
     let isSynced = intSelectedVersion == timelineVersion;
+    let color = 'color: #f6d55c';
     if (isSynced) {
-      return 'color: #3caea3';
-    } else {
-      return 'color: #f6d55c';
+      color = 'color: #3caea3';
     }
+    if (!isVideoMatch) {
+      color = 'color: #ed553b';
+    }
+    return color;
   };
 
   $: initCard = () => {
@@ -88,8 +112,8 @@
       publishedVersion = '';
     }
     console.log('init card', clip);
-
     editVersion = GetFileVersion(clip.filepath) ?? '';
+    handleCheckNewVersion();
   };
 
   $: editIsSelected = () => {
@@ -102,7 +126,6 @@
 
   onMount(() => {
     initCard();
-    console.log('has version', clip.filepath.match(/v\d+/));
   });
 </script>
 
@@ -123,7 +146,19 @@
           class="clip-name-header noselect"
           style={getSyncedColor()}
         >
-          {clip.shotName}
+          {#if videoDifferences.length > 0}
+            <Tooltip
+              title={videoDifferences.length > 0
+                ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
+                : 'Replace with selected version'}
+              position="top"
+              dark={!isVideoMatch}
+            >
+              {clip.shotName}
+            </Tooltip>
+          {:else}
+            {clip.shotName}
+          {/if}
         </h4>
       </div>
       <h4>{publishedVersion ? publishedVersion : 'n/a'}</h4>
@@ -145,13 +180,15 @@
       <div
         style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
       >
-        <button
-          class="icon active"
-          on:click={handleReplaceClip}
-          disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
-        >
-          <ArrowUpDown />
-        </button>
+        <div class="tooltip-container">
+          <button
+            class={isVideoMatch ? 'icon active' : 'icon warning'}
+            on:click={handleReplaceClip}
+            disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
+          >
+            <ArrowUpDown />
+          </button>
+        </div>
         <button
           class="icon active"
           on:click={handleImportClip}
@@ -188,5 +225,14 @@
 
   .edit-version {
     cursor: pointer;
+  }
+
+  .warning {
+    background-color: #ed553b;
+  }
+
+  .tooltip-container {
+    display: inline-block;
+    position: relative;
   }
 </style>
