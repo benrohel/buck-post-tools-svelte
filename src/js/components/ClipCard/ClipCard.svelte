@@ -8,6 +8,7 @@
   import { checkVideoFileUpdate } from '../../api/video/video';
   import { showWarnings } from '../../stores/settings-store';
   import Tooltip from '../Tooltip/Tooltip.svelte';
+  import { path } from '../../lib/cep/node';
   export let clip: any;
   export let id = 0;
   export let selected = false;
@@ -109,6 +110,10 @@
       publishedVersion = clip.trackerClip
         ? clip.trackerClip.values['Comp Version']
         : '';
+
+      if (!clip.shotName) {
+        clip.shotName = path.basename(clip.filepath).split(/v\d+/)[0];
+      }
     } else {
       publishedVersion = '';
     }

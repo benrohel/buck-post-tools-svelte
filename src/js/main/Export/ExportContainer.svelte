@@ -1,16 +1,14 @@
 <script lang="ts">
-  import { onMount, getContext } from "svelte";
-  import ExportShots from "./ExportShots.svelte";
-  import ExportStills from "./ExportStills.svelte";
-  import ExportSequenceXML from "./ExportSequenceXML.svelte";
-  import ExportCompositions from "./ExportCompositions.svelte";
-  import Dropdown from "../../components/Dropdown/Dropdown.svelte";
-  import DropdownItem from "../../components/Dropdown/DropdownItem.svelte";
-  import Select from "svelte-select";
-  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
-  import filter from "svelte-select/filter";
-  import fi from "date-fns/locale/fi";
-  const appId = getContext("appId") as string;
+  import { onMount, getContext } from 'svelte';
+  import ExportShots from './ExportShots.svelte';
+  import ExportStills from './ExportStills.svelte';
+  import ExportSequenceXML from './ExportSequenceXML.svelte';
+  import ExportCompositions from './ExportCompositions.svelte';
+  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
+  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
+  import Select from 'svelte-select';
+  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { appId } from '../../lib/utils/cep';
 
   interface SelectToolItem {
     value: string;
@@ -21,22 +19,22 @@
 
   const exportModes: SelectToolItem[] = [
     {
-      value: "xml",
-      label: "Sequence to Xml",
+      value: 'xml',
+      label: 'Sequence to Xml',
       component: ExportSequenceXML,
-      apps: ["PPRO"],
+      apps: ['PPRO'],
     },
     {
-      value: "still",
-      label: "Stills",
+      value: 'still',
+      label: 'Stills',
       component: ExportStills,
-      apps: ["PPRO"],
+      apps: ['PPRO'],
     },
     {
-      value: "selectedComps",
-      label: "Selected Comps",
+      value: 'selectedComps',
+      label: 'Selected Comps',
       component: ExportCompositions,
-      apps: ["AEFT"],
+      apps: ['AEFT'],
     },
     // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
@@ -47,7 +45,7 @@
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
   let selectedExportMode: SelectToolItem =
-    appId === "PPRO" ? exportModes[0] : exportModes[2];
+    appId === 'PPRO' ? exportModes[0] : exportModes[2];
 </script>
 
 <MenuSelect

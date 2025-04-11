@@ -859,6 +859,7 @@ declare interface NewSequenceOptions {
   templatePath: string;
   presetPath: string;
   uuid?: string;
+  projectFile: string;
 }
 
 const getSequenceFromName = (id: string): Sequence => {
@@ -876,6 +877,7 @@ export const newSequenceFromPreset = ({
   templatePath,
   presetPath,
   uuid,
+  projectFile
 }: NewSequenceOptions) => {
   app.enableQE();
   app.openDocument(templatePath);
@@ -883,6 +885,7 @@ export const newSequenceFromPreset = ({
   qe.project.newSequence(uuid, presetFile.fsName);
   const newSeq = getSequenceFromName(uuid!);
   newSeq.projectItem.name = sequenceName;
+  app.project.saveAs(projectFile);
 
   return newSeq.projectItem.nodeId;
 };

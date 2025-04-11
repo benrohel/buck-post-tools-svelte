@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { Recycle } from 'lucide-svelte';
   import { Server, RefreshCw } from 'lucide-svelte';
   import { buck5Server } from '../stores/server-store';
-  import aquariumLogo from '../assets/aquarium-logo.svg';
   import pkg from '../../../package.json';
   import buckLogo from '../assets/BUCK_ICON_WHITE.svg';
   export let authenticated: boolean = false;

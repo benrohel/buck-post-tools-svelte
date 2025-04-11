@@ -1,3 +1,16 @@
+export const  selectFolder = (
+  msg: string = "Select a Folder"
+): string | false => {
+  const folder = Folder.selectDialog(msg);
+  // alert(file.fsName);
+  if (folder.exists) {
+    return folder.fsName;
+  }
+  return false;
+};
+
+
+
 export const forEachLayer = (
   comp: CompItem,
   callback: (item: Layer, index: number) => void

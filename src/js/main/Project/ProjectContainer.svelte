@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { getContext } from "svelte";
-  import ProjectStarter from "./ProjectStarter.svelte";
-  import CopySequenceSettings from "./CopySequenceSettings.svelte";
-  import AspectRatios from "./AspectRatios.svelte";
+  import { onMount } from 'svelte';
+  import { getContext } from 'svelte';
+  import ProjectStarter from './ProjectStarter.svelte';
+  import CopySequenceSettings from './CopySequenceSettings.svelte';
+  import AspectRatios from './AspectRatios.svelte';
+  import { appId } from '../../lib/utils/cep';
 
-  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
-  const appId = getContext("appId") as string;
+  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
 
   const toolList = [
     {
-      label: "Start Project",
-      value: "projectStarter",
+      label: 'Start Project',
+      value: 'projectStarter',
       component: ProjectStarter,
-      apps: ["AEFT", "PPRO"],
+      apps: ['AEFT', 'PPRO'],
     },
     {
-      label: "Sequence Settings",
-      value: "sequenceSettings",
+      label: 'Sequence Settings',
+      value: 'sequenceSettings',
       component: CopySequenceSettings,
-      apps: ["PPRO"],
+      apps: ['PPRO'],
     },
     {
-      label: "Aspect Ratios",
-      value: "aspectRatios",
-      apps: ["PPRO"],
+      label: 'Aspect Ratios',
+      value: 'aspectRatios',
+      apps: ['PPRO'],
       component: AspectRatios,
     },
     // {

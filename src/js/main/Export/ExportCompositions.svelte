@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
+  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { sequenceOutputFolder } from '../../stores/local-storage';
   import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
@@ -91,7 +91,7 @@
 
   const presetList: () => Promise<ExportNamePreset[]> = async () => {
     const presets = (await getPreferenceByKey(
-      'exportNamePresets'
+      'exportNamePresets',
     )) as ExportNamePreset[];
     if (presets) {
       return new Promise((resolve) => {
@@ -262,10 +262,10 @@
   };
   onMount(async () => {
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
+      await evalES('getOutputModulesTemplates()'),
     );
     renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith('_')
+      (p: string) => !p.startsWith('_'),
     );
 
     activeRenderSetting = renderSettings[0];
@@ -282,11 +282,7 @@
 </script>
 
 <div>
-  <SelectFolder
-    defaultFolder={$sequenceOutputFolder}
-    onChange={handleSetOutputFolder}
-    label="Select Output Folder"
-  />
+  <FolderSelctWeb bind:value={$sequenceOutputFolder} />
 </div>
 <div class="flex-row-between">
   <p class="select-label">Select Name Preset:</p>

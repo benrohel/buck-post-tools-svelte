@@ -15,16 +15,21 @@
   import { onMount, getContext } from 'svelte';
   import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import { getClips } from '../../api/clip';
+  import { SyncLoader } from 'svelte-loading-spinners';
+  import { notifications } from '../../stores/notifications-store';
 
   const appId = getContext('appId');
   let find = '';
   let replace = '';
   $: sequenceClips = [] as any[];
   let rootFolder = '';
+  let isLoading = false;
 
-  const resetList = () => {
-    getClips();
-    searchFiles();
+  const resetList = async () => {
+    isLoading = true;
+    sequenceClips = await getClips();
+    await searchFiles();
+    isLoading = false;
   };
 
   const handleFindAndReplace = async () => {
@@ -71,11 +76,12 @@
     });
   };
 
-  const handleReplaceAll = () => {
+  const handleReplaceAll = async () => {
     console.log('replace all');
-    sequenceClips.forEach((clip: any) => {
-      handleReplaceClip(clip, clip.selectedVersion);
-    });
+    for (const clip of sequenceClips) {
+      await handleReplaceClip(clip, clip.selectedVersion);
+    }
+    notifications.success('All clips have been successfully replaced', 2000);
   };
   const handleClipOnChange = async (clip: any, version: any) => {
     const foundClipIndex = sequenceClips.findIndex((c) => {
@@ -136,7 +142,6 @@
 
 <div id="search-folder">
   <FolderSelctWeb bind:value={rootFolder} />
-
   <button on:click={searchFiles} style="justify-self:flex-end">
     <RefreshCw size="16" />
   </button>
@@ -161,6 +166,9 @@
     <button on:click={resetList} style="justify-self:flex-start">
       <ListRestart size="16" />
     </button>
+    {#if isLoading}
+      <SyncLoader color="#adadad" size="20" />
+    {/if}
     <button class="active" on:click={handleReplaceAll}> Relink Clips </button>
   </div>
 </div>

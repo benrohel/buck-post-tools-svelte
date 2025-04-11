@@ -22,6 +22,7 @@
   } from 'lucide-svelte';
   import { getContext, onMount, setContext } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
+  import { notifications } from '../../stores/notifications-store';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
@@ -90,11 +91,13 @@
     sequenceClips.forEach((clip) => {
       handleReplaceClip(clip, clip.selectedVersion);
     });
+    notifications.success('All clips have been successfully replaced', 2000);
   };
   const handleImportAll = () => {
     sequenceClips.forEach((clip) => {
       handleImportClip(clip, clip.selectedVersion);
     });
+    notifications.success('All clips have been successfully imported', 2000);
   };
 
   const handleClipOnChange = async (clip: any, version: any) => {
@@ -148,12 +151,17 @@
     console.log('showWarnings', $showWarnings);
   };
 
-  const handleReloadClips = async () => {
-    sequenceClips = await getClips();
+  const handleReloadClips = () => {
+    isLoading = true;
+    getClips().then((clips) => {
+      console.log('clips', clips);
+      sequenceClips = clips;
+      isLoading = false;
+    });
   };
 
-  onMount(async () => {
-    sequenceClips = await getClips();
+  onMount(() => {
+    handleReloadClips();
   });
 </script>
 

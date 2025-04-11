@@ -4,13 +4,11 @@
   import { getPresetFile } from '../../api/SQPreset';
   import { v4 as uuidv4 } from 'uuid';
   import { fs, path } from '../../lib/cep/node';
-  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
+  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import Select from 'svelte-select';
   import { getProjectTemplate } from '../../api/buck-libray';
   import { buck5Server } from '../../stores/server-store';
-  import te from 'date-fns/locale/te';
-  import fr from 'date-fns/locale/fr';
-  const appId: string = getContext('appId');
+  import { appId } from '../../lib/utils/cep';
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },
@@ -57,7 +55,7 @@
 
   $: console.log(
     'file template path:',
-    getProjectTemplate(appId, template.value)
+    getProjectTemplate(appId, template.value),
   );
 
   $: console.log(framerate);
@@ -82,7 +80,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate
+        option.framerate,
       );
       if (sqp) {
         const sequenceOptions = {
@@ -95,7 +93,7 @@
 
         await evalES(
           `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
-          false
+          false,
         );
         fs.unlinkSync(sqp);
       }
@@ -109,12 +107,12 @@
         name: sequenceName,
         projectFile: path.posix.join(
           rootFolder,
-          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
+          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`,
         ),
       };
       await evalES(
         `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
-        false
+        false,
       );
     }
   };
@@ -152,12 +150,7 @@
   <div>You need to be connected to Buck server to use this feature.</div>
 {:else}
   <div style="display:flex; flex-direction:column; text-align:center">
-    <SelectFolder
-      defaultFolder={rootFolder}
-      onChange={handleSetOutputFolder}
-      message="Select Project Save Location"
-      label="Select Project Save Location"
-    />
+    <FolderSelctWeb bind:value={rootFolder} />
     <div class="flex-row-start">
       <label for="projectName">Project Name: </label>
       <input
@@ -168,25 +161,25 @@
         on:change={handleProjectNameChange}
       />
     </div>
-    {#if appId === 'AEFT'}
-      <div class="flex-row-start">
-        <p class="select-label">Template:</p>
-        <Select
-          --width="auto"
-          listOffset={2}
-          label="label"
-          itemId="value"
-          items={templates}
-          placeholder="Template"
-          showChevron
-          clearable={false}
-          bind:value={template}
-          bind:focused={templateFocus}
-          bind:listOpen={templateFocus}
-        />
-      </div>
-    {/if}
-    {#if template.value === 'Shot' || appId === 'PPRO'}
+
+    <div class="flex-row-start">
+      <p class="select-label">Template:</p>
+      <Select
+        --width="auto"
+        listOffset={2}
+        label="label"
+        itemId="value"
+        items={templates}
+        placeholder="Template"
+        showChevron
+        clearable={false}
+        bind:value={template}
+        bind:focused={templateFocus}
+        bind:listOpen={templateFocus}
+      />
+    </div>
+
+    {#if template.value === 'Edit' || appId === 'PPRO'}
       <div class="flex-row-start">
         <p class="select-label">Resolutions:</p>
         <Select

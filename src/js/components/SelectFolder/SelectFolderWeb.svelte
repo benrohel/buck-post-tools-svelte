@@ -8,10 +8,9 @@
   export let value = defaultFolder;
 
   const handleSetOutputFolder = async () => {
-    let folderPath = window.cep.fs.showOpenDialog(false, true).data[0];
+    let folderPath = await evalES(`selectFolder("${label}")`);
+    console.log(folderPath);
     folderPath = folderPath.replace('file://', '');
-    // const folderPath = await evalES(`openFolderDialog("${message}")`, false);
-
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;
     } else {

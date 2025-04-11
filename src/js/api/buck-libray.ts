@@ -15,7 +15,6 @@ export const getProjectTemplate = (appId: string, templateName: string) => {
     appName = 'PREMIERE';
     extensiom = '.prproj';
   }
-  console.log('getProjectTemplate', appId, templateName);
   return path.join(
     SHARED_FOLDER,
     appName,
@@ -23,3 +22,4 @@ export const getProjectTemplate = (appId: string, templateName: string) => {
     `default${templateName}Template${extensiom}`
   );
 };
+

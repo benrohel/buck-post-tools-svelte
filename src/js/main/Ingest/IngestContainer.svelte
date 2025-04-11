@@ -3,9 +3,7 @@
   import Versioner from './Versioner.svelte';
   import ShotLibrary from './ShotLibrary.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-
-  const appId = getContext('appId') as string;
-
+  import { appId } from '../../lib/utils/cep';
   const ingestModes = [
     {
       value: 'versions',
@@ -13,17 +11,17 @@
       component: Versioner,
       apps: ['PPRO', 'AEFT'],
     },
-    {
-      value: 'shotlibrary',
-      label: 'Shot Library',
-      component: ShotLibrary,
-      apps: ['PPRO'],
-    },
+    // {
+    //   value: 'shotlibrary',
+    //   label: 'Shot Library',
+    //   component: ShotLibrary,
+    //   apps: ['PPRO'],
+    // },
   ];
 
   let selectedMode = ingestModes[0];
   let filteredIngestModes = ingestModes.filter((tool) =>
-    tool.apps.includes(appId)
+    tool.apps.includes(appId),
   );
   const handleOnMenuChange = (value: any) => (selectedMode = value);
 </script>

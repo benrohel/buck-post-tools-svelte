@@ -1,20 +1,14 @@
 import { Key } from 'lucide-svelte';
 import { padLeft, openFolderDialog, forEach } from '../utils/utils';
-import {
-  findCompByName,
-  findFolderByName,
-  getOutputModulesTemplates,
-  getSelectedCompsForRender,
-  getProjectFile,
-} from './aeft-utils';
 export {
-  openFolderDialog,
-  getOutputModulesTemplates,
-  getSelectedCompsForRender,
   findCompByName,
   findFolderByName,
+  getOutputModulesTemplates,
+  getSelectedCompsForRender,
   getProjectFile,
-};
+  selectFolder
+} from './aeft-utils';
+
 
 export const helloWorld = () => {
   alert('Hello from After Effects!');
@@ -154,6 +148,21 @@ export const renameToFile = () => {
   return true;
 };
 
+interface IImportOptions {
+  filepath: string;
+  isSequence: boolean;
+}
+
+export const importMediaFile = (options: IImportOptions) => {
+  const f = new File(options.filepath);
+  const importOptions = new ImportOptions();
+  importOptions.sequence = options.isSequence;
+  importOptions.file=f;
+  importOptions.forceAlphabetical = true;
+  var importedItem= app.project.importFile(importOptions);
+  return importedItem.id;
+};
+ 
 export const getSelectedClips = () => {
   var clipsSelection = app.project.selection;
   var clips: any = [];
