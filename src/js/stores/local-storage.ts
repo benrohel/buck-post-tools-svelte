@@ -151,3 +151,13 @@ selectedExportPreset.subscribe((value) => {
     localStorage.setItem("selectedExportPresets", JSON.stringify(value));
   }
 });
+
+// Show Tooltips
+const storedShowTooltips = safeload("showTooltips") ;
+export const showTooltips = writable<boolean>(
+  //@ts-ignore
+  storedShowTooltips ? localStorage.getItem("showTooltips") : false
+);
+showTooltips.subscribe((value) => {
+  localStorage.setItem("showTooltips", JSON.stringify(value));
+});

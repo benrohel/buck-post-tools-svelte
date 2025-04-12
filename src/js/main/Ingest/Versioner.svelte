@@ -4,7 +4,11 @@
   import { openUrl } from '../../lib/utils/utils';
   import ClipCard from '../../components/ClipCard/ClipCard.svelte';
   import { Shots } from '../../api/buck5/buck5-api';
-  import { sessionProject, storedProject } from '../../stores/local-storage';
+  import {
+    sessionProject,
+    showTooltips,
+    storedProject,
+  } from '../../stores/local-storage';
   import { showWarnings } from '../../stores/settings-store';
   import { getClips } from '../../api/clip';
   import {
@@ -23,17 +27,22 @@
   import { getContext, onMount, setContext } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
+  import Tooltip from '../../components/Tooltip/Tooltip.svelte';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
 
   $: clips = [] as any[];
   $: sequenceClips = [] as any[];
+  $: console.log('showTooltips', $showTooltips);
+  $: tooltips = $showTooltips;
 
+  showTooltips.subscribe((value) => {
+    tooltips = value;
+  });
   const handleClipSelect = (task: any) => {
     console.log(task);
   };
-
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
     let importOptions = {
       nodeId: clip.nodeId,
@@ -173,9 +182,16 @@
     <div
       style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
     >
-      <button class="icon" style="margin-left:4px" on:click={handleReloadClips}>
-        <RefreshCw />
-      </button>
+      <Tooltip title={'Reload Clips'} position="top" dark={false}>
+        <button
+          class="icon"
+          style="margin-left:4px"
+          on:click={handleReloadClips}
+        >
+          <RefreshCw />
+        </button>
+      </Tooltip>
+
       <p class="clip-name-header">NAME</p>
     </div>
     <p>PUBLISHED</p>

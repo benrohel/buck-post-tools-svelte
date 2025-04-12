@@ -198,7 +198,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
   var pFile = new File(options.oldPath);
   var nFile = new File(options.newPath);
 
-  if (currentClip instanceof FootageItem && pFile.exists && nFile.exists) {
+  if (currentClip instanceof FootageItem  && nFile.exists) {
     if (options.isSequence) {
       currentClip.replaceWithSequence(nFile, true);
     } else {

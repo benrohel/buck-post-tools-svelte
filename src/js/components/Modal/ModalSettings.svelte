@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { XCircle } from "lucide-svelte";
-
-  export let name = "";
+  import { XCircle } from 'lucide-svelte';
   export let onClose: Function = () => {};
 
   const handleOnClose = () => {
@@ -13,23 +10,36 @@
 
   export function clickOutside(node: any) {
     const handleClick = (event: MouseEvent) => {
-      if (node && !node.contains(event.target) && !event.defaultPrevented) {
-        node.dispatchEvent(new CustomEvent("click_outside", node));
+      if (
+        node &&
+        !node.contains(event.target as Node) &&
+        !event.defaultPrevented
+      ) {
+        node.dispatchEvent(new CustomEvent('click_outside'));
       }
     };
 
-    document.addEventListener("click", handleClick, true);
+    // Use setTimeout to delay adding the event listener
+    // This prevents the modal from closing immediately when it's opened
+    setTimeout(() => {
+      document.addEventListener('click', handleClick, true);
+    }, 50);
 
     return {
       destroy() {
-        document.removeEventListener("click", handleClick, true);
+        document.removeEventListener('click', handleClick, true);
       },
     };
   }
 </script>
 
-<div id="modal-overlay">
-  <div id="topModal" use:clickOutside on:click_outside={handleOnClose}>
+<div id="modal-overlay" on:click={handleOnClose}>
+  <div
+    id="topModal"
+    use:clickOutside
+    on:click_outside={handleOnClose}
+    on:click|stopPropagation
+  >
     <button id="close" on:click={handleOnClose}>
       <XCircle size={20} />
     </button>
@@ -38,16 +48,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
-  .form-row {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 8px;
-  }
-  label {
-    color: $font;
-  }
+  @use '../../variables.scss' as *;
 
   #modal-overlay {
     position: fixed;
@@ -70,16 +71,14 @@
     border: 1px solid $dimmed-font-color;
     background: $darkest;
     display: flex;
-    padding-top: 40px;
+    padding-top: 20px;
     align-items: flex-start;
-    justify-content: center;
   }
 
   #modal-content {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    width: 80%;
   }
 
   #close {

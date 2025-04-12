@@ -1,82 +1,26 @@
 <script lang="ts">
-  import { Check, ExternalLink } from 'lucide-svelte';
-  import { sessionProject, trackerType } from '../../stores/local-storage';
-  import { openUrl } from '../../lib/utils/utils';
+  import { showTooltips } from '../../stores/local-storage';
+  import Toggle from '../../components/Toggle/Toggle.svelte';
 
-  import { Projects } from '../../api/buck5/buck5-api';
-  import { projects } from '../../stores/aquarium-store';
-  import { onMount } from 'svelte';
-
-  const trackerOptions = ['coda', 'aquarium'];
-  let selectedProjectName: string = '';
-  let selectedAquariumProject: any = null;
-
-  const handleSelectProject = (e: any) => {
-    console.log('selected project', e.target.value);
-    console.log('tracker type', $trackerType);
-
-    console.log('selected aquarium project', e.target.value);
-    const proj = $projects.find((p) => p.data.name === e.target.value);
-    console.log(proj);
-    selectedAquariumProject = proj;
-    if (proj) {
-      selectedProjectName = proj.data.name;
-      sessionProject.set(proj._key);
-    }
-    console.log('selected project after', selectedProjectName);
+  const handleChange = (value: boolean) => {
+    showTooltips.set(value);
   };
-
-  const setActiveProject = () => {
-    console.log('set active project');
-    console.log('tracker type', $trackerType);
-    console.log('selected aquarium project', selectedAquariumProject);
-    if ($trackerType === 'aquarium') {
-      sessionProject.set(selectedAquariumProject._key);
-    }
-  };
-
-  onMount(async () => {
-    const projs = await Projects();
-    projects.set(projs);
-    selectedProjectName = projs.find((p) => p._key === $sessionProject)?.data
-      .name;
-  });
-  $: console.log($trackerType);
-  $: console.log($sessionProject);
 </script>
 
 <div class="container">
-  <div class="setting">
-    <p>Tracker Type:</p>
-    <select bind:value={$trackerType}>
-      {#each trackerOptions as trackerOption}
-        <option value={trackerOption}>{trackerOption}</option>
-      {/each}
-    </select>
+  <div
+    style="display:flex; flex-direction:row; align-items:center; justify-content:center;"
+  >
+    <h2>Settings</h2>
   </div>
-  <div class="setting">
-    <p>Project:</p>
 
-    {#if $trackerType === 'aquarium'}
-      <select
-        bind:value={selectedProjectName}
-        on:change={handleSelectProject}
-        class="select-overflow"
-      >
-        {#if $projects != null}
-          {#each $projects as project}
-            <option value={project.data.name}>{project.data.name}</option>
-          {/each}
-        {/if}
-      </select>
-    {/if}
-    <button
-      class="icon active"
-      on:click={setActiveProject}
-      disabled={selectedProjectName.length > 0 ? false : true}
-    >
-      <Check />
-    </button>
+  <div class="flex-row-start">
+    <Toggle
+      label="Show tooltips"
+      checked={$showTooltips}
+      id="show-tooltips"
+      onChange={handleChange}
+    />
   </div>
 </div>
 
@@ -84,28 +28,34 @@
   @use '../../variables.scss' as *;
 
   .container {
-    margin-top: 8px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    min-width: 300px;
+    max-width: 400px;
   }
 
   .setting {
-    font-size: small;
     display: flex;
     flex-direction: row;
     align-items: center;
-
-    gap: 8px;
-    p {
-      margin: 0;
-    }
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 8px 16px;
   }
 
-  .select-overflow {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
+  h2 {
+    color: $font;
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 18px;
+    text-align: center;
+  }
+
+  .select-label {
+    color: $font;
+    font-size: small;
+    margin: 0;
   }
 </style>

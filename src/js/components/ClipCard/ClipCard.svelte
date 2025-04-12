@@ -20,7 +20,7 @@
   let selectedVersion: any = {};
   let publishedVersion = '';
   let editVersion = '';
-  $: isVideoMatch = false;
+  $: isVideoMatch = true;
   let videoDifferences: any[] = [];
 
   export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
@@ -112,7 +112,7 @@
         : '';
 
       if (!clip.shotName) {
-        clip.shotName = path.basename(clip.filepath).split(/v\d+/)[0];
+        clip.shotName = path.basename(clip.filepath).split(/_v\d+/)[0];
       }
     } else {
       publishedVersion = '';
@@ -156,6 +156,7 @@
         >
           {#if videoDifferences.length > 0 && $showWarnings}
             <Tooltip
+              show={true}
               title={videoDifferences.length > 0
                 ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
                 : 'Replace with selected version'}

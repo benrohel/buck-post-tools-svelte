@@ -1,12 +1,22 @@
 <script lang="ts">
-  import { Server, RefreshCw } from 'lucide-svelte';
+  import { Server, RefreshCw, Settings } from 'lucide-svelte';
   import { buck5Server } from '../stores/server-store';
   import pkg from '../../../package.json';
   import buckLogo from '../assets/BUCK_ICON_WHITE.svg';
+
+  import SettingsContainer from './Settings/SettingsContainer.svelte';
+  import ModalSettings from '../components/Modal/ModalSettings.svelte';
+
   export let authenticated: boolean = false;
+  $: showSettings = false;
 
   const refreshPage = () => {
     window.location.reload();
+  };
+
+  const onClose = () => {
+    console.log('Settings modal closed');
+    showSettings = false;
   };
 </script>
 
@@ -24,13 +34,27 @@
     </div>
   </div>
   <div id="buck-version" style="font-size:10px">BUCK 2025 {pkg.version}</div>
-  <button
-    class="icon"
-    style="margin-right:8px; cursor:pointer; background-color:transparent"
-    on:click={refreshPage}
-  >
-    <RefreshCw color="white" />
-  </button>
+  <div style="display:flex; flex-direction:row; align-items:center; gap:4px">
+    <button
+      class="icon"
+      style="margin-right:8px; cursor:pointer; background-color:transparent"
+      on:click={() => (showSettings = !showSettings)}
+    >
+      <Settings color="white" />
+    </button>
+    <button
+      class="icon"
+      style="margin-right:8px; cursor:pointer; background-color:transparent"
+      on:click={refreshPage}
+    >
+      <RefreshCw color="white" />
+    </button>
+  </div>
+  {#if showSettings}
+    <ModalSettings {onClose}>
+      <SettingsContainer />
+    </ModalSettings>
+  {/if}
 </div>
 
 <style lang="scss">

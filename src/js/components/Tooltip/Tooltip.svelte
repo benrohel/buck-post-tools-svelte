@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-
+  import { showTooltips } from '../../stores/local-storage';
   export let title = '';
   export let position = 'bottom'; // top, right, bottom, left
   export let delay = 0; // delay in ms before showing tooltip
   export let width = 'auto'; // width of tooltip
   export let dark = false; // dark theme
   export let followCursor = false; // follow cursor or stay fixed to element
+  export let show = false;
 
   let isHovered = false;
   let tooltipElement: HTMLElement;
@@ -140,7 +141,7 @@
   <slot />
 </div>
 
-{#if isHovered}
+{#if isHovered && ($showTooltips || show)}
   <div
     bind:this={tooltipElement}
     style="top: {y}px; left: {x}px; width: {width}; white-space: pre-line;"
