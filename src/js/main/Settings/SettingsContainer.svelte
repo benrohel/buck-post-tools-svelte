@@ -24,25 +24,29 @@
   >
     <h2>Settings</h2>
   </div>
-  <div class="flex-row-start">
-    <Toggle
-      label="Show tooltips"
-      checked={$appStore.showTooltips}
-      id="show-tooltips"
-      onChange={() => handleChange('showTooltips', !$appStore.showTooltips)}
-    />
-  </div>
-  <div class="flex-row-start">
-    <Toggle
-      label="Remember Rename Relink last search folder"
-      checked={$appStore.rememberLastFolderSearch}
-      id="remember-last-folder-search"
-      onChange={() =>
-        handleChange(
-          'rememberLastFolderSearch',
-          !$appStore.rememberLastFolderSearch,
-        )}
-    />
+  <div class="settings-container">
+    <div class="flex-row-between setting-row">
+      <label for="show-tooltips">Show Tooltips</label>
+      <Toggle
+        checked={$appStore.showTooltips}
+        id="show-tooltips"
+        onChange={() => handleChange('showTooltips', !$appStore.showTooltips)}
+      />
+    </div>
+    <div class="flex-row-between setting-row">
+      <label for="remember-last-folder-search"
+        >Remember Rename Relink last search folder</label
+      >
+      <Toggle
+        checked={$appStore.rememberLastFolderSearch}
+        id="remember-last-folder-search"
+        onChange={() =>
+          handleChange(
+            'rememberLastFolderSearch',
+            !$appStore.rememberLastFolderSearch,
+          )}
+      />
+    </div>
   </div>
   <div class="flex-row-end action-row">
     <button class="active" on:click={saveSettings}>Save Settings</button>
@@ -52,13 +56,20 @@
 <style lang="scss">
   @use '../../variables.scss' as *;
 
-  .container {
-    padding: 16px;
+  .settings-container {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-width: 300px;
-    max-width: 400px;
+    width: 100%;
+    gap: 2px;
+    margin-bottom: 8px;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
   }
 
   .setting {
@@ -77,10 +88,14 @@
     font-size: 18px;
     text-align: center;
   }
+  label {
+    font-size: 12px;
+  }
 
-  .select-label {
-    color: $font;
-    font-size: small;
-    margin: 0;
+  .setting-row {
+    background-color: $extra-dark;
+    margin: 0px 0px 0px 0px;
+
+    padding: 2px 8px;
   }
 </style>

@@ -8,9 +8,9 @@
   import { checkVideoFileUpdate } from '../../api/video/video';
   import { showWarnings } from '../../stores/settings-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { type AppStore } from '../../stores/app-store';
+  import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
-  const appStore = getContext('app-store') as Writable<AppStore>;
+  import TooltipComponent from '../../components/Tooltip/Tooltip.svelte';
   import { path } from '../../lib/cep/node';
   import ToolCard from './ToolCard.svelte';
   export let clip: any;
@@ -156,42 +156,43 @@
 >
   <div class="ingest-shot-row">
     {#if clip}
-      <div style="display:flex; flex-direction:row ; align-items:center;">
-        <Tooltip
-          action={$appStore.showTooltips ? 'hover' : 'none'}
-          content="Open New version in video player"
-          position="right"
-          delay={1000}
+      {#if !isVideoMatch && $showWarnings}
+        <TooltipComponent
+          title={videoDifferences.length > 0
+            ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
+            : 'Replace with selected version'}
         >
-          <div>
+          <div
+            style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
+          >
             <button class="icon" on:click={handleOpenFile}>
               <Eye />
             </button>
-          </div>
-        </Tooltip>
-        <Tooltip
-          action={$appStore.showTooltips ? 'hover' : 'none'}
-          content="Green = Synced,
-        Yellow = Clip has a new version available and ready to be imported.
-        Red = Video mismatch between new version and current version."
-          position="bottom"
-          delay={1000}
-        >
-          <div>
             <h4
               id="shot-label"
               class="clip-name-header noselect"
               style={getSyncedColor()}
             >
-              {#if videoDifferences.length > 0 && $showWarnings}
-                {clip.shotName}
-              {:else}
-                {clip.shotName}
-              {/if}
+              {clip.shotName}
             </h4>
-          </div></Tooltip
+          </div>
+        </TooltipComponent>
+      {:else}
+        <div
+          style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
         >
-      </div>
+          <button class="icon" on:click={handleOpenFile}>
+            <Eye />
+          </button>
+          <h4
+            id="shot-label"
+            class="clip-name-header noselect"
+            style={getSyncedColor()}
+          >
+            {clip.shotName}
+          </h4>
+        </div>
+      {/if}
       <h4>{publishedVersion ? publishedVersion : 'n/a'}</h4>
       <h4 class="edit-version" on:dblclick|preventDefault={handleEditClipCLick}>
         {editVersion}

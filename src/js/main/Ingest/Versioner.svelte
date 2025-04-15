@@ -17,16 +17,15 @@
     RefreshCw,
     ArrowUpDown,
     ExternalLink,
-    SearchCheck,
     TriangleAlert,
   } from 'lucide-svelte';
-  import { getContext, onMount, setContext } from 'svelte';
+  import { onMount } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { type AppStore } from '../../stores/app-store';
+  import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
-  const appStore = getContext('app-store') as Writable<AppStore>;
+
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
 
