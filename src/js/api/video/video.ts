@@ -37,9 +37,6 @@ const ffprobePath = path.join(__dirname, 'ffprobe');
   const sourceJson: VideoInfosCheck = GetVideoInfos(checkSource);
   const destinationJson: VideoInfosCheck = GetVideoInfos(checkDestination);
 
-  console.log('sourceJson', sourceJson);
-  console.log('destinationJson', destinationJson);
-
   const errors: VideoError[] = [];
   Object.keys(sourceJson ).forEach(key => {
     if (sourceJson[key] !== destinationJson[key]) {

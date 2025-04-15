@@ -128,7 +128,6 @@
     } else {
       publishedVersion = '';
     }
-    console.log('init card', clip);
     editVersion = GetFileVersion(clip.filepath) ?? '';
     if ($showWarnings) {
       handleCheckNewVersion();
@@ -148,26 +147,25 @@
   });
 </script>
 
-<div
-  class={!selected ? 'clip-card' : 'clip-card selected'}
-  on:dblclick={handleEditClipCLick}
-  on:keydown={handleSelectTask}
-  transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
+<Tooltip
+  style={{ position: 'fixed !important' }}
+  action={videoDifferences.length > 0 ? 'hover' : 'none'}
+  content={`<b>Video differences detected:</b>${videoDifferences.map((diff) => `<p style="margin: 0px;">${diff.name}: ${diff.source} ≠ ${diff.destination}</p>`).join('')}`}
+  position="bottom"
+  delay={1000}
 >
-  <div class="ingest-shot-row">
-    {#if clip}
-      <div style="display:flex; flex-direction:row ; align-items:center; ">
-        <button class="icon" on:click={handleOpenFile}>
-          <Eye />
-        </button>
-        <Tooltip
-          action={$appStore.showTooltips ? 'hover' : 'none'}
-          content={videoDifferences.length > 0
-            ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
-            : 'Replace with selected version'}
-          position="bottom"
-          delay={1000}
-        >
+  <div
+    class={!selected ? 'clip-card' : 'clip-card selected'}
+    on:dblclick={handleEditClipCLick}
+    on:keydown={handleSelectTask}
+    transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
+  >
+    <div class="ingest-shot-row">
+      {#if clip}
+        <div style="display:flex; flex-direction:row ; align-items:center; ">
+          <button class="icon" on:click={handleOpenFile}>
+            <Eye />
+          </button>
           <div>
             <h4
               id="shot-label"
@@ -181,49 +179,55 @@
               {/if}
             </h4>
           </div>
-        </Tooltip>
-      </div>
-      <h4>{publishedVersion ? publishedVersion : 'n/a'}</h4>
-      <h4 class="edit-version" on:dblclick|preventDefault={handleEditClipCLick}>
-        {editVersion}
-      </h4>
-      <div class="select-wrapper">
-        {#if clip.versions && clip.versions.length > 0}
-          <select bind:value={selectedVersion} on:change={handleSelectVersion}>
-            {#each clip.versions as version, id}
-              <option value={version}>
-                {version.displayName}
-              </option>
-            {/each}
-          </select>
-        {/if}
-      </div>
+        </div>
+        <h4>{publishedVersion ? publishedVersion : 'n/a'}</h4>
+        <h4
+          class="edit-version"
+          on:dblclick|preventDefault={handleEditClipCLick}
+        >
+          {editVersion}
+        </h4>
+        <div class="select-wrapper">
+          {#if clip.versions && clip.versions.length > 0}
+            <select
+              bind:value={selectedVersion}
+              on:change={handleSelectVersion}
+            >
+              {#each clip.versions as version, id}
+                <option value={version}>
+                  {version.displayName}
+                </option>
+              {/each}
+            </select>
+          {/if}
+        </div>
 
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-      >
-        <div class="tooltip-container">
+        <div
+          style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
+        >
+          <div class="tooltip-container">
+            <button
+              class={$showWarnings && !isVideoMatch
+                ? 'icon error'
+                : 'icon active'}
+              on:click={handleReplaceClip}
+              disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
+            >
+              <ArrowUpDown />
+            </button>
+          </div>
           <button
-            class={$showWarnings && !isVideoMatch
-              ? 'icon error'
-              : 'icon active'}
-            on:click={handleReplaceClip}
+            class="icon active"
+            on:click={handleImportClip}
             disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
           >
-            <ArrowUpDown />
+            <Download />
           </button>
         </div>
-        <button
-          class="icon active"
-          on:click={handleImportClip}
-          disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
-        >
-          <Download />
-        </button>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
-</div>
+</Tooltip>
 
 <style lang="scss">
   @use '../../variables.scss' as *;
@@ -254,5 +258,6 @@
   .tooltip-container {
     display: inline-block;
     position: relative;
+    z-index: 1;
   }
 </style>

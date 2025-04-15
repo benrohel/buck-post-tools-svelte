@@ -7,7 +7,7 @@
     "cpy:ffmpeg": "cp node_modules/ffmpeg-ffprobe-static/ffmpeg dist/cep/ffmpeg && cp node_modules/ffmpeg-ffprobe-static/ffprobe dist/cep/ffprobe",
     "build": "rimraf dist/* && tsc -p \"tsconfig-build.json\" && vite build --watch false",
     "build:ffmpeg": "yarn build && yarn cpy:ffmpeg",
-    "zxp": "rimraf dist/* && tsc -p \"tsconfig-build.json\" && cross-env ZXP_PACKAGE=true vite build --watch false",
+    "zxp": "yarn build:ffmpeg && cross-env ZXP_PACKAGE=true vite build --watch false",
     "zip": "rimraf dist/* && tsc -p \"tsconfig-build.json\" && cross-env ZIP_PACKAGE=true vite build --watch false",
     "serve": "cross-env SERVE_PANEL=true vite preview",
     "symlink": "cross-env ACTION=symlink vite",

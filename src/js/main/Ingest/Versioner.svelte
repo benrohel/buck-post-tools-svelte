@@ -195,7 +195,7 @@
       <div>
         <Tooltip
           action={$appStore.showTooltips ? 'hover' : 'none'}
-          content="Show Warnings for clips with video mismatch such as frame range, resolution, etc."
+          content="<b> Show Warnings</b><p style=margin: 0px; >for clips with video mismatch such as frame range, resolution, etc.</p><p style=margin: 0px;> &#9888 Loading files will be significantly slower</p>"
           position="right"
           delay={1000}
         >
@@ -251,7 +251,7 @@
       </div>
     </div>
 
-    <div id="card-list">
+    <div class="card-list">
       {#each sequenceClips as clip, id}
         {#key clip.nodeId}
           <ClipCard
@@ -267,7 +267,7 @@
       {/each}
     </div>
   </div>
-  <div id="coda-header">
+  <!-- <div class="coda-header">
     <div class="form-row"></div>
     <div
       style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
@@ -287,7 +287,7 @@
         <ExternalLink />
       </button>
     </div>
-  </div>
+  </div> -->
 </div>
 
 <style lang="scss">
@@ -310,7 +310,7 @@
     flex-grow: 1;
   }
 
-  #coda-header {
+  .coda-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -322,9 +322,9 @@
     margin-bottom: 4px;
   }
 
-  #card-list {
-    position: absolute;
+  .card-list {
+    position: relative;
     height: calc(100vh - 150px);
-    overflow: scroll;
+    overflow: auto;
   }
 </style>
