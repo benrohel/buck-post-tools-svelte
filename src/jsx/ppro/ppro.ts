@@ -1,5 +1,5 @@
-import { padLeft, openFolderDialog ,padStart} from '../utils/utils';
-export { openFolderDialog };
+import { padLeft, selectFolder ,padStart} from '../utils/utils';
+export { selectFolder };
 
 import { getProjectFile } from './ppro-utils';
 export { getProjectFile };

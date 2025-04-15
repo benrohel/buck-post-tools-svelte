@@ -317,7 +317,8 @@
   }
 
   #card-list {
+    position: absolute;
+    height: calc(100vh - 140px);
     overflow: scroll;
-    height: calc(100vh - 160px);
   }
 </style>

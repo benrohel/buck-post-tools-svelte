@@ -196,7 +196,6 @@ interface IReplaceMediaOptions {
 export const replaceMedia = function (options: IReplaceMediaOptions) {
   var currentClip = getItemFromNodeId(options.nodeId);
 
-  var pFile = new File(options.oldPath);
   var nFile = new File(options.newPath);
 
   if (currentClip instanceof FootageItem  && nFile.exists) {

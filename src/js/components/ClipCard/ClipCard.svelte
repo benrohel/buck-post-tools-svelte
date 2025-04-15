@@ -156,43 +156,33 @@
 >
   <div class="ingest-shot-row">
     {#if clip}
-      {#if !isVideoMatch && $showWarnings}
-        <TooltipComponent
-          title={videoDifferences.length > 0
+      <div style="display:flex; flex-direction:row ; align-items:center; ">
+        <button class="icon" on:click={handleOpenFile}>
+          <Eye />
+        </button>
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content={videoDifferences.length > 0
             ? `Video differences detected:\n${videoDifferences.map((diff) => `${diff.name}: ${diff.source} ≠ ${diff.destination}`).join('\n')}`
             : 'Replace with selected version'}
+          position="bottom"
+          delay={1000}
         >
-          <div
-            style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
-          >
-            <button class="icon" on:click={handleOpenFile}>
-              <Eye />
-            </button>
+          <div>
             <h4
               id="shot-label"
               class="clip-name-header noselect"
               style={getSyncedColor()}
             >
-              {clip.shotName}
+              {#if !isVideoMatch && $showWarnings}
+                {clip.shotName}
+              {:else}
+                {clip.shotName}
+              {/if}
             </h4>
           </div>
-        </TooltipComponent>
-      {:else}
-        <div
-          style="display:flex; flex-direction:row ; align-items:center; overflow: hidden"
-        >
-          <button class="icon" on:click={handleOpenFile}>
-            <Eye />
-          </button>
-          <h4
-            id="shot-label"
-            class="clip-name-header noselect"
-            style={getSyncedColor()}
-          >
-            {clip.shotName}
-          </h4>
-        </div>
-      {/if}
+        </Tooltip>
+      </div>
       <h4>{publishedVersion ? publishedVersion : 'n/a'}</h4>
       <h4 class="edit-version" on:dblclick|preventDefault={handleEditClipCLick}>
         {editVersion}

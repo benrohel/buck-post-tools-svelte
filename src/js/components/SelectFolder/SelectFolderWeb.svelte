@@ -10,9 +10,9 @@
   const handleSetOutputFolder = async () => {
     let folderPath = await evalES(`selectFolder("${label}")`);
     folderPath = folderPath.replace('file://', '');
-    onChange(folderPath);
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;
+      onChange(folderPath);
     } else {
       await evalES(`alert("You must choose a directory")`, false);
     }

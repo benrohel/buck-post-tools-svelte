@@ -66,13 +66,23 @@ export const padLeft = (str: string, paddingValue: string) => {
   return String(paddingValue + str).slice(-paddingValue.length);
 };
 
-export const openFolderDialog = (txt: string) => {
-  var newOutput = Folder.selectDialog(txt);
-  if (newOutput && newOutput.exists) {
-    return newOutput.fsName;
-  } else {
-    return undefined;
+// export const openFolderDialog = (txt: string) => {
+//   var newOutput = Folder.selectDialog(txt);
+//   if (newOutput && newOutput.exists) {
+//     return newOutput.fsName;
+//   } else {
+//     return undefined;
+//   }
+// };
+
+export const  selectFolder = (
+  msg: string = "Select a Folder"
+): string | false => {
+  const folder = Folder.selectDialog(msg);
+  if (folder.exists) {
+    return folder.fsName;
   }
+  return false;
 };
 
 export const padStart = (str: string, paddingValue: string) => {

@@ -16,15 +16,16 @@
   import { notifications } from '../../stores/notifications-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { lastFolderSearch } from '../../stores/local-storage';
-  import { type AppStore } from '../../stores/app-store';
+  import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
+  import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
-  const appStore = getContext('app-store') as Writable<AppStore>;
 
   let find = '';
   let replace = '';
   $: sequenceClips = [] as any[];
   let rootFolder = '';
   let isLoading = false;
+  let isProcessing = false;
 
   const resetList = async () => {
     isLoading = true;
@@ -77,12 +78,53 @@
     });
   };
 
-  const handleReplaceAll = async () => {
-    console.log('replace all');
-    for (const clip of sequenceClips) {
-      await handleReplaceClip(clip, clip.selectedVersion);
+  // Track progress for the progress bar
+  $: processedCount = 0;
+  $: totalCount = 0;
+  $: progressPercentage =
+    totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0;
+
+  const handleReplaceAll = () => {
+    // Only process clips that have a selectedVersion
+    const clipsToProcess = sequenceClips.filter((clip) => clip.selectedVersion);
+    isProcessing = true;
+    processedCount = 0;
+    totalCount = clipsToProcess.length;
+
+    if (clipsToProcess.length === 0) {
+      notifications.warning('No clips selected for replacement', 2000);
+      isProcessing = false;
+      return;
     }
-    notifications.success('All clips have been successfully replaced', 2000);
+    // Process first clip and set up chain
+    processNextClip(clipsToProcess, 0);
+  };
+
+  // Process clips one at a time, updating progress as we go
+  const processNextClip = async (clips: any[], index: number) => {
+    // If we've processed all clips, we're done
+    if (index >= clips.length) {
+      notifications.success('All clips have been successfully replaced', 2000);
+      isProcessing = false;
+      return;
+    }
+
+    const clip = clips[index];
+
+    try {
+      // Process this clip
+      await handleReplaceClip(clip, clip.selectedVersion);
+
+      // Update progress
+      processedCount++;
+
+      // Process next clip
+      processNextClip(clips, index + 1);
+    } catch (error) {
+      console.error(`Error processing clip ${clip.clipName}:`, error);
+      notifications.error(`Failed to replace clip ${clip.clipName}`, 2000);
+      isProcessing = false;
+    }
   };
   const handleClipOnChange = async (clip: any, version: any) => {
     const foundClipIndex = sequenceClips.findIndex((c) => {
@@ -99,6 +141,7 @@
     if (!rootFolder || !find || !replace) {
       return;
     }
+    isLoading = true;
     await getClips();
     const currentFiles = sequenceClips;
 
@@ -115,6 +158,7 @@
     }
     sequenceClips = [...currentFiles];
     console.log('res', sequenceClips);
+    isLoading = false;
   };
 
   const handleSetOutputFolder = async (folderPath: string) => {
@@ -154,7 +198,7 @@
 </div>
 
 <div id="search-folder">
-  <FolderSelctWeb bind:value={rootFolder} onChange={handleSetOutputFolder} />
+  <FolderSelctWeb onChange={handleSetOutputFolder} value={rootFolder} />
   <Tooltip
     action={$appStore.showTooltips ? 'hover' : 'none'}
     content="Search clips in Folder"
@@ -167,7 +211,7 @@
   </Tooltip>
 </div>
 <div
-  style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px;"
+  style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; gap:20px"
 >
   <Tooltip
     action={$appStore.showTooltips ? 'hover' : 'none'}
@@ -179,13 +223,30 @@
       <ListRestart size="16" />
     </button>
   </Tooltip>
+  {#if isProcessing}
+    <div style="width: 60%">
+      <ProgressBar
+        current={processedCount}
+        total={totalCount}
+        percentage={progressPercentage}
+        showLabel={true}
+        showPercentage={false}
+      />
+    </div>
+  {/if}
   {#if isLoading}
     <SyncLoader color="#adadad" size="20" />
   {/if}
-
-  <button title="Relink Clips" class="active" on:click={handleReplaceAll}>
-    Relink Clips
-  </button>
+  <Tooltip
+    action={$appStore.showTooltips ? 'hover' : 'none'}
+    content="<b>Relink Clips</b><p>File System will cache the clips first. This could be slow.</p>"
+    position="left"
+    delay={1000}
+  >
+    <button title="Relink Clips" class="active" on:click={handleReplaceAll}>
+      Relink Clips
+    </button>
+  </Tooltip>
 </div>
 <div style=" height: calc(100vh - 180px); overflow:scroll">
   <div style="overflow: scroll">
