@@ -74,3 +74,7 @@ export const openFolderDialog = (txt: string) => {
     return undefined;
   }
 };
+
+export const padStart = (str: string, paddingValue: string) => {
+  return String(paddingValue + str).slice(-paddingValue.length);
+};

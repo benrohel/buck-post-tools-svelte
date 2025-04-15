@@ -1244,6 +1244,11 @@
   dependencies:
     cookie-storage "^6.1.0"
 
+"@svelte-plugins/tooltips@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@svelte-plugins/tooltips/-/tooltips-3.0.3.tgz#3defe5774afbd3ca46585b6bf97f38d3e11e0d87"
+  integrity sha512-Hs1N/c68yf3OavELTNWWC5W7esrbYp+p0ytRBxihuGXvoiP/TJ7yd5g8qQ8NeTv6ealuqJkBpGo1IrrT8Zy1+Q==
+
 "@sveltejs/vite-plugin-svelte@^1.2.0":
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@sveltejs/vite-plugin-svelte/-/vite-plugin-svelte-1.4.0.tgz#412a735de489ca731d0c780c2b410f45dd95b392"

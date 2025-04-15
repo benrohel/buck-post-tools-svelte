@@ -2,15 +2,15 @@
   import { FolderSearch } from 'lucide-svelte';
   import { fs, path } from '../../lib/cep/node';
   import { evalES } from '../../lib/utils/bolt';
-  // export let onChange: Function;
   export let defaultFolder = '';
   export let label = 'Select Folder';
   export let value = defaultFolder;
+  export let onChange: Function = () => {};
 
   const handleSetOutputFolder = async () => {
     let folderPath = await evalES(`selectFolder("${label}")`);
-    console.log(folderPath);
     folderPath = folderPath.replace('file://', '');
+    onChange(folderPath);
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;
     } else {

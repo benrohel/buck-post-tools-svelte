@@ -1,4 +1,17 @@
 import { writable } from 'svelte/store';
-export const appId = writable<string | null>(null);
-export const showTooltips = writable<boolean>(false);
+import { appId } from '../lib/utils/cep';
 
+
+export interface AppStore {
+  showTooltips: boolean;
+  appId: string;
+  rememberLastFolderSearch: boolean;
+}
+
+export const defaultAppStore: AppStore = {
+  showTooltips: false,
+  appId: appId,
+  rememberLastFolderSearch: true,
+};
+
+export const appStore = writable<AppStore>(defaultAppStore);

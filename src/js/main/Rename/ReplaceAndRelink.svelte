@@ -7,18 +7,19 @@
   } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { GetRenamedFiles } from '../../api/files/files';
-  import { GetSystemFileVersionsWithShotName } from '../../api/files/files';
-  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
   import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
   import { fs } from '../../lib/cep/node';
-  import SelectFolder from '../../components/SelectFolder/SelectFolder.svelte';
   import { onMount, getContext } from 'svelte';
   import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import { getClips } from '../../api/clip';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { lastFolderSearch } from '../../stores/local-storage';
+  import { type AppStore } from '../../stores/app-store';
+  import type { Writable } from 'svelte/store';
+  const appStore = getContext('app-store') as Writable<AppStore>;
 
-  const appId = getContext('appId');
   let find = '';
   let replace = '';
   $: sequenceClips = [] as any[];
@@ -38,7 +39,7 @@
       from: find,
       to: replace,
     };
-    console.log(options);
+
     let prevReplace = replace;
     await evalES(`findAndReplace(${JSON.stringify(options)})`).then((res) => {
       replace = find;
@@ -119,13 +120,25 @@
   const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
       rootFolder = folderPath;
+      if ($appStore.rememberLastFolderSearch) {
+        lastFolderSearch.set(folderPath);
+      }
       searchFiles();
     }
   };
 
-  $: console.log(rootFolder);
+  $: () => {
+    console.log('rootFolder', rootFolder);
+    if ($appStore.rememberLastFolderSearch) {
+      lastFolderSearch.set(rootFolder);
+    }
+  };
 
   onMount(async () => {
+    if ($lastFolderSearch !== null && $appStore.rememberLastFolderSearch) {
+      console.log('lastFolderSearch', $lastFolderSearch);
+      rootFolder = $lastFolderSearch;
+    }
     await getClips();
   });
 </script>
@@ -141,39 +154,60 @@
 </div>
 
 <div id="search-folder">
-  <FolderSelctWeb bind:value={rootFolder} />
-  <button on:click={searchFiles} style="justify-self:flex-end">
-    <RefreshCw size="16" />
-  </button>
+  <FolderSelctWeb bind:value={rootFolder} onChange={handleSetOutputFolder} />
+  <Tooltip
+    action={$appStore.showTooltips ? 'hover' : 'none'}
+    content="Search clips in Folder"
+    position="left"
+    delay={1000}
+  >
+    <button on:click={searchFiles} style="justify-self:flex-end">
+      <RefreshCw size="16" />
+    </button>
+  </Tooltip>
 </div>
-
-<div>
-  {#if sequenceClips && sequenceClips.length > 0}
-    {#each sequenceClips as clip, id}
-      <ClipCardReplace
-        {clip}
-        selected={false}
-        {id}
-        onChange={handleClipOnChange}
-        selectedVersion={clip.selectedVersion}
-      />
-    {/each}
-  {/if}
-
-  <div
-    style="display: flex; flex-direction: row; align-items: center; justify-content: space-between"
+<div
+  style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px;"
+>
+  <Tooltip
+    action={$appStore.showTooltips ? 'hover' : 'none'}
+    content="Reload Clips Selection"
+    position="right"
+    delay={1000}
   >
     <button on:click={resetList} style="justify-self:flex-start">
       <ListRestart size="16" />
     </button>
-    {#if isLoading}
-      <SyncLoader color="#adadad" size="20" />
+  </Tooltip>
+  {#if isLoading}
+    <SyncLoader color="#adadad" size="20" />
+  {/if}
+
+  <button title="Relink Clips" class="active" on:click={handleReplaceAll}>
+    Relink Clips
+  </button>
+</div>
+<div style=" height: calc(100vh - 180px); overflow:scroll">
+  <div style="overflow: scroll">
+    {#if sequenceClips && sequenceClips.length > 0}
+      {#each sequenceClips as clip, id}
+        <ClipCardReplace
+          {clip}
+          selected={false}
+          {id}
+          onChange={handleClipOnChange}
+          selectedVersion={clip.selectedVersion}
+        />
+      {/each}
     {/if}
-    <button class="active" on:click={handleReplaceAll}> Relink Clips </button>
   </div>
 </div>
 
 <style lang="scss">
+  .toto:hover {
+    color: red;
+  }
+
   .row {
     width: 100%;
   }
@@ -193,4 +227,31 @@
     justify-content: space-between;
     margin-bottom: 4px;
   }
+
+  // .tooltip {
+  //   position: relative;
+  //   display: inline-block;
+  // }
+
+  // .tooltip .tooltip-text {
+  //   visibility: hidden;
+  //   width: 120px;
+  //   background-color: #555;
+  //   color: #fff;
+  //   text-align: center;
+  //   border-radius: 6px;
+  //   padding: 5px;
+  //   position: absolute;
+  //   z-index: 1;
+  //   bottom: 125%;
+  //   left: 50%;
+  //   transform: translateX(-50%);
+  //   opacity: 0;
+  //   transition: opacity 0.3s;
+  // }
+
+  // .tooltip:hover .tooltip-text {
+  //   visibility: visible;
+  //   opacity: 1;
+  // }
 </style>

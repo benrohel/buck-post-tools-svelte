@@ -9,6 +9,9 @@ export const  selectFolder = (
   return false;
 };
 
+export const padStart = (str: string, paddingValue: string) => {
+  return String(paddingValue + str).slice(-paddingValue.length);
+};
 
 
 export const forEachLayer = (

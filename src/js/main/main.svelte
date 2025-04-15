@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { appId } from '../lib/utils/cep';
+  import { getContext, onMount, setContext } from 'svelte';
+  import { writable } from 'svelte/store';
   import { subscribeBackgroundColor } from '../lib/utils/bolt';
   import '../index.scss';
   import Tabs from '../components/Tabs/Tabs.svelte';
@@ -20,20 +20,32 @@
   import ToolsContainer from './Tools/ToolsContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
-  import Tools from './Project/Tools.svelte';
+  import {
+    appStore,
+    defaultAppStore,
+    type AppStore,
+  } from '../stores/app-store';
+  import { localAppStore, lastFolderSearch } from '../stores/local-storage';
+
+  import { appId } from '../lib/utils/cep';
 
   let backgroundColor: string = '#282c34';
 
   let items = [
     {
-      label: 'Tools',
+      label: 'Starter',
       value: 1,
       component: ProjectContainer,
       icon: PencilRuler,
     },
-    { label: 'Rename', value: 2, component: RenameContainer, icon: WrapText },
     {
-      label: 'Ingest',
+      label: 'Renaming Tools',
+      value: 2,
+      component: RenameContainer,
+      icon: WrapText,
+    },
+    {
+      label: 'Version Manamgment',
       value: 3,
       component: IngestContainer,
       icon: ArrowDownUp,
@@ -45,7 +57,7 @@
       icon: ArrowRightFromLine,
     },
     {
-      label: 'Tools',
+      label: 'Scripts',
       value: 5,
       component: ToolsContainer,
       icon: Code,
@@ -53,6 +65,14 @@
   ];
 
   let authenticated = false;
+  $: console.log('$localAppStore', $localAppStore);
+  if (!$localAppStore) {
+    appStore.set(defaultAppStore);
+    setContext('app-store', defaultAppStore);
+  } else {
+    appStore.set($localAppStore);
+    setContext('app-store', $localAppStore);
+  }
 
   onMount(async () => {
     if (window.cep) {
@@ -62,6 +82,7 @@
         authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
+    console.log('$localAppStore', $localAppStore);
   });
 </script>
 

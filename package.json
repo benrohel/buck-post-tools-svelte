@@ -14,6 +14,7 @@
     "delsymlink": "cross-env ACTION=delsymlink vite"
   },
   "dependencies": {
+    "@svelte-plugins/tooltips": "^3.0.3",
     "axios": "^1.6.2",
     "buck-client": "../buck5/javascript/lib/buck-client",
     "date-fns": "^2.30.0",

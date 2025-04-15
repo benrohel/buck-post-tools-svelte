@@ -1,5 +1,6 @@
 import { Key } from 'lucide-svelte';
-import { padLeft, openFolderDialog, forEach } from '../utils/utils';
+import { padStart, openFolderDialog, forEach } from '../utils/utils';
+import {findCompByName} from './aeft-utils';
 export {
   findCompByName,
   findFolderByName,
@@ -115,7 +116,7 @@ export const renameShots = (options: any) => {
   var shots = sequence.selectedLayers;
   for (var s = 0; s < shots.length; s++) {
     var shotNumber = (options.startValue + s * options.increment).toString();
-    var padString = padLeft(shotNumber, options.padding);
+    var padString = padStart(shotNumber, options.padding);
     var shotName = options.prefix + padString;
     shots[s].name = shotName;
   }
@@ -312,4 +313,45 @@ export const buildCornerPinFromNuke = (trackingData: TrackersData) => {
     var currentTracker = trackingData[keys[i]];
     createNukeTracker(keys[i], currentTracker);
   }
+};
+
+export const versionUpNames = () => {
+  var selection = app.project.selection;
+  if (selection.length === 0) {
+    alert('No clips selected');
+    return false;
+  }
+
+  for (var c = 0; c < selection.length; c++) {
+    const currentVersion = selection[c].name.match(/_v(\d+)$/);
+    if (!currentVersion) {
+      alert(`No version token found in ${selection[c].name}`);
+      return false;
+    }
+    const version = parseInt(currentVersion[1]) + 1;
+    const versionString = padStart(version.toString(), '000');
+    const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
+    selection[c].name = newName;
+  }
+  return true;
+};
+
+
+export const goToFrame = (nodeId: number) => {
+  const clip = getItemFromNodeId(nodeId);
+  let clipLayer = null;
+  if(clip){
+    var usedIn = clip.usedIn;
+    if(usedIn){
+      var firstComp = usedIn[0];
+      for (var l=1;l<=firstComp.numLayers;l++){
+        clipLayer = firstComp.layer(l) as AVLayer;  
+        if(clipLayer.source.id === clip.id){
+        firstComp.openInViewer();
+        firstComp.time = clipLayer.startTime;
+        }
+     }
+    }
+  }
+  return true;
 };

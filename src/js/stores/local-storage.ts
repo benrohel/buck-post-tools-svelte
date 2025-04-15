@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import type * as BUCK5 from "../api/buck5/index.d";
-
+import { defaultAppStore, type AppStore } from "../stores/app-store";
 const safeload = (key: string) => {
   try {
     if (localStorage.getItem(key) === null) {
@@ -86,6 +86,7 @@ codaTable.subscribe((value) => {
   }
 });
 
+// PPRO
 // StillOutput Folder
 const storedStillOutputFolder = safeload("stillfolder");
 export const stillOutputFolder = writable<string | null>(
@@ -101,6 +102,8 @@ stillOutputFolder.subscribe((value) => {
     localStorage.setItem("stillfolder", JSON.stringify(value));
   }
 });
+
+
 
 // Sequence Output Folder
 const storedSSequenceOutputFolder = safeload("sequencefolder");
@@ -152,12 +155,34 @@ selectedExportPreset.subscribe((value) => {
   }
 });
 
-// Show Tooltips
-const storedShowTooltips = safeload("showTooltips") ;
-export const showTooltips = writable<boolean>(
+
+
+// Replace Search Folder
+export const lastFolderSearch = writable<string | null>(
   //@ts-ignore
-  storedShowTooltips ? localStorage.getItem("showTooltips") : false
+  JSON.parse(
+      localStorage.getItem("lastfoldersearch") ?? null
+  )
 );
-showTooltips.subscribe((value) => {
-  localStorage.setItem("showTooltips", JSON.stringify(value));
+lastFolderSearch.subscribe((value) => {
+  if (value === "") {
+    return;
+  } else {
+    localStorage.setItem("lastfoldersearch", JSON.stringify(value));
+  }
+});
+
+// Replace Search Folder
+export const localAppStore = writable<AppStore>(
+  //@ts-ignore
+  JSON.parse(
+      localStorage.getItem("lacalappstore") ?? JSON.stringify(defaultAppStore)
+  )
+);
+localAppStore.subscribe((value) => {
+  if (value === null) {
+    return;
+  } else {
+    localStorage.setItem("localappstore", JSON.stringify(value));
+  }
 });

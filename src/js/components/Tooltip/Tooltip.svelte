@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { showTooltips } from '../../stores/local-storage';
+
   export let title = '';
   export let position = 'bottom'; // top, right, bottom, left
   export let delay = 0; // delay in ms before showing tooltip
@@ -141,7 +141,7 @@
   <slot />
 </div>
 
-{#if isHovered && ($showTooltips || show)}
+{#if isHovered}
   <div
     bind:this={tooltipElement}
     style="top: {y}px; left: {x}px; width: {width}; white-space: pre-line;"

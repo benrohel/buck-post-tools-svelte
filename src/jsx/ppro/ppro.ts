@@ -1,4 +1,4 @@
-import { padLeft, openFolderDialog } from '../utils/utils';
+import { padLeft, openFolderDialog ,padStart} from '../utils/utils';
 export { openFolderDialog };
 
 import { getProjectFile } from './ppro-utils';
@@ -938,4 +938,25 @@ export const exportSequenceXml = (filepath: string, sequenceId: string) => {
   }
   seq.exportAsFinalCutProXML(filepath);
   return filepath;
+};
+
+
+export const versionUpNames = () => {
+  var selection = getSelectedSequences();
+  if (selection.length === 0) {
+    alert('No Sequences selected');
+    return false;
+  }
+  for (var c = 0; c < selection.length; c++) {
+    const currentVersion = selection[c].name.match(/_v(\d+)$/);
+    if (!currentVersion) {
+      alert(`No version token found in ${selection[c].name}`);
+      return false;
+    }
+    const version = parseInt(currentVersion[1]) + 1;
+    const versionString = padStart(version.toString(), '000');
+    const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
+    selection[c].name = newName;
+  }
+  return true;
 };

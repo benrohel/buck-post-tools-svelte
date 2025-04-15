@@ -4,11 +4,7 @@
   import { openUrl } from '../../lib/utils/utils';
   import ClipCard from '../../components/ClipCard/ClipCard.svelte';
   import { Shots } from '../../api/buck5/buck5-api';
-  import {
-    sessionProject,
-    showTooltips,
-    storedProject,
-  } from '../../stores/local-storage';
+  import { sessionProject, storedProject } from '../../stores/local-storage';
   import { showWarnings } from '../../stores/settings-store';
   import { getClips } from '../../api/clip';
   import {
@@ -27,19 +23,16 @@
   import { getContext, onMount, setContext } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
-  import Tooltip from '../../components/Tooltip/Tooltip.svelte';
-
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { type AppStore } from '../../stores/app-store';
+  import type { Writable } from 'svelte/store';
+  const appStore = getContext('app-store') as Writable<AppStore>;
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
 
   $: clips = [] as any[];
   $: sequenceClips = [] as any[];
-  $: console.log('showTooltips', $showTooltips);
-  $: tooltips = $showTooltips;
 
-  showTooltips.subscribe((value) => {
-    tooltips = value;
-  });
   const handleClipSelect = (task: any) => {
     console.log(task);
   };
@@ -182,7 +175,12 @@
     <div
       style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
     >
-      <Tooltip title={'Reload Clips'} position="top" dark={false}>
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Reload Clips Selection"
+        position="right"
+        delay={1000}
+      >
         <button
           class="icon"
           style="margin-left:4px"
@@ -191,7 +189,6 @@
           <RefreshCw />
         </button>
       </Tooltip>
-
       <p class="clip-name-header">NAME</p>
     </div>
     <p>PUBLISHED</p>
@@ -208,18 +205,39 @@
     <div
       style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
     >
-      <button
-        class={$showWarnings ? 'icon error' : 'icon active'}
-        on:click={handleShowWarnings}
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Show Warnings for clips with video mismatch such as frame range, resolution, etc."
+        position="left"
+        delay={1000}
       >
-        <TriangleAlert color="#1d1d1e" />
-      </button>
-      <button class="icon active" on:click={handleReplaceAll}>
-        <ArrowUpDown size="20" />
-      </button>
-      <button class="icon active" on:click={handleImportAll}>
-        <Download />
-      </button>
+        <button
+          class={$showWarnings ? 'icon error' : 'icon active'}
+          on:click={handleShowWarnings}
+        >
+          <TriangleAlert color="#1d1d1e" />
+        </button>
+      </Tooltip>
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Replace All Clips"
+        position="left"
+        delay={1000}
+      >
+        <button class="icon active" on:click={handleReplaceAll}>
+          <ArrowUpDown size="20" />
+        </button>
+      </Tooltip>
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Import All Clips"
+        position="left"
+        delay={1000}
+      >
+        <button class="icon active" on:click={handleImportAll}>
+          <Download />
+        </button>
+      </Tooltip>
     </div>
     {#if isLoading}
       <div

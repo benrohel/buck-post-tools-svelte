@@ -1,35 +1,38 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import FindAndReplace from "./FindAndReplace.svelte";
-  import PrefixSuffix from "./PrefixAndSuffix.svelte";
-  import SequentialRename from "./SequentialRename.svelte";
-  import RevertToFilename from "./RevertToFilename.svelte";
-  import ReplaceAndRelink from "./ReplaceAndRelink.svelte";
-
-  import MenuSelect from "../../components/MultiSelect/MenuSelect.svelte";
-
-  const appId = getContext("appId");
+  import { getContext } from 'svelte';
+  import FindAndReplace from './FindAndReplace.svelte';
+  import PrefixSuffix from './PrefixAndSuffix.svelte';
+  import SequentialRename from './SequentialRename.svelte';
+  import RevertToFilename from './RevertToFilename.svelte';
+  import ReplaceAndRelink from './ReplaceAndRelink.svelte';
+  import VersionUp from './VersionUp.svelte';
+  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
 
   const renameModes = [
-    { value: "replace", label: "Find and Replace", component: FindAndReplace },
+    { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
     {
-      value: "prefix",
-      label: "Add Prefix or Suffix",
+      value: 'prefix',
+      label: 'Add Prefix or Suffix',
       component: PrefixSuffix,
     },
     {
-      value: "sequential",
-      label: "Sequential Rename",
+      value: 'sequential',
+      label: 'Sequential Rename',
       component: SequentialRename,
     },
     {
-      value: "revert",
-      label: "Revert to filename",
+      value: 'versionUp',
+      label: 'Version Up',
+      component: VersionUp,
+    },
+    {
+      value: 'revert',
+      label: 'Revert to filename',
       component: RevertToFilename,
     },
     {
-      value: "relink",
-      label: "Rename and Relink",
+      value: 'relink',
+      label: 'Rename and Relink',
       component: ReplaceAndRelink,
     },
   ];

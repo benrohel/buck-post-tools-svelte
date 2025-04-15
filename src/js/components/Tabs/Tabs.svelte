@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { type AppStore, appStore } from '../../stores/app-store';
+
   interface TabItem {
     value: number;
     label: string;
@@ -14,18 +17,25 @@
 
 <ul>
   {#each items as item}
-    <li class={activeTabValue === item.value ? "active" : ""}>
+    <li class={activeTabValue === item.value ? 'active' : ''}>
       <span
         on:click={handleClick(item.value)}
         on:keypress={handleClick(item.value)}
       >
         {#if item.icon}
-          <svelte:component this={item.icon} size="12" />
+          <Tooltip
+            action={$appStore.showTooltips ? 'hover' : 'none'}
+            content={item.label}
+            position="bottom"
+            delay={1000}
+          >
+            <svelte:component this={item.icon} size="12" />
+          </Tooltip>
         {:else}
           {item.label}
         {/if}
       </span>
-      <div class={activeTabValue === item.value ? "stripe-active" : ""} />
+      <div class={activeTabValue === item.value ? 'stripe-active' : ''} />
     </li>
   {/each}
 </ul>
@@ -39,7 +49,7 @@
 {/each}
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
   .box {
     margin-bottom: 2px;
     border-radius: 0 0 2px 2px;

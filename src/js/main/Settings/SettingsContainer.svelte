@@ -1,9 +1,20 @@
 <script lang="ts">
-  import { showTooltips } from '../../stores/local-storage';
+  import { localAppStore } from '../../stores/local-storage';
   import Toggle from '../../components/Toggle/Toggle.svelte';
+  import { type AppStore, appStore } from '../../stores/app-store';
+  import { notifications } from '../../stores/notifications-store';
 
-  const handleChange = (value: boolean) => {
-    showTooltips.set(value);
+  const handleChange = (key: keyof AppStore, value: boolean) => {
+    appStore.update((s: AppStore) => ({ ...s, [key]: value }));
+  };
+
+  const saveSettings = () => {
+    localAppStore.set($appStore);
+    if ($localAppStore === $appStore) {
+      notifications.success('Settings saved successfully', 2000);
+    } else {
+      notifications.error('Failed to save settings', 2000);
+    }
   };
 </script>
 
@@ -13,14 +24,28 @@
   >
     <h2>Settings</h2>
   </div>
-
   <div class="flex-row-start">
     <Toggle
       label="Show tooltips"
-      checked={$showTooltips}
+      checked={$appStore.showTooltips}
       id="show-tooltips"
-      onChange={handleChange}
+      onChange={() => handleChange('showTooltips', !$appStore.showTooltips)}
     />
+  </div>
+  <div class="flex-row-start">
+    <Toggle
+      label="Remember Rename Relink last search folder"
+      checked={$appStore.rememberLastFolderSearch}
+      id="remember-last-folder-search"
+      onChange={() =>
+        handleChange(
+          'rememberLastFolderSearch',
+          !$appStore.rememberLastFolderSearch,
+        )}
+    />
+  </div>
+  <div class="flex-row-end action-row">
+    <button class="active" on:click={saveSettings}>Save Settings</button>
   </div>
 </div>
 
