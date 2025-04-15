@@ -23,11 +23,16 @@
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
+  import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
   import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
+  $: isProcessing = false;
+  $: processedCount = 5;
+  $: totalCount = 10;
+  $: progressPercentage = 0;
 
   $: clips = [] as any[];
   $: sequenceClips = [] as any[];
@@ -118,23 +123,6 @@
     });
   };
 
-  const handleUpdateEditClips = async () => {
-    if (!clips) {
-      return;
-    }
-    const clipsToUpdates = sequenceClips.filter((clip) => {
-      return clip.versions.length > 0;
-    });
-    clipsToUpdates.forEach((clip) => {
-      const data = {
-        shot_version: 'v01',
-      };
-      const c = clips.find((c) => {
-        return c.shot._key === clip.shotKey;
-      });
-    });
-  };
-
   const refreshShots = async () => {
     const shots = await Shots(storedProject);
     console.log('client-shots', shots);
@@ -202,49 +190,67 @@
 
   <div>
     <div
-      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
+      style="display:flex; flex-direction:row; justify-content:space-between; align-items:center;"
     >
-      <Tooltip
-        action={$appStore.showTooltips ? 'hover' : 'none'}
-        content="Show Warnings for clips with video mismatch such as frame range, resolution, etc."
-        position="left"
-        delay={1000}
-      >
-        <button
-          class={$showWarnings ? 'icon error' : 'icon active'}
-          on:click={handleShowWarnings}
+      <div>
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content="Show Warnings for clips with video mismatch such as frame range, resolution, etc."
+          position="right"
+          delay={1000}
         >
-          <TriangleAlert color="#1d1d1e" />
-        </button>
-      </Tooltip>
-      <Tooltip
-        action={$appStore.showTooltips ? 'hover' : 'none'}
-        content="Replace All Clips"
-        position="left"
-        delay={1000}
-      >
-        <button class="icon active" on:click={handleReplaceAll}>
-          <ArrowUpDown size="20" />
-        </button>
-      </Tooltip>
-      <Tooltip
-        action={$appStore.showTooltips ? 'hover' : 'none'}
-        content="Import All Clips"
-        position="left"
-        delay={1000}
-      >
-        <button class="icon active" on:click={handleImportAll}>
-          <Download />
-        </button>
-      </Tooltip>
-    </div>
-    {#if isLoading}
-      <div
-        style="display:flex; flex-direction:row; justify-content:center; align-items:center; padding: 8px;"
-      >
-        <SyncLoader color="#adadad" size="28" />
+          <button
+            class={$showWarnings ? 'icon error' : 'icon active'}
+            on:click={handleShowWarnings}
+          >
+            <TriangleAlert color="#1d1d1e" />
+          </button>
+        </Tooltip>
       </div>
-    {/if}
+      {#if isProcessing}
+        <div style="width: 60%">
+          <ProgressBar
+            current={processedCount}
+            total={totalCount}
+            percentage={progressPercentage}
+            showLabel={true}
+            showPercentage={false}
+          />
+        </div>
+      {/if}
+      {#if isLoading}
+        <div
+          style="display:flex; flex-direction:row; justify-content:center; align-items:center; padding: 8px;"
+        >
+          <SyncLoader color="#adadad" size="28" />
+        </div>
+      {/if}
+      <div
+        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
+      >
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content="Replace All Clips"
+          position="left"
+          delay={1000}
+        >
+          <button class="icon active" on:click={handleReplaceAll}>
+            <ArrowUpDown size="20" />
+          </button>
+        </Tooltip>
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content="Import All Clips"
+          position="left"
+          delay={1000}
+        >
+          <button class="icon active" on:click={handleImportAll}>
+            <Download />
+          </button>
+        </Tooltip>
+      </div>
+    </div>
+
     <div id="card-list">
       {#each sequenceClips as clip, id}
         {#key clip.nodeId}
@@ -318,7 +324,7 @@
 
   #card-list {
     position: absolute;
-    height: calc(100vh - 140px);
+    height: calc(100vh - 150px);
     overflow: scroll;
   }
 </style>

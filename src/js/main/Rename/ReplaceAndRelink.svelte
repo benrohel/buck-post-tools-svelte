@@ -18,7 +18,6 @@
   import { lastFolderSearch } from '../../stores/local-storage';
   import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
   import { type AppStore, appStore } from '../../stores/app-store';
-  import type { Writable } from 'svelte/store';
 
   let find = '';
   let replace = '';

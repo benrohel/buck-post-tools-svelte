@@ -12,7 +12,7 @@
   } from '../../api/preferences';
   import type { ExportNamePreset } from '../../api/preferences';
   //@ts-ignore
-  import { tooltip } from '../../components/Tooltip/tooltip.js';
+  import { Tooltip } from '@svelte-plugins/tooltips';
 
   import Select from 'svelte-select';
 
