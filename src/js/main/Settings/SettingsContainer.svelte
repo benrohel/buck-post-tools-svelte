@@ -43,7 +43,21 @@
         onChange={() =>
           handleChange(
             'rememberLastFolderSearch',
-            !$appStore.rememberLastFolderSearch,
+            !$appStore.rememberLastFolderSearch
+          )}
+      />
+    </div>
+    <div class="flex-row-between setting-row">
+      <label for="remember-last-export-path"
+        >Remember last export root folder</label
+      >
+      <Toggle
+        checked={$appStore.rememberLastExportPath}
+        id="remember-last-export-path"
+        onChange={() =>
+          handleChange(
+            'rememberLastExportPath',
+            !$appStore.rememberLastExportPath
           )}
       />
     </div>

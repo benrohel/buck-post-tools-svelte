@@ -6,24 +6,27 @@
     ArrowUp,
     ArrowDown,
     Pencil,
-    Settings,
+    ListPlus,
     ChevronDown,
     ChevronRight,
     Trash,
+    ChevronUp,
   } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-
+  import { lastFolderExport, localAppStore } from '../../stores/local-storage';
+  import { getPreferenceByKey } from '../../api/preferences';
+  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
+  import { appStore } from '../../stores/app-store';
   //
   let activeElement: HTMLInputElement | null = null;
 
   // Available tokens for path construction
   const availableTokens = [
-    { name: 'Comp Name', token: '{comp}' },
+    { name: 'Comp Name', token: '{shot}' },
     { name: 'Project Version', token: '{project_version}' },
     { name: 'Version', token: '{version}' },
-    { name: 'Frame Number', token: '{frame}' },
     { name: 'Task Name', token: '{task}' },
   ];
 
@@ -40,19 +43,17 @@
     parentId?: string | null;
   }
 
+  $: modalOpen = false;
+  $: showBuildPreset = false;
+
   let pathStructure: PathItem[] = [];
+  let version = 0;
+  $: versionString = `v${version.toString().padStart(3, '0')}`;
 
   $: console.log(pathStructure);
 
   // Default exporters for different file types
-  let outputModules: string[] = [
-    'PNG Sequence',
-    'JPEG Sequence',
-    'EXR Sequence',
-    'ProRes 4444',
-    'ProRes 422 HQ',
-    'H.264',
-  ];
+  let outputModules: string[] = [];
 
   $: outputModulesSelectItems = outputModules.map((module) => ({
     value: module,
@@ -64,6 +65,7 @@
   );
 
   let rootFolder = '';
+  let presetName = '';
 
   interface ExportPreset {
     name: string;
@@ -158,6 +160,10 @@
 
   // Initialize with a basic hierarchical structure
   onMount(async () => {
+    if ($appStore.rememberLastExportPath) {
+      lastFolderExport.set($lastFolderExport);
+    }
+    rootFolder = $lastFolderExport;
     const rootId = generateId();
     const rendersId = generateId();
 
@@ -175,7 +181,7 @@
             id: rendersId,
             type: 'folder',
             name: 'renders',
-            path: 'renders',
+            path: '{comp}/renders',
             isEditing: false,
             expanded: true,
             parentId: rootId,
@@ -184,7 +190,7 @@
                 id: generateId(),
                 type: 'file',
                 name: '{comp}_{version}.####.{ext}',
-                path: '{comp}_{version}.####.{ext}',
+                path: '{comp}/renders/{comp}_{version}.####.{ext}',
                 outputModule: 'Prores 422HQ',
                 isEditing: false,
                 parentId: rendersId,
@@ -213,6 +219,11 @@
 
   // Function to set the Root Folder
   function setRootFolder(path: string) {
+    lastFolderExport.set(path);
+    if ($appStore.rememberLastExportPath) {
+      lastFolderExport.set(path);
+    }
+
     rootFolder = path;
   }
 
@@ -306,6 +317,7 @@
 
   // Function to edit an item by ID
   function editItem(itemId: string) {
+    console.log('editItem', itemId);
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       isEditing: true,
@@ -392,28 +404,39 @@
     });
   }
 
+  // Function to handle token addition
+  function handleAddToken(token: { token: string; name: string }) {
+    console.log('adding token', token);
+
+    updateNodeInTree(pathStructure, selectedItemId, (node) => ({
+      ...node,
+      name: `${selectedNode.name}${token.name}`,
+    }));
+  }
+
   // Function to insert a token at cursor position
   function insertToken(input: HTMLInputElement, token: string) {
-    // const start = input.selectionStart || 0;
-    // const end = input.selectionEnd || 0;
-    // const beforeCursor = input.value.substring(0, start);
-    // const afterCursor = input.value.substring(end);
-    // input.value = beforeCursor + token + afterCursor;
-    console.log('inserting token', token);
-    input.value += token;
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const beforeCursor = input.value.substring(0, start);
+    const afterCursor = input.value.substring(end);
+    const newValue = beforeCursor + token + afterCursor;
+    console.log('inserting token', newValue);
+    input.value = newValue;
 
     // Update the model - node ID is stored in the data-id attribute
     const nodeId = input.dataset.id;
+
     if (nodeId) {
       pathStructure = updateNodeInTree(pathStructure, nodeId, (node) => ({
         ...node,
-        name: input.value,
+        name: newValue,
       }));
     }
 
     // Set cursor position after the inserted token
-    // input.selectionStart = start + token.length;
-    // input.selectionEnd = start + token.length;
+    input.selectionStart = start + token.length;
+    input.selectionEnd = start + token.length;
     input.focus();
   }
 
@@ -531,18 +554,36 @@
     return pathPreviewsCache;
   }
 
+  function closeModal() {
+    console.log('close modal outsie');
+    modalOpen = false;
+  }
+
+  async function handleSavePreset() {
+    const namePresets = await getPreferenceByKey('exportNamePresets');
+    const newPreset = { name: presetName, template: pathStructure };
+    console.log('newPreset', newPreset);
+    modalOpen = false;
+  }
+
   // Reactive variables for UI updates
   $: pathPreviews = getMemoizedPaths(pathStructure);
   $: fullPath = pathPreviews.join('\n');
   $: selectedNode = selectedItemId
     ? findNodeById(pathStructure, selectedItemId)
     : null;
+
+  $: console.log('selectedNode', selectedNode);
 </script>
 
 <div class="export-path-builder">
   <div class="header">
     <div class="actions">
-      <SelectFolderWeb onChange={setRootFolder} label="Set Root Folder" />
+      <SelectFolderWeb
+        onChange={setRootFolder}
+        bind:value={rootFolder}
+        label="Set Root Folder"
+      />
       <div style="display: flex; align-items: center; gap: 8px;">
         <label for="export-preset">Presets:</label>
         <MenuSelect
@@ -552,154 +593,191 @@
         />
       </div>
     </div>
-  </div>
-
-  <div class="tokens">
-    <div class="token-list">
-      {#each availableTokens as token}
-        <button class="token-btn" title={token.name}>
-          {token.token}
-        </button>
-      {/each}
+    <div class="flex-row-end">
+      <label for="increment">Version Number: </label>
+      <input type="number" placeholder="Version" bind:value={version} />
     </div>
-  </div>
-  <!-- Item actions panel - outside the tree -->
-  <div class="item-actions-panel">
-    {#if selectedItemId}
-      {@const selectedNode = findNodeById(pathStructure, selectedItemId)}
-      {#if selectedNode}
-        <div class="action-buttons">
-          {#if selectedNode.type === 'folder'}
-            <button
-              on:click={() => addFolder(selectedNode.id)}
-              class="outline"
-              title="Add Folder"
-            >
-              <Folder />
-            </button>
-            <button class="outline" on:click={() => addFile(selectedNode.id)}>
-              <File />
-            </button>
-          {/if}
-          {#if selectedNode.type === 'file'}
-            <MenuSelect
-              items={outputModulesSelectItems}
-              bind:value={selectedOutputModuleMenuItem}
-              onChange={() =>
-                handleOnChangeOutputModule(
-                  selectedNode.id,
-                  selectedOutputModuleMenuItem
-                )}
-            />
-          {/if}
-          <button
-            on:click={() => editItem(selectedNode.id)}
-            class="outline"
-            title="Edit"
-          >
-            <Pencil />
-          </button>
-          <button
-            on:click={() => deleteItem(selectedNode.id)}
-            class="outline"
-            title="Delete"
-          >
-            <Trash />
-          </button>
-        </div>
-      {/if}
-    {:else}
-      <p class="no-selection">Select a folder or file to see actions</p>
-    {/if}
-    <div class="container">
-      <div class="tree-structure">
-        <!-- Non-recursive flat tree rendering -->
-        {#each flattenTree(pathStructure) as { node, depth }}
-          <div
-            class="tree-item {node.type} {selectedItemId === node.id
-              ? 'selected'
-              : ''}"
-            style="margin-left: {depth * 20}px;"
-            on:click={(e) => {
-              e.stopPropagation();
-              selectedItemId = node.id;
-            }}
-          >
-            <div class="item-header">
-              {#if node.type === 'folder'}
-                <button
-                  class="icon-only"
-                  on:click|stopPropagation={() => toggleExpand(node.id)}
-                >
-                  {#if node.expanded}
-                    <ChevronDown />
-                  {:else}
-                    <ChevronRight />
-                  {/if}
-                </button>
-              {:else}
-                <span class="indent"></span>
-              {/if}
-
-              <div class="item-icon">
-                {#if node.type === 'folder'}
-                  <Folder color="white" size="16" />
-                {:else}
-                  <File color="white" size="16" />
-                {/if}
-              </div>
-
-              <div class="item-content">
-                {#if node.isEditing}
-                  <input
-                    id="item-name"
-                    type="text"
-                    placeholder="Enter name"
-                    value={node.name}
-                    data-id={node.id}
-                    on:blur={(e) => saveItem(node.id, e)}
-                    on:keydown={(e) =>
-                      e.key === 'Enter' && saveItem(node.id, e)}
-                    on:focus={(e) => (activeElement = e.target)}
-                  />
-                  <div class="token-dropdown">
-                    <div class="dropdown-content">
-                      {#each availableTokens as token}
-                        <button
-                          class="token-btn"
-                          on:click={() =>
-                            insertToken(activeElement, token.token)}
-                        >
-                          {token.name} ({token.token})
-                        </button>
-                      {/each}
-                    </div>
-                  </div>
-                {:else}
-                  <div class="item-info">
-                    <span class="item-name">{node.name}</span>
-                    {#if node.type === 'file' && node.outputModule}
-                      <span class="exporter">{node.outputModule}</span>
-                    {/if}
-                  </div>
-                {/if}
-              </div>
-            </div>
-          </div>
-        {/each}
+    <div class="preview">
+      <div class="preview-header">Preview:</div>
+      <div class="preview-path">
+        {pathPreviews}
+        <!-- {#each pathPreviews as path}
+          <div class="path-item-preview">{path}</div>
+        {/each} -->
       </div>
     </div>
   </div>
-
-  <div class="preview">
-    <div class="preview-header">Path Preview:</div>
-    <div class="preview-path">
-      {#each pathPreviews as path}
-        <div class="path-item-preview">{path}</div>
-      {/each}
+  <div class="preset-builder">
+    <div class="flex-row-end action-row">
+      <p>Build Export Name Preset</p>
+      <button
+        class="outline"
+        on:click={() => {
+          showBuildPreset = !showBuildPreset;
+        }}
+      >
+        {#if showBuildPreset}
+          <ChevronUp size={16} />
+        {:else}
+          <ChevronDown size={16} />
+        {/if}
+      </button>
     </div>
-  </div>
+    {#if showBuildPreset}
+      <div
+        style="display:flex; flex-direction:row; justify-content:space-between"
+      >
+        <div class="token-list">
+          {#each availableTokens as token}
+            <button
+              class="token-btn"
+              title={token.name}
+              on:click={() => handleAddToken(token)}
+            >
+              {token.token}
+            </button>
+          {/each}
+        </div>
 
+        <div class="flex-row-end action-row">
+          <button
+            on:click={() => {
+              modalOpen = !modalOpen;
+            }}
+          >
+            <ListPlus />
+          </button>
+        </div>
+      </div>
+      <!-- Item actions panel - outside the tree -->
+      <div class="item-actions-panel">
+        {#if selectedItemId}
+          {@const selectedNode = findNodeById(pathStructure, selectedItemId)}
+          {#if selectedNode}
+            <div class="action-buttons">
+              {#if selectedNode.type === 'folder'}
+                <button
+                  on:click={() => addFolder(selectedNode.id)}
+                  class="outline"
+                  title="Add Folder"
+                >
+                  <Folder />
+                </button>
+                <button
+                  class="outline"
+                  on:click={() => addFile(selectedNode.id)}
+                >
+                  <File />
+                </button>
+              {/if}
+              {#if selectedNode.type === 'file'}
+                <MenuSelect
+                  items={outputModulesSelectItems}
+                  bind:value={selectedOutputModuleMenuItem}
+                  onChange={() =>
+                    handleOnChangeOutputModule(
+                      selectedNode.id,
+                      selectedOutputModuleMenuItem
+                    )}
+                />
+              {/if}
+
+              <button
+                on:click={() => deleteItem(selectedNode.id)}
+                class="outline"
+                title="Delete"
+              >
+                <Trash />
+              </button>
+            </div>
+          {/if}
+        {:else}
+          <p class="no-selection">Select a folder or file to see actions</p>
+        {/if}
+        <div class="container">
+          <div class="tree-structure">
+            <!-- Non-recursive flat tree rendering -->
+            {#each flattenTree(pathStructure) as { node, depth }}
+              <div
+                class="tree-item {node.type} {selectedItemId === node.id
+                  ? 'selected'
+                  : ''}"
+                style="margin-left: {depth * 20}px;"
+                on:click={(e) => {
+                  e.stopPropagation();
+                  selectedItemId = node.id;
+                }}
+              >
+                <div class="item-header">
+                  {#if node.type === 'folder'}
+                    <button
+                      class="icon-only"
+                      on:click|stopPropagation={() => toggleExpand(node.id)}
+                    >
+                      {#if node.expanded}
+                        <ChevronDown />
+                      {:else}
+                        <ChevronRight />
+                      {/if}
+                    </button>
+                  {:else}
+                    <span class="indent"></span>
+                  {/if}
+
+                  <div class="item-icon">
+                    {#if node.type === 'folder'}
+                      <Folder color="white" size="16" />
+                    {:else}
+                      <File color="white" size="16" />
+                    {/if}
+                  </div>
+
+                  <div class="item-content">
+                    {#if node.isEditing}
+                      <input
+                        id="item-name"
+                        type="text"
+                        placeholder="Enter name"
+                        value={node.name}
+                        data-id={node.id}
+                        on:blur={(e) => saveItem(node.id, e)}
+                        on:keydown={(e) =>
+                          e.key === 'Enter' && saveItem(node.id, e)}
+                        on:focus={(e) => (activeElement = e.target)}
+                      />
+                      <div class="token-dropdown">
+                        <div class="dropdown-content">
+                          {#each availableTokens as token}
+                            <button
+                              class="token-btn"
+                              on:click={() =>
+                                insertToken(activeElement, token.token)}
+                            >
+                              {token.name} ({token.token})
+                            </button>
+                          {/each}
+                        </div>
+                      </div>
+                    {:else}
+                      <div
+                        class="item-info"
+                        on:dblclick={() => editItem(node.id)}
+                      >
+                        <span class="item-name">{node.name}</span>
+                        {#if node.type === 'file' && node.outputModule}
+                          <span class="exporter">{node.outputModule}</span>
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    {/if}
+  </div>
   {#if pathStructure.some((item) => item.type === 'file')}
     <div class="exporter-selector">
       <div class="exporter-header">Default Exporter:</div>
@@ -712,24 +790,47 @@
   {/if}
 </div>
 
+{#if modalOpen}
+  <ModalSettings onClose={closeModal}>
+    <div id="modal-content">
+      <div class="flex-row-start">
+        <label for="name">Preset name</label>
+        <input type="text" id="name" name="name" bind:value={presetName} />
+      </div>
+      <div class="row-preview">
+        <label for="prefix">Preview</label>
+        <p>
+          {pathPreviews}
+        </p>
+      </div>
+      <div class="flex-row-end">
+        <button
+          class="active"
+          on:click={handleSavePreset}
+          disabled={!presetName}
+        >
+          Save Preset
+        </button>
+      </div>
+    </div>
+  </ModalSettings>
+{/if}
+
 <style lang="scss">
   @use '../../variables.scss' as *;
   .export-path-builder {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #2d2d2d;
     color: #e0e0e0;
-    padding: 15px;
+    padding: 4px;
     border-radius: 5px;
-    max-width: 800px;
+    border: 1px solid #444;
+    margin-top: 4px;
   }
 
   .header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+    flex-direction: column;
+    margin-bottom: 8px;
     border-bottom: 1px solid #444;
-    padding-bottom: 10px;
   }
 
   .header h2 {
@@ -773,6 +874,14 @@
     background-color: #4a4a4a;
   }
 
+  .token-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    display: none;
+  }
+
   .tree-structure {
     flex: 1;
     border: 1px solid #444;
@@ -789,7 +898,7 @@
 
   .tree-item.selected > .item-header {
     background-color: $darker;
-    border: 1px solid $highlight;
+    border: 1px solid $active;
     box-shadow: 0 0 2px rgba(255, 255, 255, 0.1);
   }
 
@@ -974,18 +1083,17 @@
   }
 
   .preview {
-    margin-bottom: 15px;
-    padding: 10px;
-    background-color: #3a3a3a;
+    padding: 2px;
+    font-size: 11px;
     border-radius: 3px;
-  }
-
-  .preview-header {
-    font-size: 14px;
-    margin-bottom: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
   }
 
   .preview-path {
+    margin-left: 4px;
     font-family: monospace;
     word-break: break-all;
     max-height: 150px;
