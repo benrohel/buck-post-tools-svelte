@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fs, path } from '../../lib/cep/node';
+
   import {
     Folder,
     File,
@@ -29,6 +31,13 @@
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
+
+  interface CompRenderData {
+    compName: string;
+    nodeId: number;
+    projectName: string;
+    projectVersion: string;
+  }
 
   // Path structure components using hierarchical tree structure
   interface PathItem {
@@ -248,6 +257,30 @@
     }));
   }
 
+  async function addToRenderQueue(comp: CompRenderData) {
+    const renderPath = `${rootFolder}/${pathPreviews}`;
+    console.log('renderPath', renderPath);
+    const options = {
+      compId: comp.nodeId,
+      filepath: renderPath,
+      presetName: selectedOutputModule,
+    };
+
+    fs.existsSync(path.dirname(renderPath)) ||
+      fs.mkdirSync(renderPath, { recursive: true });
+
+    await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
+  }
+
+  async function addCompsToRenderQueue() {
+    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
+      .comps as CompRenderData[];
+
+    comps.forEach((element: any) => {
+      addToRenderQueue(element);
+    });
+  }
+
   // Function to add a new folder
   function addFolder(parentId: string | null = null) {
     const newFolder = {
@@ -456,7 +489,7 @@
   // Function to insert a token at cursor position
   function insertToken(input: HTMLInputElement, token: string) {
     if (!input) return;
-    
+
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
     const beforeCursor = input.value.substring(0, start);
@@ -493,7 +526,7 @@
         name: input.value,
       }));
     }
-    
+
     // Use setTimeout to ensure we maintain focus after the token insertion
     setTimeout(() => {
       // Focus the input and make sure it stays in edit mode
@@ -670,6 +703,14 @@
         {/each} -->
       </div>
     </div>
+    <div class="flex-row-end action-row">
+      <button
+        title={'Add to Render Queue'}
+        class="active"
+        on:click={addCompsToRenderQueue}
+        disabled={!rootFolder}>Add To Render Queue</button
+      >
+    </div>
   </div>
   <div class="preset-builder">
     <div class="flex-row-end action-row">
@@ -692,14 +733,11 @@
         style="display:flex; flex-direction:row; justify-content:space-between"
       >
         <div class="token-list">
+          <p>Tokens:</p>
           {#each availableTokens as token}
-            <button
-              class="token-btn"
-              title={token.name}
-              on:click={() => handleAddToken(token)}
-            >
+            <div class="token-tag" title={token.name}>
               {token.token}
-            </button>
+            </div>
           {/each}
         </div>
 
@@ -807,7 +845,10 @@
                         on:blur={(e) => {
                           // Only save on blur if we're not clicking on a suggestion
                           const relatedTarget = e.relatedTarget;
-                          if (!relatedTarget || !relatedTarget.classList.contains('suggestion-btn')) {
+                          if (
+                            !relatedTarget ||
+                            !relatedTarget.classList.contains('suggestion-btn')
+                          ) {
                             saveItem(node.id, e);
                           }
                         }}
@@ -970,6 +1011,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
+    align-content: center;
+    align-items: center;
   }
 
   .token-btn {
@@ -1094,6 +1137,16 @@
     left: 0;
     z-index: 10;
     display: none;
+  }
+  .token-tag {
+    display: inline-block;
+    padding: 2px 2px;
+    border-radius: 3px;
+    background-color: $dark;
+    color: #e0e0e0;
+    font-family: monospace;
+    font-size: 11px;
+    height: 16px;
   }
 
   .item-content input:focus + .token-dropdown {
