@@ -414,30 +414,94 @@
     }));
   }
 
+  // Variables for autocomplete
+  let suggestedTokens: { name: string; token: string }[] = [];
+  let showSuggestions = false;
+  let currentInputValue = '';
+  let currentNodeId = '';
+
+  // Function to check for token suggestion
+  function updateSuggestions(input: HTMLInputElement) {
+    const value = input.value;
+    currentInputValue = value;
+    currentNodeId = input.dataset.id || '';
+
+    const cursorPos = input.selectionStart || 0;
+    const textBeforeCursor = value.substring(0, cursorPos);
+
+    // Check if we're in the middle of typing a token (starting with '{')
+    const tokenStartPos = textBeforeCursor.lastIndexOf('{');
+    if (
+      tokenStartPos >= 0 &&
+      textBeforeCursor.indexOf('}', tokenStartPos) === -1
+    ) {
+      // We have an opening brace without a closing one
+      const partialToken = textBeforeCursor
+        .substring(tokenStartPos)
+        .toLowerCase();
+
+      // Filter available tokens based on the partial input
+      suggestedTokens = availableTokens.filter(
+        (token) =>
+          token.token.toLowerCase().includes(partialToken) ||
+          token.name.toLowerCase().includes(partialToken.substring(1))
+      );
+
+      showSuggestions = suggestedTokens.length > 0;
+    } else {
+      showSuggestions = false;
+    }
+  }
+
   // Function to insert a token at cursor position
   function insertToken(input: HTMLInputElement, token: string) {
+    if (!input) return;
+    
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
     const beforeCursor = input.value.substring(0, start);
     const afterCursor = input.value.substring(end);
-    const newValue = beforeCursor + token + afterCursor;
-    console.log('inserting token', newValue);
-    input.value = newValue;
+
+    // If we're in the middle of typing a token, replace just that part
+    const tokenStartPos = beforeCursor.lastIndexOf('{');
+    let newValue = '';
+
+    if (tokenStartPos >= 0 && !beforeCursor.includes('}', tokenStartPos)) {
+      // Replace the partial token
+      newValue = beforeCursor.substring(0, tokenStartPos) + token + afterCursor;
+      input.value = newValue;
+
+      // Position cursor after the inserted token
+      const newCursorPos = tokenStartPos + token.length;
+      input.selectionStart = newCursorPos;
+      input.selectionEnd = newCursorPos;
+    } else {
+      // Normal insertion
+      newValue = beforeCursor + token + afterCursor;
+      input.value = newValue;
+
+      // Position cursor after the inserted token
+      input.selectionStart = start + token.length;
+      input.selectionEnd = start + token.length;
+    }
 
     // Update the model - node ID is stored in the data-id attribute
     const nodeId = input.dataset.id;
-
     if (nodeId) {
       pathStructure = updateNodeInTree(pathStructure, nodeId, (node) => ({
         ...node,
-        name: newValue,
+        name: input.value,
       }));
     }
-
-    // Set cursor position after the inserted token
-    input.selectionStart = start + token.length;
-    input.selectionEnd = start + token.length;
-    input.focus();
+    
+    // Use setTimeout to ensure we maintain focus after the token insertion
+    setTimeout(() => {
+      // Focus the input and make sure it stays in edit mode
+      if (input) {
+        input.focus();
+        showSuggestions = false;
+      }
+    }, 0);
   }
 
   // Function to flatten the tree for iterative rendering
@@ -737,27 +801,75 @@
                       <input
                         id="item-name"
                         type="text"
-                        placeholder="Enter name"
+                        placeholder="Enter name type tokens"
                         value={node.name}
                         data-id={node.id}
-                        on:blur={(e) => saveItem(node.id, e)}
-                        on:keydown={(e) =>
-                          e.key === 'Enter' && saveItem(node.id, e)}
-                        on:focus={(e) => (activeElement = e.target)}
+                        on:blur={(e) => {
+                          // Only save on blur if we're not clicking on a suggestion
+                          const relatedTarget = e.relatedTarget;
+                          if (!relatedTarget || !relatedTarget.classList.contains('suggestion-btn')) {
+                            saveItem(node.id, e);
+                          }
+                        }}
+                        on:keydown={(e) => {
+                          if (e.key === 'Enter') {
+                            if (showSuggestions && suggestedTokens.length > 0) {
+                              // Insert the first suggested token
+                              insertToken(e.target, suggestedTokens[0].token);
+                              e.preventDefault();
+                            } else {
+                              saveItem(node.id, e);
+                            }
+                          } else if (e.key === 'Escape') {
+                            showSuggestions = false;
+                          } else {
+                            updateSuggestions(e.target);
+                          }
+                        }}
+                        on:input={(e) => updateSuggestions(e.target)}
+                        on:focus={(e) => {
+                          activeElement = e.target;
+                          updateSuggestions(e.target);
+                        }}
                       />
-                      <div class="token-dropdown">
-                        <div class="dropdown-content">
-                          {#each availableTokens as token}
-                            <button
-                              class="token-btn"
-                              on:click={() =>
-                                insertToken(activeElement, token.token)}
-                            >
-                              {token.name} ({token.token})
-                            </button>
-                          {/each}
+
+                      <!-- Token suggestion dropdown for autocomplete -->
+                      {#if showSuggestions}
+                        <div class="suggestions-dropdown">
+                          <div class="suggestions-content">
+                            {#each suggestedTokens as token}
+                              <button
+                                class="suggestion-btn"
+                                on:mousedown|preventDefault={(e) => {
+                                  // Prevent blur and focus loss on mousedown
+                                  e.preventDefault();
+                                  insertToken(activeElement, token.token);
+                                }}
+                              >
+                                <strong>{token.token}</strong> - {token.name}
+                              </button>
+                            {/each}
+                          </div>
                         </div>
-                      </div>
+                      {:else}
+                        <!-- Regular token dropdown when not showing suggestions -->
+                        <div class="token-dropdown">
+                          <div class="dropdown-content">
+                            {#each availableTokens as token}
+                              <button
+                                class="token-btn"
+                                on:mousedown|preventDefault={(e) => {
+                                  // Prevent blur and focus loss on mousedown
+                                  e.preventDefault();
+                                  insertToken(activeElement, token.token);
+                                }}
+                              >
+                                {token.name} ({token.token})
+                              </button>
+                            {/each}
+                          </div>
+                        </div>
+                      {/if}
                     {:else}
                       <div
                         class="item-info"
@@ -878,7 +990,7 @@
     position: absolute;
     top: 100%;
     left: 0;
-    z-index: 10;
+    z-index: 100;
     display: none;
   }
 
@@ -996,6 +1108,50 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
+  }
+
+  /* Autocomplete suggestions styling */
+  .suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20; /* Higher than regular dropdown */
+    width: 100%;
+  }
+
+  .suggestions-content {
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 3px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: 160px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .suggestion-btn {
+    background-color: #444;
+    border: none;
+    color: #e0e0e0;
+    padding: 6px 8px;
+    border-radius: 3px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .suggestion-btn:hover {
+    background-color: #5a5a5a;
+  }
+
+  .suggestion-btn strong {
+    color: #9999ff;
   }
 
   .item-actions {
