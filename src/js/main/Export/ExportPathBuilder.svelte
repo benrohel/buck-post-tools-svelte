@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fs, path } from '../../lib/cep/node';
-
+  import { computePosition } from '@floating-ui/dom';
   import {
     Folder,
     File,
@@ -13,44 +13,48 @@
     ChevronRight,
     Trash,
     ChevronUp,
+    SquarePlus,
+    Plus,
+    Save,
   } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
+  import { generateId } from '../../lib/utils/utils';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { lastFolderExport, localAppStore } from '../../stores/local-storage';
   import { getPreferenceByKey } from '../../api/preferences';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { appStore } from '../../stores/app-store';
+  import type { Exporter, PathItem, CompRenderData } from '../../api/exporter';
+  import {
+    getExporterPresets,
+    setExporterPresets,
+  } from '../../api/preferences';
+  import { createFloatingActions } from 'svelte-floating-ui';
+  // @ts-ignore
+  import { offset, flip, shift } from 'svelte-floating-ui/dom';
+  import { appId } from '../../lib/utils/cep';
+  import { notifications } from '../../stores/notifications-store';
+
   //
+  let isEditing = false;
   let activeElement: HTMLInputElement | null = null;
+  let tokenDropdownRef: HTMLDivElement | null = null;
+
+  const [floatingRef, floatingContent] = createFloatingActions({
+    strategy: 'absolute',
+    placement: 'top',
+    middleware: [offset(6), flip(), shift()],
+  });
+  $: console.log(tokenDropdownRef);
 
   // Available tokens for path construction
   const availableTokens = [
-    { name: 'Comp Name', token: '{shot}' },
+    { name: 'Shot Name', token: '{shot}' },
     { name: 'Project Version', token: '{project_version}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
-
-  interface CompRenderData {
-    compName: string;
-    nodeId: number;
-    projectName: string;
-    projectVersion: string;
-  }
-
-  // Path structure components using hierarchical tree structure
-  interface PathItem {
-    id: string;
-    type: 'folder' | 'file';
-    path: string;
-    name: string;
-    isEditing: boolean;
-    outputModule?: string;
-    children?: PathItem[];
-    expanded?: boolean;
-    parentId?: string | null;
-  }
 
   $: modalOpen = false;
   $: showBuildPreset = false;
@@ -74,142 +78,48 @@
   );
 
   let rootFolder = '';
+
+  // Preset Name
   let presetName = '';
+  $: presetNameExists = exportPresets.some(
+    (preset) => preset.name === presetName
+  );
 
-  interface ExportPreset {
-    name: string;
-    path: PathItem[];
-  }
+  $: validPresetName = presetName.length < 5 || presetNameExists;
 
-  let exportPresets: ExportPreset[] = [
-    {
-      name: 'Buck Default',
-      path: [
-        {
-          type: 'folder',
-          name: 'renders',
-          path: 'renders',
-          children: [],
-          id: generateId(),
-          isEditing: false,
-          parentId: null,
-        },
-      ],
-    },
-    {
-      name: 'AEFTDefault',
-      path: [
-        {
-          type: 'folder',
-          name: 'renders',
-          path: 'renders',
-          children: [],
-          id: generateId(),
-          isEditing: false,
-          parentId: null,
-        },
-      ],
-    },
-    {
-      name: 'Default',
-      path: [
-        {
-          type: 'folder',
-          name: 'renders',
-          path: 'renders',
-          children: [],
-          id: generateId(),
-          isEditing: false,
-          parentId: null,
-        },
-      ],
-    },
-    {
-      name: 'Default',
-      path: [
-        {
-          type: 'folder',
-          name: 'renders',
-          path: 'renders',
-          children: [],
-          id: generateId(),
-          isEditing: false,
-          parentId: null,
-        },
-      ],
-    },
-    {
-      name: 'Default',
-      path: [
-        {
-          type: 'folder',
-          name: 'renders',
-          path: 'renders',
-          children: [],
-          id: generateId(),
-          isEditing: false,
-          parentId: null,
-        },
-      ],
-    },
-  ];
-  let exportPresetsSelectItems: { value: string; label: string }[] =
-    exportPresets.map((preset: ExportPreset) => ({
-      value: preset.name,
-      label: preset.name,
-    }));
+  // Exporter presets
+  let exportPresets: Exporter[] = [];
+  $: exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+    value: preset.name,
+    label: preset.name,
+  }));
 
-  let selectedExportPresetMenuItem = exportPresetsSelectItems[0];
-  let selectedExportPreset: ExportPreset = exportPresets[0];
-
-  // Generate a unique ID for each path item
-  function generateId(): string {
-    return Math.random().toString(36).substring(2, 9);
-  }
+  let selectedExportPresetMenuItem = { label: '', value: '' };
+  let selectedExportPreset: Exporter = exportPresets[0];
 
   // Initialize with a basic hierarchical structure
   onMount(async () => {
+    tokenDropdownRef = document.querySelector('.dropdown-container');
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set($lastFolderExport);
     }
     rootFolder = $lastFolderExport;
-    const rootId = generateId();
-    const rendersId = generateId();
 
-    pathStructure = [
-      {
-        id: rootId,
-        type: 'folder',
-        name: '{comp}',
-        path: '{comp}',
-        isEditing: false,
-        expanded: true,
-        parentId: null,
-        children: [
-          {
-            id: rendersId,
-            type: 'folder',
-            name: 'renders',
-            path: '{comp}/renders',
-            isEditing: false,
-            expanded: true,
-            parentId: rootId,
-            children: [
-              {
-                id: generateId(),
-                type: 'file',
-                name: '{comp}_{version}.####.{ext}',
-                path: '{comp}/renders/{comp}_{version}.####.{ext}',
-                outputModule: 'Prores 422HQ',
-                isEditing: false,
-                parentId: rendersId,
-                children: [],
-              },
-            ],
-          },
-        ],
-      },
-    ];
+    const storedExportPresets = await getExporterPresets(appId);
+    console.log('storedExportPresets', storedExportPresets);
+    if (storedExportPresets.length > 0) {
+      exportPresets = storedExportPresets;
+      selectedExportPreset = exportPresets[0];
+      exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+        value: preset.name,
+        label: preset.name,
+      }));
+      selectedExportPresetMenuItem = exportPresetsSelectItems[0];
+    }
+
+    if (exportPresets.length > 0) {
+      pathStructure = exportPresets[0].path;
+    }
 
     const renderSettings = JSON.parse(
       await evalES('getOutputModulesTemplates()')
@@ -241,6 +151,7 @@
     selectedExportPreset = exportPresets.find(
       (preset) => preset.name === value.value
     );
+    pathStructure = selectedExportPreset.path;
   }
 
   function handleOnChangeOutputModule(
@@ -278,6 +189,58 @@
 
     comps.forEach((element: any) => {
       addToRenderQueue(element);
+    });
+  }
+
+  //Function ti add a new preset
+  function addExporter(name: string): Exporter {
+    // first check if the name already exists
+    if (exportPresets.some((preset) => preset.name === name)) {
+      notifications.error(
+        'Exporter preset with this name already exists',
+        2000
+      );
+      return;
+    }
+
+    const newExporter = {
+      name: name,
+      previewPath: '{shot}',
+      path: [
+        {
+          id: generateId(),
+          type: 'folder',
+          name: '{shot}',
+          expanded: true,
+          path: '{shot}',
+          isEditing: false,
+          parentId: null,
+          children: [],
+        },
+      ] as PathItem[],
+      rootFolder: '',
+      latestVersion: 0,
+    };
+    exportPresets.push(newExporter);
+    selectedExportPreset = newExporter;
+    exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+      value: preset.name,
+      label: preset.name,
+    }));
+    selectedExportPresetMenuItem =
+      exportPresetsSelectItems[exportPresets.length - 1];
+    pathStructure = selectedExportPreset.path;
+    return newExporter;
+  }
+
+  // Function to save the current preset
+  function saveExporter() {
+    setExporterPresets(appId, exportPresets).then((result) => {
+      if (result) {
+        notifications.success('Exporter preset saved successfully', 2000);
+      } else {
+        notifications.error('Failed to save exporter preset', 2000);
+      }
     });
   }
 
@@ -585,8 +548,8 @@
   }
 
   // Helper function to build paths (iterative version)
-  function buildPathFromNodes(nodes: PathItem[]): string[] {
-    const paths: string[] = [];
+  function buildPathFromNodes(nodes: PathItem[]): string {
+    let paths: string = '';
     const stack: Array<{ node: PathItem; path: string[] }> = [];
 
     // Initialize stack with root nodes
@@ -602,7 +565,7 @@
       const { node, path } = stack.pop()!;
 
       if (node.type === 'file') {
-        paths.push(path.join('/'));
+        paths = path.join('/');
       } else if (node.children && node.children.length > 0) {
         // Add children to stack
         for (const child of node.children) {
@@ -613,7 +576,7 @@
         }
       } else {
         // Empty folder
-        paths.push(path.join('/') + '/');
+        paths += path.join('/') + '/';
       }
     }
 
@@ -621,7 +584,7 @@
   }
 
   // Cache for path previews to reduce rebuilds
-  let pathPreviewsCache: string[] = [];
+  let pathPreviewsCache: string = '';
   let lastPathStructure: string = '';
 
   // Helper function to find a node by ID in the tree
@@ -642,7 +605,7 @@
   }
 
   // Generate the full path preview with memoization to prevent excessive recalculation
-  function getMemoizedPaths(nodes: PathItem[]): string[] {
+  function getMemoizedPaths(nodes: PathItem[]): string {
     const structureJson = JSON.stringify(nodes);
     if (structureJson !== lastPathStructure) {
       pathPreviewsCache = buildPathFromNodes(nodes);
@@ -664,8 +627,7 @@
   }
 
   // Reactive variables for UI updates
-  $: pathPreviews = getMemoizedPaths(pathStructure);
-  $: fullPath = pathPreviews.join('\n');
+  $: pathPreviews = selectedNode ? selectedNode.path : '';
   $: selectedNode = selectedItemId
     ? findNodeById(pathStructure, selectedItemId)
     : null;
@@ -676,19 +638,45 @@
 <div class="export-path-builder">
   <div class="header">
     <div class="actions">
+      <label for="root-folder">Root Folder:</label>
       <SelectFolderWeb
         onChange={setRootFolder}
         bind:value={rootFolder}
         label="Set Root Folder"
       />
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <label for="export-preset">Presets:</label>
-        <MenuSelect
-          items={exportPresetsSelectItems}
-          bind:value={selectedExportPresetMenuItem}
-          onChange={handleOnChangeExportPreset}
-        />
-      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <label for="export-preset">Presets:</label>
+      <MenuSelect
+        items={exportPresetsSelectItems}
+        bind:value={selectedExportPresetMenuItem}
+        onChange={handleOnChangeExportPreset}
+      />
+      <button
+        on:click={() => {
+          modalOpen = true;
+        }}
+        class="outline"
+        title="edit"
+      >
+        <Plus />
+      </button>
+      <button
+        on:click={() => {
+          showBuildPreset = !showBuildPreset;
+        }}
+      >
+        <Pencil />
+      </button>
+      <button
+        on:click={() => {
+          showBuildPreset = true;
+        }}
+        class="outline"
+        title="Delete"
+      >
+        <Trash />
+      </button>
     </div>
     <div class="flex-row-end">
       <label for="increment">Version Number: </label>
@@ -713,44 +701,15 @@
     </div>
   </div>
   <div class="preset-builder">
-    <div class="flex-row-end action-row">
-      <p>Build Export Name Preset</p>
-      <button
-        class="outline"
-        on:click={() => {
-          showBuildPreset = !showBuildPreset;
-        }}
-      >
-        {#if showBuildPreset}
-          <ChevronUp size={16} />
-        {:else}
-          <ChevronDown size={16} />
-        {/if}
-      </button>
-    </div>
+    <div class="flex-row-end action-row"></div>
     {#if showBuildPreset}
-      <div
-        style="display:flex; flex-direction:row; justify-content:space-between"
-      >
-        <div class="token-list">
-          <p>Tokens:</p>
-          {#each availableTokens as token}
-            <div class="token-tag" title={token.name}>
-              {token.token}
-            </div>
-          {/each}
-        </div>
-
-        <div class="flex-row-end action-row">
-          <button
-            on:click={() => {
-              modalOpen = !modalOpen;
-            }}
-          >
-            <ListPlus />
-          </button>
-        </div>
+      <div class="flex-row-between action-row">
+        <p style="margin: 4px;">Export Builder</p>
+        <button class="outline" title="Save" on:click={saveExporter}>
+          <Save />
+        </button>
       </div>
+
       <!-- Item actions panel - outside the tree -->
       <div class="item-actions-panel">
         {#if selectedItemId}
@@ -809,6 +768,7 @@
                   e.stopPropagation();
                   selectedItemId = node.id;
                 }}
+                use:floatingRef
               >
                 <div class="item-header">
                   {#if node.type === 'folder'}
@@ -837,6 +797,7 @@
                   <div class="item-content">
                     {#if node.isEditing}
                       <input
+                        use:floatingRef
                         id="item-name"
                         type="text"
                         placeholder="Enter name type tokens"
@@ -851,6 +812,7 @@
                           ) {
                             saveItem(node.id, e);
                           }
+                          isEditing = false;
                         }}
                         on:keydown={(e) => {
                           if (e.key === 'Enter') {
@@ -871,46 +833,9 @@
                         on:focus={(e) => {
                           activeElement = e.target;
                           updateSuggestions(e.target);
+                          isEditing = true;
                         }}
                       />
-
-                      <!-- Token suggestion dropdown for autocomplete -->
-                      {#if showSuggestions}
-                        <div class="suggestions-dropdown">
-                          <div class="suggestions-content">
-                            {#each suggestedTokens as token}
-                              <button
-                                class="suggestion-btn"
-                                on:mousedown|preventDefault={(e) => {
-                                  // Prevent blur and focus loss on mousedown
-                                  e.preventDefault();
-                                  insertToken(activeElement, token.token);
-                                }}
-                              >
-                                <strong>{token.token}</strong> - {token.name}
-                              </button>
-                            {/each}
-                          </div>
-                        </div>
-                      {:else}
-                        <!-- Regular token dropdown when not showing suggestions -->
-                        <div class="token-dropdown">
-                          <div class="dropdown-content">
-                            {#each availableTokens as token}
-                              <button
-                                class="token-btn"
-                                on:mousedown|preventDefault={(e) => {
-                                  // Prevent blur and focus loss on mousedown
-                                  e.preventDefault();
-                                  insertToken(activeElement, token.token);
-                                }}
-                              >
-                                {token.name} ({token.token})
-                              </button>
-                            {/each}
-                          </div>
-                        </div>
-                      {/if}
                     {:else}
                       <div
                         class="item-info"
@@ -927,6 +852,50 @@
               </div>
             {/each}
           </div>
+        </div>
+      </div>
+    {/if}
+  </div>
+  <!-- Move dropdowns outside the normal flow to ensure they are shown properly -->
+  <div
+    class="dropdown-container"
+    style="position: absolute; top: 100%; left: 0; width: 100%;"
+    use:floatingContent
+  >
+    <!-- Token suggestion dropdown for autocomplete -->
+    {#if showSuggestions}
+      <div use:floatingContent>
+        <div class="suggestions-content">
+          {#each suggestedTokens as token}
+            <button
+              class="suggestion-btn"
+              on:mousedown|preventDefault={(e) => {
+                // Prevent blur and focus loss on mousedown
+                e.preventDefault();
+                insertToken(activeElement, token.token);
+              }}
+            >
+              <strong>{token.token}</strong> - {token.name}
+            </button>
+          {/each}
+        </div>
+      </div>
+    {:else if isEditing}
+      <!-- Regular token dropdown when input is focused but no suggestions -->
+      <div id="token-dropdown" use:floatingContent>
+        <div class="dropdown-content">
+          {#each availableTokens as token}
+            <button
+              class="token-btn"
+              on:mousedown|preventDefault={(e) => {
+                // Prevent blur and focus loss on mousedown
+                e.preventDefault();
+                insertToken(activeElement, token.token);
+              }}
+            >
+              {token.name} ({token.token})
+            </button>
+          {/each}
         </div>
       </div>
     {/if}
@@ -948,19 +917,23 @@
     <div id="modal-content">
       <div class="flex-row-start">
         <label for="name">Preset name</label>
-        <input type="text" id="name" name="name" bind:value={presetName} />
-      </div>
-      <div class="row-preview">
-        <label for="prefix">Preview</label>
-        <p>
-          {pathPreviews}
-        </p>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          bind:value={presetName}
+          class={`${validPresetName ? 'box-error' : ''}`}
+        />
       </div>
       <div class="flex-row-end">
         <button
           class="active"
-          on:click={handleSavePreset}
-          disabled={!presetName}
+          on:click={() => {
+            addExporter(presetName);
+            modalOpen = false;
+            showBuildPreset = true;
+          }}
+          disabled={!presetName || validPresetName}
         >
           Save Preset
         </button>
@@ -983,7 +956,7 @@
     display: flex;
     flex-direction: column;
     margin-bottom: 8px;
-    border-bottom: 1px solid #444;
+    gap: 4px;
   }
 
   .header h2 {
@@ -994,7 +967,8 @@
   .actions {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    gap: 4px;
     width: 100%;
   }
 
@@ -1102,10 +1076,12 @@
     flex: 1;
     position: relative;
     display: flex;
+    z-index: 500; /* Add z-index to ensure content stays above other elements */
   }
 
   .item-name {
     font-family: monospace;
+    text-align: left;
   }
 
   .exporter {
@@ -1132,12 +1108,12 @@
     margin-right: 8px;
   }
   .token-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 10;
-    display: none;
+    position: relative; /* Changed from absolute */
+    width: 100%;
+    z-index: 1000; /* High z-index */
+    display: block; /* Always visible when needed */
   }
+
   .token-tag {
     display: inline-block;
     padding: 2px 2px;
@@ -1149,12 +1125,13 @@
     height: 16px;
   }
 
-  .item-content input:focus + .token-dropdown {
-    display: block;
+  /* Always show token dropdown when input is focused */
+  .item-content input:focus ~ .token-dropdown {
+    display: block !important;
   }
 
   .dropdown-content {
-    background-color: #3a3a3a;
+    background-color: $extra-dark;
     border: 1px solid #555;
     border-radius: 3px;
     padding: 5px;
@@ -1163,18 +1140,27 @@
     gap: 3px;
   }
 
+  /* Container for dropdowns */
+  .dropdown-container {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 2000 !important; /* Even higher z-index */
+    pointer-events: auto !important; /* Ensure clicks are captured */
+  }
+
   /* Autocomplete suggestions styling */
   .suggestions-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 20; /* Higher than regular dropdown */
+    position: relative; /* Changed from absolute */
     width: 100%;
+    display: block; /* Always visible when active */
+    z-index: 1500; /* High z-index */
   }
 
   .suggestions-content {
-    background-color: #3a3a3a;
-    border: 1px solid #555;
+    background-color: $extra-dark; /* Slightly blue tint to make it stand out */
+    border: 1px solid $active;
     border-radius: 3px;
     padding: 5px;
     display: flex;
@@ -1182,11 +1168,11 @@
     gap: 3px;
     max-height: 160px;
     overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 80, 0.4);
+    margin-top: 2px;
   }
 
   .suggestion-btn {
-    background-color: #444;
     border: none;
     color: #e0e0e0;
     padding: 6px 8px;
@@ -1204,7 +1190,7 @@
   }
 
   .suggestion-btn strong {
-    color: #9999ff;
+    color: $highlight;
   }
 
   .item-actions {
@@ -1297,7 +1283,7 @@
     border-radius: 3px;
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: top;
     margin-bottom: 4px;
   }
 
@@ -1307,6 +1293,7 @@
     word-break: break-all;
     max-height: 150px;
     overflow-y: auto;
+    text-align: initial;
   }
 
   .path-item-preview {
@@ -1334,5 +1321,33 @@
     color: #e0e0e0;
     padding: 5px;
     border-radius: 3px;
+  }
+
+  #token-dropdown {
+    width: max-content;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #222;
+    color: white;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 90%;
+    z-index: 1000;
+  }
+
+  .floating {
+    background: red;
+    color: white;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 90%;
+    z-index: 1000;
+  }
+
+  .box-error {
+    border: 1px solid #ed553b;
   }
 </style>

@@ -1,5 +1,6 @@
-import { fs, path, os } from "../lib/cep/node";
-import pkg from "../../../package.json";
+import { fs, path, os } from '../lib/cep/node';
+import pkg from '../../../package.json';
+import { Exporter, defaultExportPresets } from './exporter';
 
 export declare interface ExportNamePreset {
   name: string;
@@ -16,12 +17,12 @@ export declare interface UserPreferences {
 // Get the path to the user's home directory
 const homeDir = os.homedir();
 // Get the os-specific path to the preferences file. user AppData for windows  and Library/Application support for Mac
-const preferencesPath = path.join(
-  homeDir,
-  os.platform() === "win32"
-    ? `AppData\\Roaming\\${pkg.name}\\preferences.json`
-    : `Library/Application Support/${pkg.name}/preferences.json`
-);
+const preferencesRoot =
+  os.platform() === 'win32'
+    ? 'AppData\\Roaming'
+    : 'Library/Application Support';
+const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
+const preferencesPath = path.join(preferencesDir, 'preferences.json');
 
 /**
  * Reads the user's preferences from disk.
@@ -32,17 +33,17 @@ export const getPreferences = async (): Promise<UserPreferences> => {
   try {
     if (!fs.existsSync(preferencesPath)) {
       fs.mkdirSync(path.dirname(preferencesPath), { recursive: true });
-      fs.writeFileSync(preferencesPath, "{}", "utf-8");
+      fs.writeFileSync(preferencesPath, '{}', 'utf-8');
       return {
         exportNamePresets: [],
-        latestOutputPath: "",
-        latestAeOutputModule: "",
-        latestPproRenderPreset: "",
+        latestOutputPath: '',
+        latestAeOutputModule: '',
+        latestPproRenderPreset: '',
       };
     }
-    return JSON.parse(fs.readFileSync(preferencesPath, "utf-8"));
+    return JSON.parse(fs.readFileSync(preferencesPath, 'utf-8'));
   } catch (e) {
-    console.error("Failed to read preferences", e);
+    console.error('Failed to read preferences', e);
     throw e;
   }
 };
@@ -74,10 +75,10 @@ export const setPreferences = async (preferences: any) => {
     fs.writeFileSync(
       preferencesPath,
       JSON.stringify(preferences, null, 2),
-      "utf-8"
+      'utf-8'
     );
   } catch (e) {
-    console.error("Failed to write preferences", e);
+    console.error('Failed to write preferences', e);
     throw e;
   }
 };
@@ -89,4 +90,52 @@ export const setPreferenceByKey = async (
   const preferences = await getPreferences();
   preferences[key] = value;
   await setPreferences(preferences);
+};
+
+export const getExporterPresets = async (
+  appId: 'AEFT' | 'PPRO'
+): Promise<Exporter[]> => {
+  try {
+    const exportPresetsPath = path.join(
+      preferencesDir,
+      `exportPresets-${appId.toLowerCase()}.json`
+    );
+    if (!fs.existsSync(exportPresetsPath)) {
+      fs.mkdirSync(path.dirname(exportPresetsPath), { recursive: true });
+      fs.writeFileSync(
+        exportPresetsPath,
+        JSON.stringify(defaultExportPresets),
+        'utf-8'
+      );
+      return defaultExportPresets;
+    }
+    return JSON.parse(fs.readFileSync(exportPresetsPath, 'utf-8'));
+  } catch (e) {
+    console.error('Failed to read preferences', e);
+    throw e;
+  }
+};
+
+export const setExporterPresets = async (
+  appId: 'AEFT' | 'PPRO',
+  exportPresets: Exporter[]
+) => {
+  const exportPresetsPath = path.join(
+    preferencesDir,
+    `exportPresets-${appId}.json`
+  );
+  if (!fs.existsSync(exportPresetsPath)) {
+    fs.mkdirSync(path.dirname(exportPresetsPath), { recursive: true });
+  }
+  try {
+    fs.writeFileSync(
+      exportPresetsPath,
+      JSON.stringify(exportPresets, null, 2),
+      'utf-8'
+    );
+    return true;
+  } catch (e) {
+    console.error('Failed to write preferences', e);
+    throw e;
+  }
 };

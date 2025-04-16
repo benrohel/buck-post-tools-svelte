@@ -1410,7 +1410,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/dom@npm:^1.5.3":
+"@floating-ui/dom@npm:^1.5.3, @floating-ui/dom@npm:^1.6.13":
   version: 1.6.13
   resolution: "@floating-ui/dom@npm:1.6.13"
   dependencies:
@@ -2990,6 +2990,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.19.0"
     "@babel/preset-typescript": "npm:^7.16.0"
     "@babel/runtime": "npm:^7.16.3"
+    "@floating-ui/dom": "npm:^1.6.13"
     "@rollup/plugin-babel": "npm:^5.3.1"
     "@rollup/plugin-commonjs": "npm:^21.0.2"
     "@rollup/plugin-image": "npm:^2.1.1"
@@ -3025,6 +3026,7 @@ __metadata:
     svelte: "npm:^3.53.1"
     svelte-check: "npm:^2.9.2"
     svelte-file-dropzone: "npm:^2.0.9"
+    svelte-floating-ui: "npm:^1.6.2"
     svelte-icons: "npm:^2.1.0"
     svelte-loading-spinners: "npm:^0.3.6"
     svelte-preprocess: "npm:^4.10.7"
@@ -5654,6 +5656,15 @@ __metadata:
     "@floating-ui/core": "npm:^1.5.0"
     "@floating-ui/dom": "npm:^1.5.3"
   checksum: 63f2a7aadc7b2f8bb0736e034a4e1344918139d9572d852a8b34841691b99fbb62f066f17dff22fcb04e24b18ce2767dfa858eb7bc925036af0c9b1a70d4b135
+  languageName: node
+  linkType: hard
+
+"svelte-floating-ui@npm:^1.6.2":
+  version: 1.6.2
+  resolution: "svelte-floating-ui@npm:1.6.2"
+  dependencies:
+    "@floating-ui/dom": "npm:^1.6.13"
+  checksum: 556d1cc8f48abe3485540fe7ee9a04863649241b205b5576cc365c68bb3bed3cb18961753c52c1918f9baf2c27a1f6077e1b2bfa64f087138b992b07500adac0
   languageName: node
   linkType: hard
 

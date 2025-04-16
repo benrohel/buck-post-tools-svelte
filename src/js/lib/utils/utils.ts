@@ -1,10 +1,10 @@
-import { child_process, os, path } from "../cep/node";
+import { child_process, os, path } from '../cep/node';
 const { exec } = child_process;
 
 export const openUrl = (url: string) => {
   let openCmd = `open "${url}"`;
 
-  if (process.platform == "win32") {
+  if (process.platform == 'win32') {
     openCmd = `start "${url}"`;
   }
 
@@ -22,7 +22,7 @@ export const openUrl = (url: string) => {
 };
 
 const resolveHome = (filepath: string) => {
-  if (filepath[0] === "~") {
+  if (filepath[0] === '~') {
     if (process.env.HOME) {
       return path.join(process.env.HOME, filepath.slice(1));
     }
@@ -32,11 +32,15 @@ const resolveHome = (filepath: string) => {
 
 export const openFile = async (filepath: string) => {
   filepath = resolveHome(filepath);
-  if (os.platform() === "darwin") {
+  if (os.platform() === 'darwin') {
     const cmd = `open "${filepath}"`;
     exec(cmd);
-  } else if (os.platform() === "win32") {
+  } else if (os.platform() === 'win32') {
     const cmd = `start  ${filepath}`;
     exec(cmd);
   }
+};
+
+export const generateId = (): string => {
+  return Math.random().toString(36).substring(2, 10);
 };
