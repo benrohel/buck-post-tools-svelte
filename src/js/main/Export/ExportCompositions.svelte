@@ -91,7 +91,7 @@
 
   const presetList: () => Promise<ExportNamePreset[]> = async () => {
     const presets = (await getPreferenceByKey(
-      'exportNamePresets',
+      'exportNamePresets'
     )) as ExportNamePreset[];
     if (presets) {
       return new Promise((resolve) => {
@@ -262,10 +262,10 @@
   };
   onMount(async () => {
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()'),
+      await evalES('getOutputModulesTemplates()')
     );
     renderSettingsList = renderSettings.filter(
-      (p: string) => !p.startsWith('_'),
+      (p: string) => !p.startsWith('_')
     );
 
     activeRenderSetting = renderSettings[0];
@@ -427,7 +427,7 @@
   >
 </div>
 {#if modalOpen}
-  <ModalSettings name="Save Preset" onClose={closeModal}>
+  <ModalSettings onClose={closeModal}>
     <div id="modal-content">
       <div class="flex-row-start">
         <label for="name">Preset name</label>

@@ -4,11 +4,10 @@
   import ExportStills from './ExportStills.svelte';
   import ExportSequenceXML from './ExportSequenceXML.svelte';
   import ExportCompositions from './ExportCompositions.svelte';
-  import Dropdown from '../../components/Dropdown/Dropdown.svelte';
-  import DropdownItem from '../../components/Dropdown/DropdownItem.svelte';
-  import Select from 'svelte-select';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { appId } from '../../lib/utils/cep';
+  import ExportPathBuilder from './ExportPathBuilder.svelte';
+  import ExportSystemApp from './ExportSystemApp.svelte';
 
   interface SelectToolItem {
     value: string;
@@ -36,11 +35,18 @@
       component: ExportCompositions,
       apps: ['AEFT'],
     },
+    {
+      value: 'hiero',
+      label: 'Hiero',
+      component: ExportPathBuilder,
+      apps: ['AEFT'],
+    },
     // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
 
   const handleOnChange = (value: SelectToolItem) => {
     selectedExportMode = value;
+    console.log('selectedExportMode', selectedExportMode);
   };
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));

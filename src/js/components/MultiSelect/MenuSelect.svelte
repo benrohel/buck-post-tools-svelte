@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Select from "svelte-select";
+  import Select from 'svelte-select';
   export let items;
   export let value: any;
-  export let placeholder = "Select Tool";
+  export let placeholder = 'Select Tool';
   export let onChange;
 
   $: focus = false;
@@ -34,5 +34,6 @@
 <style lang="scss">
   .svelte-select-container {
     width: 100%;
+    margin-bottom: 0px;
   }
 </style>
