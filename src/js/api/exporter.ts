@@ -78,8 +78,7 @@ export const buildRenderPath = (
 
 export interface IAddToRenderQueueOptions {
   rootFolder: string;
-  presetName: string;
-  previewString: string;
+  outputModules: { outputModuleName: string; outputModuleFilePath: string }[];
   appId: string;
   version?: number;
   selectedTask?: string;
@@ -88,23 +87,32 @@ export const addToRenderQueue = async (
   comp: CompRenderData,
   options: IAddToRenderQueueOptions
 ) => {
-  const renderPath = buildRenderPath(
-    comp,
-    options.appId,
-    options.rootFolder,
-    options.previewString,
-    options.selectedTask,
-    options.version
-  );
-  console.log('renderPath', renderPath);
+  // Build the render paths for each output module
+  const outputOptions = options.outputModules.map((outputModule) => {
+    const renderPath = buildRenderPath(
+      comp,
+      options.appId,
+      options.rootFolder,
+      outputModule.outputModuleFilePath,
+      options.selectedTask,
+      options.version
+    );
+    return {
+      outputModuleName: outputModule.outputModuleName,
+      outputModuleFilePath: renderPath,
+    };
+  });
+
+  // Create the output folders
+  outputOptions.forEach((outputOption) => {
+    fs.existsSync(path.dirname(outputOption.outputModuleFilePath)) ||
+      fs.mkdirSync(outputOption.outputModuleFilePath, { recursive: true });
+  });
+
   const renderOptions = {
     compId: comp.nodeId,
-    filepath: renderPath,
-    presetName: options.presetName,
+    outputModules: outputOptions,
   };
-
-  fs.existsSync(path.dirname(renderPath)) ||
-    fs.mkdirSync(renderPath, { recursive: true });
 
   await evalES(`addToRenderQueue(${JSON.stringify(renderOptions)})`, false);
 };

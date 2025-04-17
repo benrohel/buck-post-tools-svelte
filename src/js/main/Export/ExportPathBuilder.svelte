@@ -614,20 +614,21 @@
     return null;
   }
   // Helper function to find node of a specific type and return an array of nodes
-  function findNodeByType(nodes: PathItem[], type: string): PathItem[] {
-    // First check at the current level
-    const directMatches = nodes.filter((node) => node.type === type);
-    if (directMatches.length > 0) return directMatches;
+  function findNodesByType(nodes: PathItem[], type: string): PathItem[] {
+    let results: PathItem[] = [];
 
-    // Then check children
+    // Add matches at the current level
+    results = results.concat(nodes.filter((node) => node.type === type));
+
+    // Then recursively check children
     for (const node of nodes) {
       if (node.children && node.children.length > 0) {
-        const childMatch = findNodeByType(node.children, type);
-        if (childMatch) return childMatch;
+        const childMatches = findNodesByType(node.children, type);
+        results = results.concat(childMatches);
       }
     }
 
-    return null;
+    return results;
   }
 
   // Generate the full path preview with memoization to prevent excessive recalculation
@@ -650,25 +651,39 @@
     if (!selectedExportPreset) {
       return;
     }
-    const fileNodes = findNodeByType(selectedExportPreset.path, 'file');
+    const fileNodes = findNodesByType(selectedExportPreset.path, 'file');
+    const outputModules = fileNodes.map((node) => ({
+      outputModuleName: node.outputModule,
+      outputModuleFilePath: node.path,
+    }));
+
     console.log('fileNodes', fileNodes);
     const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
       .comps as CompRenderData[];
 
     //for all comps add to render queue  with all files node option
     for (const comp of comps) {
-      for (const fileNode of fileNodes) {
-        const options = {
-          rootFolder: rootFolder,
-          presetsName: fileNode.outputModule,
-          previewString: fileNode.path,
-          appId: appId,
-          version: version,
-          selectedTask: '',
-        };
-        console.log('options', options);
-        await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
-      }
+      //   for (const fileNode of fileNodes) {
+      //     const options = {
+      //       rootFolder: rootFolder,
+      //       presetsName: fileNode.outputModule,
+      //       previewString: fileNode.path,
+      //       appId: appId,
+      //       version: version,
+      //       selectedTask: '',
+      //     };
+      //     console.log('options', options);
+      //     await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
+      //   }
+      const options = {
+        rootFolder: rootFolder,
+        outputModules: outputModules,
+        appId: appId,
+        version: version,
+        selectedTask: '',
+      };
+      console.log('options', options);
+      await addToRenderQueue(comp, options);
     }
   }
 

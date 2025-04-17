@@ -233,13 +233,12 @@ export const getSelectedSequencesForNode = () => {
 //Export
 interface IRenderWithTokensOptions {
   compId: number;
-  filepath: string;
-  presetName: string;
-  nFrames: number;
+  outputModules: { outputModuleName: string; outputModuleFilePath: string }[];
 }
 export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
+  app.beginUndoGroup('Add to Render Queue');
   var shotComp;
-  var { compId, filepath, presetName } = options;
+  var { compId, outputModules } = options;
   if (compId <= 0) {
     shotComp = app.project.activeItem;
   } else {
@@ -251,30 +250,37 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
     return false;
   }
   var rqItems = app.project.renderQueue.items;
-  var newItem = rqItems.add(shotComp);
-
-  newItem.timeSpanDuration = shotComp.workAreaDuration;
-
-  var renderFile = new File(filepath);
-  var om = newItem.outputModule(1);
-
-  if (presetName) {
-    om.applyTemplate(presetName);
-    om.file = renderFile;
+  var rqItem = rqItems.add(shotComp);
+  rqItem.timeSpanDuration = shotComp.workAreaDuration;
+  var numModules = options.outputModules.length;
+  // Loop to add output modules
+  for (var i = 0; i < numModules; i++) {
+    rqItem.outputModules.add();
   }
-  var omFilePath = om.file.fsName;
-  // Check if file path includes "_[####]" pattern
-  if (omFilePath.indexOf('_[') !== -1) {
-    // Replace "_[####]" with ".[####]"
-    var newFilePath = omFilePath.replace(/_\[(\d+)\]/g, '.[$$1]');
+  for (var i = 0; i < rqItem.numOutputModules; i++) {
+    var presetName = outputModules[i].outputModuleName;
+    var presetPath = outputModules[i].outputModuleFilePath;
 
-    // Create new file object with updated path
-    var newFile = new File(newFilePath);
+    var om = rqItem.outputModule(i + 1);
 
-    // Update output module file path
-    om.file = newFile;
+    // Apply the template
+    try {
+      alert(rqItem.numOutputModules);
+      om.applyTemplate(presetName);
+      // om.file = new File(outputModules[i].outputModuleFilePath);
+    } catch (e: any) {
+      alert(
+        'Failed to apply template: ' +
+          outputModules[i].outputModuleName +
+          '\n' +
+          e.toString()
+      );
+      break;
+    }
+
+    // Set the output file path (optional)
   }
-
+  app.endUndoGroup();
   return true;
 };
 
