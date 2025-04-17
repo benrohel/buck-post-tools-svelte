@@ -25,7 +25,13 @@
   import { getPreferenceByKey } from '../../api/preferences';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { appStore } from '../../stores/app-store';
-  import type { Exporter, PathItem, CompRenderData } from '../../api/exporter';
+  import {
+    Exporter,
+    PathItem,
+    CompRenderData,
+    addToRenderQueue,
+    addCompsToRenderQueue,
+  } from '../../api/exporter';
   import {
     getExporterPresets,
     setExporterPresets,
@@ -49,12 +55,21 @@
   $: console.log(tokenDropdownRef);
 
   // Available tokens for path construction
-  const availableTokens = [
-    { name: 'Shot Name', token: '{shot}' },
+  const aeAvailableTokens = [
+    { name: 'Comp Name', token: '{shot}' },
     { name: 'Project Version', token: '{project_version}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
+  const pproAvailableTokens = [
+    { name: 'Sequence Name', token: '{sequence}' },
+    { name: 'Project Version', token: '{project_version}' },
+    { name: 'Version', token: '{version}' },
+    { name: 'Task Name', token: '{task}' },
+  ];
+
+  const availableTokens =
+    appId === 'AEFT' ? aeAvailableTokens : pproAvailableTokens;
 
   $: modalOpen = false;
   $: showBuildPreset = false;
@@ -124,7 +139,9 @@
     const renderSettings = JSON.parse(
       await evalES('getOutputModulesTemplates()')
     );
-    outputModules = renderSettings as string[];
+    outputModules = renderSettings.filter(
+      (p: string) => !p.startsWith('_HIDDEN')
+    );
     selectedOutputModule = outputModules[0];
     outputModulesSelectItems = outputModules.map((module) => ({
       value: module,
@@ -166,30 +183,6 @@
       ...node,
       outputModule: selectedOutputModule,
     }));
-  }
-
-  async function addToRenderQueue(comp: CompRenderData) {
-    const renderPath = `${rootFolder}/${pathPreviews}`;
-    console.log('renderPath', renderPath);
-    const options = {
-      compId: comp.nodeId,
-      filepath: renderPath,
-      presetName: selectedOutputModule,
-    };
-
-    fs.existsSync(path.dirname(renderPath)) ||
-      fs.mkdirSync(renderPath, { recursive: true });
-
-    await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
-  }
-
-  async function addCompsToRenderQueue() {
-    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
-      .comps as CompRenderData[];
-
-    comps.forEach((element: any) => {
-      addToRenderQueue(element);
-    });
   }
 
   //Function ti add a new preset
@@ -235,8 +228,25 @@
 
   // Function to save the current preset
   function saveExporter() {
-    setExporterPresets(appId, exportPresets).then((result) => {
+    const updatedExportPreset = {
+      ...selectedExportPreset,
+      path: pathStructure,
+    };
+    const updatedExportPresets = exportPresets.map((preset) =>
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
+    );
+    setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
+        exportPresets = updatedExportPresets;
+        exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+          value: preset.name,
+          label: preset.name,
+        }));
+        selectedExportPresetMenuItem = exportPresetsSelectItems.find(
+          (preset) => preset.value === selectedExportPreset.name
+        );
+        pathStructure = selectedExportPreset.path;
+
         notifications.success('Exporter preset saved successfully', 2000);
       } else {
         notifications.error('Failed to save exporter preset', 2000);
@@ -603,6 +613,22 @@
 
     return null;
   }
+  // Helper function to find node of a specific type and return an array of nodes
+  function findNodeByType(nodes: PathItem[], type: string): PathItem[] {
+    // First check at the current level
+    const directMatches = nodes.filter((node) => node.type === type);
+    if (directMatches.length > 0) return directMatches;
+
+    // Then check children
+    for (const node of nodes) {
+      if (node.children && node.children.length > 0) {
+        const childMatch = findNodeByType(node.children, type);
+        if (childMatch) return childMatch;
+      }
+    }
+
+    return null;
+  }
 
   // Generate the full path preview with memoization to prevent excessive recalculation
   function getMemoizedPaths(nodes: PathItem[]): string {
@@ -619,11 +645,31 @@
     modalOpen = false;
   }
 
-  async function handleSavePreset() {
-    const namePresets = await getPreferenceByKey('exportNamePresets');
-    const newPreset = { name: presetName, template: pathStructure };
-    console.log('newPreset', newPreset);
-    modalOpen = false;
+  async function handleAddCompsToRenderQueue() {
+    // find all file nodes in selected preset
+    if (!selectedExportPreset) {
+      return;
+    }
+    const fileNodes = findNodeByType(selectedExportPreset.path, 'file');
+    console.log('fileNodes', fileNodes);
+    const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
+      .comps as CompRenderData[];
+
+    //for all comps add to render queue  with all files node option
+    for (const comp of comps) {
+      for (const fileNode of fileNodes) {
+        const options = {
+          rootFolder: rootFolder,
+          presetsName: fileNode.outputModule,
+          previewString: fileNode.path,
+          appId: appId,
+          version: version,
+          selectedTask: '',
+        };
+        console.log('options', options);
+        await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
+      }
+    }
   }
 
   // Reactive variables for UI updates
@@ -695,7 +741,7 @@
       <button
         title={'Add to Render Queue'}
         class="active"
-        on:click={addCompsToRenderQueue}
+        on:click={handleAddCompsToRenderQueue}
         disabled={!rootFolder}>Add To Render Queue</button
       >
     </div>
@@ -893,7 +939,8 @@
                 insertToken(activeElement, token.token);
               }}
             >
-              {token.name} ({token.token})
+              {token.name}
+              {token.token}
             </button>
           {/each}
         </div>

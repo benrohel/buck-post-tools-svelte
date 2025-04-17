@@ -1,5 +1,5 @@
-export const  selectFolder = (
-  msg: string = "Select a Folder"
+export const selectFolder = (
+  msg: string = 'Select a Folder'
 ): string | false => {
   const folder = Folder.selectDialog(msg);
   // alert(file.fsName);
@@ -12,7 +12,6 @@ export const  selectFolder = (
 export const padStart = (str: string, paddingValue: string) => {
   return String(paddingValue + str).slice(-paddingValue.length);
 };
-
 
 export const forEachLayer = (
   comp: CompItem,
@@ -90,6 +89,13 @@ export const findCompByName = (name: string) => {
   return null;
 };
 
+export interface ICompRenderData {
+  compName: string;
+  nodeId: number;
+  projectName: string;
+  projectVersion: number;
+}
+
 export const getSelectedCompsForRender = () => {
   var comps = [];
   var selection = app.project.selection;
@@ -109,7 +115,7 @@ export const getSelectedCompsForRender = () => {
       });
     }
   }
-  return JSON.stringify({ comps: comps });
+  return JSON.stringify({ comps: comps } as { comps: ICompRenderData[] });
 };
 
 export const findFolderByName = (name: string) => {

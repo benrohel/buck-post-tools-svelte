@@ -1,15 +1,14 @@
 import { Key } from 'lucide-svelte';
 import { padStart, openFolderDialog, forEach } from '../utils/utils';
-import {findCompByName} from './aeft-utils';
+import { findCompByName } from './aeft-utils';
 export {
   findCompByName,
   findFolderByName,
   getOutputModulesTemplates,
   getSelectedCompsForRender,
   getProjectFile,
-  selectFolder
+  selectFolder,
 } from './aeft-utils';
-
 
 export const helloWorld = () => {
   alert('Hello from After Effects!');
@@ -158,12 +157,12 @@ export const importMediaFile = (options: IImportOptions) => {
   const f = new File(options.filepath);
   const importOptions = new ImportOptions();
   importOptions.sequence = options.isSequence;
-  importOptions.file=f;
+  importOptions.file = f;
   importOptions.forceAlphabetical = true;
-  var importedItem= app.project.importFile(importOptions);
+  var importedItem = app.project.importFile(importOptions);
   return importedItem.id;
 };
- 
+
 export const getSelectedClips = () => {
   var clipsSelection = app.project.selection;
   var clips: any = [];
@@ -198,7 +197,7 @@ export const replaceMedia = function (options: IReplaceMediaOptions) {
 
   var nFile = new File(options.newPath);
 
-  if (currentClip instanceof FootageItem  && nFile.exists) {
+  if (currentClip instanceof FootageItem && nFile.exists) {
     if (options.isSequence) {
       currentClip.replaceWithSequence(nFile, true);
     } else {
@@ -236,6 +235,7 @@ interface IRenderWithTokensOptions {
   compId: number;
   filepath: string;
   presetName: string;
+  nFrames: number;
 }
 export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
   var shotComp;
@@ -257,10 +257,25 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
   var renderFile = new File(filepath);
   var om = newItem.outputModule(1);
+
   if (presetName) {
     om.applyTemplate(presetName);
+    om.file = renderFile;
   }
-  om.file = renderFile;
+  var omFilePath = om.file.fsName;
+  // Check if file path includes "_[####]" pattern
+  if (omFilePath.indexOf('_[') !== -1) {
+    // Replace "_[####]" with ".[####]"
+    var newFilePath = omFilePath.replace(/_\[(\d+)\]/g, '.[$$1]');
+
+    // Create new file object with updated path
+    var newFile = new File(newFilePath);
+
+    // Update output module file path
+    om.file = newFile;
+  }
+
+  return true;
 };
 
 // Nuke Trackers
@@ -335,21 +350,20 @@ export const versionUpNames = () => {
   return true;
 };
 
-
 export const goToFrame = (nodeId: number) => {
   const clip = getItemFromNodeId(nodeId);
   let clipLayer = null;
-  if(clip){
+  if (clip) {
     var usedIn = clip.usedIn;
-    if(usedIn){
+    if (usedIn) {
       var firstComp = usedIn[0];
-      for (var l=1;l<=firstComp.numLayers;l++){
-        clipLayer = firstComp.layer(l) as AVLayer;  
-        if(clipLayer.source.id === clip.id){
-        firstComp.openInViewer();
-        firstComp.time = clipLayer.startTime;
+      for (var l = 1; l <= firstComp.numLayers; l++) {
+        clipLayer = firstComp.layer(l) as AVLayer;
+        if (clipLayer.source.id === clip.id) {
+          firstComp.openInViewer();
+          firstComp.time = clipLayer.startTime;
         }
-     }
+      }
     }
   }
   return true;
