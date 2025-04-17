@@ -7,7 +7,6 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { appId } from '../../lib/utils/cep';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
-  import ExportSystemApp from './ExportSystemApp.svelte';
 
   interface SelectToolItem {
     value: string;
@@ -31,17 +30,10 @@
     },
     {
       value: 'selectedComps',
-      label: 'Selected Comps',
-      component: ExportCompositions,
-      apps: ['AEFT'],
-    },
-    {
-      value: 'hiero',
-      label: 'Hiero',
+      label: 'Export Compositions',
       component: ExportPathBuilder,
       apps: ['AEFT'],
     },
-    // { value: 'shots', label: 'Shots', component: ExportShots },
   ];
 
   const handleOnChange = (value: SelectToolItem) => {

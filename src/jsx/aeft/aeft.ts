@@ -254,7 +254,7 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
   rqItem.timeSpanDuration = shotComp.workAreaDuration;
   var numModules = options.outputModules.length;
   // Loop to add output modules
-  for (var i = 0; i < numModules; i++) {
+  for (var i = 1; i < numModules; i++) {
     rqItem.outputModules.add();
   }
   for (var i = 0; i < rqItem.numOutputModules; i++) {
@@ -267,7 +267,7 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
     try {
       alert(rqItem.numOutputModules);
       om.applyTemplate(presetName);
-      // om.file = new File(outputModules[i].outputModuleFilePath);
+      om.file = new File(presetPath);
     } catch (e: any) {
       alert(
         'Failed to apply template: ' +

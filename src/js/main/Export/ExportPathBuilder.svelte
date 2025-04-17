@@ -1,41 +1,32 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { fs, path } from '../../lib/cep/node';
-  import { computePosition } from '@floating-ui/dom';
   import {
     Folder,
     File,
-    ArrowUp,
-    ArrowDown,
-    Pencil,
-    ListPlus,
     ChevronDown,
     ChevronRight,
     Trash,
-    ChevronUp,
-    SquarePlus,
     Plus,
     Save,
+    Pencil,
   } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { generateId } from '../../lib/utils/utils';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { lastFolderExport, localAppStore } from '../../stores/local-storage';
-  import { getPreferenceByKey } from '../../api/preferences';
+  import { lastFolderExport } from '../../stores/local-storage';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
-  import { appStore } from '../../stores/app-store';
-  import {
-    Exporter,
-    PathItem,
-    CompRenderData,
-    addToRenderQueue,
-    addCompsToRenderQueue,
-  } from '../../api/exporter';
   import {
     getExporterPresets,
     setExporterPresets,
   } from '../../api/preferences';
+  import { appStore } from '../../stores/app-store';
+  import {
+    type Exporter,
+    type PathItem,
+    type CompRenderData,
+    addToRenderQueue,
+  } from '../../api/exporter';
   import { createFloatingActions } from 'svelte-floating-ui';
   // @ts-ignore
   import { offset, flip, shift } from 'svelte-floating-ui/dom';
@@ -89,7 +80,7 @@
   }));
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule = outputModules.find(
-    (module) => module === selectedOutputModuleMenuItem.value
+    (module) => module === selectedOutputModuleMenuItem.value,
   );
 
   let rootFolder = '';
@@ -97,7 +88,7 @@
   // Preset Name
   let presetName = '';
   $: presetNameExists = exportPresets.some(
-    (preset) => preset.name === presetName
+    (preset) => preset.name === presetName,
   );
 
   $: validPresetName = presetName.length < 5 || presetNameExists;
@@ -137,11 +128,12 @@
     }
 
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
+      await evalES('getOutputModulesTemplates()'),
     );
     outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN')
+      (p: string) => !p.startsWith('_HIDDEN'),
     );
+
     selectedOutputModule = outputModules[0];
     outputModulesSelectItems = outputModules.map((module) => ({
       value: module,
@@ -164,20 +156,28 @@
   }
 
   function handleOnChangeExportPreset(value: { value: string; label: string }) {
+    const missingOm = checkOutputModuleTemplate();
+    if (missingOm.length > 0) {
+      notifications.warning(
+        `Missing Output modules : ${missingOm.join(', ')} `,
+        2000,
+      );
+      return;
+    }
     selectedExportPresetMenuItem = value;
     selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value
+      (preset) => preset.name === value.value,
     );
     pathStructure = selectedExportPreset.path;
   }
 
   function handleOnChangeOutputModule(
     id: string,
-    value: { value: string; label: string }
+    value: { value: string; label: string },
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value
+      (module) => module === value.value,
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
@@ -191,7 +191,7 @@
     if (exportPresets.some((preset) => preset.name === name)) {
       notifications.error(
         'Exporter preset with this name already exists',
-        2000
+        2000,
       );
       return;
     }
@@ -226,6 +226,12 @@
     return newExporter;
   }
 
+  //duplicate preset
+  function duplicatePreset() {
+    const newExporter = addExporter(selectedExportPreset.name);
+    newExporter.name = `${selectedExportPreset.name} (copy)`;
+  }
+
   // Function to save the current preset
   function saveExporter() {
     const updatedExportPreset = {
@@ -233,7 +239,7 @@
       path: pathStructure,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
     );
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -243,7 +249,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name
+          (preset) => preset.value === selectedExportPreset.name,
         );
         pathStructure = selectedExportPreset.path;
 
@@ -252,6 +258,18 @@
         notifications.error('Failed to save exporter preset', 2000);
       }
     });
+  }
+
+  //Function to check if  outputModule template exists.
+  function checkOutputModuleTemplate(): string[] {
+    const om = findNodesByType(pathStructure, 'file');
+    let missing: string[] = [];
+    om.forEach((node) => {
+      if (node.outputModule != selectedOutputModule) {
+        missing.push(node.outputModule);
+      }
+    });
+    return missing;
   }
 
   // Function to add a new folder
@@ -302,7 +320,7 @@
   function addChildToNode(
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem
+    newChild: PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -394,7 +412,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem
+    updateFn: (node: PathItem) => PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -450,7 +468,7 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken.substring(1))
+          token.name.toLowerCase().includes(partialToken.substring(1)),
       );
 
       showSuggestions = suggestedTokens.length > 0;
@@ -512,7 +530,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[]
+    nodes: PathItem[],
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -799,7 +817,7 @@
                   onChange={() =>
                     handleOnChangeOutputModule(
                       selectedNode.id,
-                      selectedOutputModuleMenuItem
+                      selectedOutputModuleMenuItem,
                     )}
                 />
               {/if}
@@ -933,7 +951,9 @@
               on:mousedown|preventDefault={(e) => {
                 // Prevent blur and focus loss on mousedown
                 e.preventDefault();
-                insertToken(activeElement, token.token);
+                if (activeElement) {
+                  insertToken(activeElement, token.token);
+                }
               }}
             >
               <strong>{token.token}</strong> - {token.name}
