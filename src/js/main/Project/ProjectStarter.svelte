@@ -6,7 +6,7 @@
   import { fs, path } from '../../lib/cep/node';
   import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import Select from 'svelte-select';
-  import { getProjectTemplate } from '../../api/buck-libray';
+  import { getProjectTemplate } from '../../api/buck-library';
   import { buck5Server } from '../../stores/server-store';
   import { appId } from '../../lib/utils/cep';
 
@@ -55,7 +55,7 @@
 
   $: console.log(
     'file template path:',
-    getProjectTemplate(appId, template.value),
+    getProjectTemplate(appId, template.value)
   );
 
   $: console.log(framerate);
@@ -80,7 +80,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate,
+        option.framerate
       );
       if (sqp) {
         const sequenceOptions = {
@@ -93,7 +93,7 @@
 
         await evalES(
           `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
-          false,
+          false
         );
         fs.unlinkSync(sqp);
       }
@@ -107,12 +107,12 @@
         name: sequenceName,
         projectFile: path.posix.join(
           rootFolder,
-          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`,
+          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
         ),
       };
       await evalES(
         `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
-        false,
+        false
       );
     }
   };

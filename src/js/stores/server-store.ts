@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import { SHARED_FOLDER } from '../api/buck-libray';
-import { fs} from '../lib/cep/node';
+import { SHARED_FOLDER } from '../api/buck-library';
+import { fs } from '../lib/cep/node';
 
 export const buck5Server = writable(false);
 
