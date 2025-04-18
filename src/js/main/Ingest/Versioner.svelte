@@ -143,14 +143,24 @@
   const handleReloadClips = () => {
     isLoading = true;
     getClips().then((clips) => {
-      console.log('clips', clips);
-      sequenceClips = clips;
-      isLoading = false;
+      if (clips.length > 0) {
+        console.log('clips', clips);
+        sequenceClips = clips;
+        isLoading = false;
+      } else {
+        sequenceClips = [];
+        isLoading = false;
+      }
     });
   };
 
   onMount(() => {
     handleReloadClips();
+    if ($appStore.showVersionWarnings) {
+      $showWarnings = true;
+    } else {
+      $showWarnings = false;
+    }
   });
 </script>
 

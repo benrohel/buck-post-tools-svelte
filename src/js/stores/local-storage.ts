@@ -179,6 +179,32 @@ lastFolderExport.subscribe((value) => {
   }
 });
 
+// Export Settings
+export const storedExportSettings = writable<string | null>(
+  //@ts-ignore
+  JSON.parse(localStorage.getItem('exportsettings') ?? null)
+);
+storedExportSettings.subscribe((value) => {
+  if (value === null) {
+    return;
+  } else {
+    localStorage.setItem('exportsettings', JSON.stringify(value));
+  }
+});
+
+//  Export Root Folder
+export const storedExportRootFolder = writable<string | null>(
+  //@ts-ignore
+  JSON.parse(localStorage.getItem('exportrootfolder') ?? null)
+);
+storedExportRootFolder.subscribe((value) => {
+  if (value === '') {
+    return;
+  } else {
+    localStorage.setItem('exportrootfolder', JSON.stringify(value));
+  }
+});
+
 // Replace Search Folder
 export const localAppStore = writable<AppStore>(
   //@ts-ignore

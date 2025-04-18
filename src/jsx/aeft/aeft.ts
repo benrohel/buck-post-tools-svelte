@@ -115,7 +115,7 @@ export const renameShots = (options: any) => {
   var shots = sequence.selectedLayers;
   for (var s = 0; s < shots.length; s++) {
     var shotNumber = (options.startValue + s * options.increment).toString();
-    var padString = padStart(shotNumber, options.padding);
+    var padString = padStart(shotNumber, options.padding, '0');
     var shotName = options.prefix + padString;
     shots[s].name = shotName;
   }
@@ -343,13 +343,16 @@ export const versionUpNames = () => {
   }
 
   for (var c = 0; c < selection.length; c++) {
+    if (!(selection[c] instanceof CompItem)) {
+      continue;
+    }
     const currentVersion = selection[c].name.match(/_v(\d+)$/);
     if (!currentVersion) {
       alert(`No version token found in ${selection[c].name}`);
       return false;
     }
-    const version = parseInt(currentVersion[1]) + 1;
-    const versionString = padStart(version.toString(), '000');
+    const version = parseInt(currentVersion[1], 10);
+    const versionString = padStart((version + 1).toString(), 3, '00');
     const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
     selection[c].name = newName;
   }

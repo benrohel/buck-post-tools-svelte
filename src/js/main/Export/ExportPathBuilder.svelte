@@ -23,6 +23,10 @@
   } from '../../api/preferences';
   import { appStore } from '../../stores/app-store';
   import {
+    storedExportSettings,
+    storedExportRootFolder,
+  } from '../../stores/local-storage';
+  import {
     type Exporter,
     type PathItem,
     type CompRenderData,
@@ -50,12 +54,14 @@
   const aeAvailableTokens = [
     { name: 'Comp Name', token: '{shot}' },
     { name: 'Project Version', token: '{project_version}' },
+    { name: 'Project Name', token: '{project_name}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
   const pproAvailableTokens = [
     { name: 'Sequence Name', token: '{sequence}' },
     { name: 'Project Version', token: '{project_version}' },
+    { name: 'Project Name', token: '{project_name}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
@@ -113,7 +119,6 @@
     rootFolder = $lastFolderExport;
 
     const storedExportPresets = await getExporterPresets(appId);
-    console.log('storedExportPresets', storedExportPresets);
     if (storedExportPresets.length > 0) {
       exportPresets = storedExportPresets;
       selectedExportPreset = exportPresets[0];
@@ -141,6 +146,19 @@
       label: module,
     }));
     selectedOutputModuleMenuItem = outputModulesSelectItems[0];
+
+    // Get Stored Settings
+    if ($appStore.rememberLastExportPath) {
+      rootFolder = $lastFolderExport;
+    }
+    if ($appStore.rememberLastExportPreset) {
+      selectedExportPreset = exportPresets.find(
+        (preset: Exporter) => preset.name === $storedExportSettings
+      );
+      if (selectedExportPreset) {
+        pathStructure = selectedExportPreset.path;
+      }
+    }
   });
 
   // Variable to track the currently selected item for adding children
@@ -672,18 +690,6 @@
 
     //for all comps add to render queue  with all files node option
     for (const comp of comps) {
-      //   for (const fileNode of fileNodes) {
-      //     const options = {
-      //       rootFolder: rootFolder,
-      //       presetsName: fileNode.outputModule,
-      //       previewString: fileNode.path,
-      //       appId: appId,
-      //       version: version,
-      //       selectedTask: '',
-      //     };
-      //     console.log('options', options);
-      //     await evalES(`addToRenderQueue(${JSON.stringify(options)})`, false);
-      //   }
       const options = {
         rootFolder: rootFolder,
         outputModules: outputModules,
@@ -693,6 +699,13 @@
       };
       console.log('options', options);
       await addToRenderQueue(comp, options);
+    }
+    // Save settings if enabled
+    if ($appStore.rememberLastExportPreset) {
+      storedExportSettings.set(selectedExportPreset.name);
+    }
+    if ($appStore.rememberLastExportPath) {
+      storedExportRootFolder.set(rootFolder);
     }
   }
 

@@ -6,6 +6,8 @@ export interface AppStore {
   appId: string;
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
+  rememberLastExportPreset: boolean;
+  showVersionWarnings: boolean;
 }
 
 export const defaultAppStore: AppStore = {
@@ -13,6 +15,8 @@ export const defaultAppStore: AppStore = {
   appId: appId,
   rememberLastFolderSearch: true,
   rememberLastExportPath: true,
+  rememberLastExportPreset: true,
+  showVersionWarnings: true,
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);

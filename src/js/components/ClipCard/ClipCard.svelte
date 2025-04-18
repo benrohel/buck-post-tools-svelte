@@ -8,11 +8,8 @@
   import { checkVideoFileUpdate } from '../../api/video/video';
   import { showWarnings } from '../../stores/settings-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { type AppStore, appStore } from '../../stores/app-store';
-  import type { Writable } from 'svelte/store';
-  import TooltipComponent from '../../components/Tooltip/Tooltip.svelte';
-  import { path } from '../../lib/cep/node';
-  import ToolCard from './ToolCard.svelte';
+  import { appStore } from '../../stores/app-store';
+  import { fs, path } from '../../lib/cep/node';
   export let clip: any;
   export let id = 0;
   export let selected = false;
@@ -26,6 +23,7 @@
   let editVersion = '';
   $: isVideoMatch = true;
   let videoDifferences: any[] = [];
+  let isMissing = false;
 
   export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
 
@@ -82,7 +80,7 @@
     if (!clip.selectedVersion?.filepath) return;
     const result = await checkVideoFileUpdate(
       clip.filepath,
-      clip.selectedVersion.filepath,
+      clip.selectedVersion.filepath
     );
     if (result.length > 0) {
       console.log(`Clip ${clip.shotName} is different: ${result}`);
@@ -102,7 +100,7 @@
     const timelineVersion = parseInt(fileVersion);
     if (selectedVersion.version == undefined) return 'color: #f6d55c';
     const intSelectedVersion = parseInt(
-      selectedVersion.version?.match(/\d+/)[0],
+      selectedVersion.version?.match(/\d+/)[0]
     );
     let isSynced = intSelectedVersion == timelineVersion;
     let color = 'color: #f6d55c';
@@ -116,6 +114,10 @@
   };
 
   $: initCard = () => {
+    if (!fs.existsSync(clip.filepath)) {
+      console.log(`Clip ${clip.shotName} is missing`);
+      isMissing = true;
+    }
     if (clip) {
       selectedVersion = clip.selectedVersion;
       publishedVersion = clip.trackerClip
@@ -211,7 +213,9 @@
                 ? 'icon error'
                 : 'icon active'}
               on:click={handleReplaceClip}
-              disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
+              disabled={editIsSelected() ||
+                clip.filepath.match(/v\d+/) == null ||
+                isMissing}
             >
               <ArrowUpDown />
             </button>
@@ -219,7 +223,9 @@
           <button
             class="icon active"
             on:click={handleImportClip}
-            disabled={editIsSelected() || clip.filepath.match(/v\d+/) == null}
+            disabled={editIsSelected() ||
+              clip.filepath.match(/v\d+/) == null ||
+              isMissing}
           >
             <Download />
           </button>

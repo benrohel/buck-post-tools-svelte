@@ -53,6 +53,7 @@ export const buildRenderPath = (
       dataString = previewString
         .replace(/{projectName}/g, compData.projectName)
         .replace(/{projectVersion}/g, projectVersionString)
+        .replace(/{projectName}/g, compData.projectName.replace(/_ \d+/, ''))
         .replace(/{sequence}/g, 'sequence')
         .replace(/{shot}/g, compData.compName)
         .replace(/{shot}/g, compData.compName)
@@ -63,7 +64,7 @@ export const buildRenderPath = (
       break;
     case 'PPRO':
       dataString = previewString
-        .replace(/{projectName}/g, compData.projectName)
+        .replace(/{projectName}/g, compData.projectName.replace(/_ \d+/, ''))
         .replace(/{sequence}/g, 'sequence')
         .replace(/{shot}/g, compData.compName)
         .replace(/{shot}/g, compData.compName)
@@ -129,4 +130,3 @@ export const addCompsToRenderQueue = async (
     addToRenderQueue(comp, options);
   });
 };
-
