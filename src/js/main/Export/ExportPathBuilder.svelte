@@ -16,6 +16,7 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { lastFolderExport } from '../../stores/local-storage';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
+  import { Tooltip } from '@svelte-plugins/tooltips';
   import {
     getExporterPresets,
     setExporterPresets,
@@ -80,7 +81,7 @@
   }));
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule = outputModules.find(
-    (module) => module === selectedOutputModuleMenuItem.value,
+    (module) => module === selectedOutputModuleMenuItem.value
   );
 
   let rootFolder = '';
@@ -88,7 +89,7 @@
   // Preset Name
   let presetName = '';
   $: presetNameExists = exportPresets.some(
-    (preset) => preset.name === presetName,
+    (preset) => preset.name === presetName
   );
 
   $: validPresetName = presetName.length < 5 || presetNameExists;
@@ -128,10 +129,10 @@
     }
 
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()'),
+      await evalES('getOutputModulesTemplates()')
     );
     outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN'),
+      (p: string) => !p.startsWith('_HIDDEN')
     );
 
     selectedOutputModule = outputModules[0];
@@ -160,24 +161,24 @@
     if (missingOm.length > 0) {
       notifications.warning(
         `Missing Output modules : ${missingOm.join(', ')} `,
-        2000,
+        2000
       );
-      return;
     }
     selectedExportPresetMenuItem = value;
+
     selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value,
+      (preset) => preset.name === value.value
     );
     pathStructure = selectedExportPreset.path;
   }
 
   function handleOnChangeOutputModule(
     id: string,
-    value: { value: string; label: string },
+    value: { value: string; label: string }
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value,
+      (module) => module === value.value
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
@@ -191,7 +192,7 @@
     if (exportPresets.some((preset) => preset.name === name)) {
       notifications.error(
         'Exporter preset with this name already exists',
-        2000,
+        2000
       );
       return;
     }
@@ -239,7 +240,7 @@
       path: pathStructure,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
     );
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -249,7 +250,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name,
+          (preset) => preset.value === selectedExportPreset.name
         );
         pathStructure = selectedExportPreset.path;
 
@@ -320,7 +321,7 @@
   function addChildToNode(
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem,
+    newChild: PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -412,7 +413,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
+    updateFn: (node: PathItem) => PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -426,16 +427,6 @@
       }
       return node;
     });
-  }
-
-  // Function to handle token addition
-  function handleAddToken(token: { token: string; name: string }) {
-    console.log('adding token', token);
-
-    updateNodeInTree(pathStructure, selectedItemId, (node) => ({
-      ...node,
-      name: `${selectedNode.name}${token.name}`,
-    }));
   }
 
   // Variables for autocomplete
@@ -468,7 +459,7 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken.substring(1)),
+          token.name.toLowerCase().includes(partialToken.substring(1))
       );
 
       showSuggestions = suggestedTokens.length > 0;
@@ -530,7 +521,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[],
+    nodes: PathItem[]
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -731,31 +722,52 @@
         bind:value={selectedExportPresetMenuItem}
         onChange={handleOnChangeExportPreset}
       />
-      <button
-        on:click={() => {
-          modalOpen = true;
-        }}
-        class="outline"
-        title="edit"
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Add new preset"
+        position="bottom"
+        delay={1000}
       >
-        <Plus />
-      </button>
-      <button
-        on:click={() => {
-          showBuildPreset = !showBuildPreset;
-        }}
+        <button
+          on:click={() => {
+            modalOpen = true;
+          }}
+          class="outline"
+          title="add new preset"
+        >
+          <Plus />
+        </button>
+      </Tooltip>
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Edit preset"
+        position="bottom"
+        delay={1000}
       >
-        <Pencil />
-      </button>
-      <button
-        on:click={() => {
-          showBuildPreset = true;
-        }}
-        class="outline"
-        title="Delete"
+        <button
+          on:click={() => {
+            showBuildPreset = !showBuildPreset;
+          }}
+          class="outline"
+        >
+          <Pencil />
+        </button>
+      </Tooltip>
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Delete preset"
+        position="left"
+        delay={1000}
       >
-        <Trash />
-      </button>
+        <button
+          on:click={() => {
+            showBuildPreset = true;
+          }}
+          class="outline"
+        >
+          <Trash />
+        </button>
+      </Tooltip>
     </div>
     <div class="flex-row-end">
       <label for="increment">Version Number: </label>
@@ -784,9 +796,16 @@
     {#if showBuildPreset}
       <div class="flex-row-between action-row">
         <p style="margin: 4px;">Export Builder</p>
-        <button class="outline" title="Save" on:click={saveExporter}>
-          <Save />
-        </button>
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content="Save"
+          position="left"
+          delay={1000}
+        >
+          <button class="outline" title="Save" on:click={saveExporter}>
+            <Save />
+          </button>
+        </Tooltip>
       </div>
 
       <!-- Item actions panel - outside the tree -->
@@ -796,39 +815,67 @@
           {#if selectedNode}
             <div class="action-buttons">
               {#if selectedNode.type === 'folder'}
-                <button
-                  on:click={() => addFolder(selectedNode.id)}
-                  class="outline"
-                  title="Add Folder"
+                <Tooltip
+                  action={$appStore.showTooltips ? 'hover' : 'none'}
+                  content="Add new folder"
+                  position="bottom"
+                  delay={1000}
                 >
-                  <Folder />
-                </button>
-                <button
-                  class="outline"
-                  on:click={() => addFile(selectedNode.id)}
+                  <button
+                    on:click={() => addFolder(selectedNode.id)}
+                    class="outline"
+                    title="Add Folder"
+                  >
+                    <Folder />
+                  </button>
+                </Tooltip>
+                <Tooltip
+                  action={$appStore.showTooltips ? 'hover' : 'none'}
+                  content="Add new file"
+                  position="bottom"
+                  delay={1000}
                 >
-                  <File />
-                </button>
+                  <button
+                    class="outline"
+                    on:click={() => addFile(selectedNode.id)}
+                  >
+                    <File />
+                  </button>
+                </Tooltip>
               {/if}
               {#if selectedNode.type === 'file'}
-                <MenuSelect
-                  items={outputModulesSelectItems}
-                  bind:value={selectedOutputModuleMenuItem}
-                  onChange={() =>
-                    handleOnChangeOutputModule(
-                      selectedNode.id,
-                      selectedOutputModuleMenuItem,
-                    )}
-                />
+                <Tooltip
+                  action={$appStore.showTooltips ? 'hover' : 'none'}
+                  content="Edit output module"
+                  position="bottom"
+                  delay={1000}
+                >
+                  <MenuSelect
+                    items={outputModulesSelectItems}
+                    bind:value={selectedOutputModuleMenuItem}
+                    onChange={() =>
+                      handleOnChangeOutputModule(
+                        selectedNode.id,
+                        selectedOutputModuleMenuItem
+                      )}
+                  />
+                </Tooltip>
               {/if}
 
-              <button
-                on:click={() => deleteItem(selectedNode.id)}
-                class="outline"
-                title="Delete"
+              <Tooltip
+                action={$appStore.showTooltips ? 'hover' : 'none'}
+                content="Delete"
+                position="left"
+                delay={1000}
               >
-                <Trash />
-              </button>
+                <button
+                  on:click={() => deleteItem(selectedNode.id)}
+                  class="outline"
+                  title="Delete"
+                >
+                  <Trash />
+                </button>
+              </Tooltip>
             </div>
           {/if}
         {:else}

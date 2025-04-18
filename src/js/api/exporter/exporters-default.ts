@@ -1,4 +1,5 @@
-export default [
+import { type Exporter } from './exporter';
+export const defaultExportPresets: Exporter[] = [
   {
     name: 'Buck Legacy',
     previewPath: '{shot}/render/comp/{shot}_{version}.{ext}',

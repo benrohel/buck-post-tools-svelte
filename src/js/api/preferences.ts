@@ -1,6 +1,7 @@
 import { fs, path, os } from '../lib/cep/node';
 import pkg from '../../../package.json';
-import { Exporter, defaultExportPresets } from './exporter/exporter';
+import { Exporter } from './exporter';
+import { defaultExportPresets } from './exporter/exporters-default';
 
 export declare interface ExportNamePreset {
   name: string;

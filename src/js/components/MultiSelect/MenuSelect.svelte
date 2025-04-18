@@ -35,6 +35,6 @@
   .svelte-select-container {
     width: 100%;
     margin-bottom: 0px;
-    z-index: 1000;
+    z-index: 100;
   }
 </style>

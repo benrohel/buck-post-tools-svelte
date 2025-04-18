@@ -1,2 +1,2 @@
 export * from './exporter';
-export * from './exporters-default';
+export { defaultExportPresets } from './exporters-default';

@@ -17,7 +17,7 @@
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { lastFolderSearch } from '../../stores/local-storage';
   import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
-  import { type AppStore, appStore } from '../../stores/app-store';
+  import { appStore } from '../../stores/app-store';
 
   let find = '';
   let replace = '';
@@ -149,7 +149,7 @@
         file.filepath,
         rootFolder,
         find,
-        replace,
+        replace
       );
 
       file.replacements = res.reverse();
