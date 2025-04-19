@@ -30,7 +30,7 @@
 
   import { appId } from '../lib/utils/cep';
 
-  let backgroundColor: string = '#333333';
+  let backgroundColor: string = '#272727';
 
   let items = [
     {
