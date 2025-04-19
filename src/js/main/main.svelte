@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { subscribeBackgroundColor } from '../lib/utils/bolt';
+  import { evalES, subscribeBackgroundColor } from '../lib/utils/bolt';
   import '../index.scss';
   import Tabs from '../components/Tabs/Tabs.svelte';
   import { getAuthAuthenticated, client } from 'buck-client';
@@ -23,13 +23,14 @@
   import {
     appStore,
     defaultAppStore,
+    appVersion,
     type AppStore,
   } from '../stores/app-store';
   import { localAppStore, lastFolderSearch } from '../stores/local-storage';
 
   import { appId } from '../lib/utils/cep';
 
-  let backgroundColor: string = '#282c34';
+  let backgroundColor: string = '#333333';
 
   let items = [
     {
@@ -76,13 +77,15 @@
 
   onMount(async () => {
     if (window.cep) {
-      subscribeBackgroundColor((c: string) => (backgroundColor = c));
+      // subscribeBackgroundColor((c: string) => (backgroundColor = c));
       await connectToDaemon();
+      appVersion.set(await evalES(`appVersion()`));
       if (client) {
         authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
     console.log('$localAppStore', $localAppStore);
+    console.log('$appVersion', $appVersion);
   });
 </script>
 

@@ -1,3 +1,4 @@
+
 @use "./variables.scss" as *;
 
 html {
@@ -5,7 +6,7 @@ html {
   font-family: Helvetica;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: $darkest;
+  background-color: $darker;
 }
 
 body {
@@ -290,8 +291,9 @@ button.icon-only {
 }
 
 button.big {
-  height: 24px;
-  // width: 24px;
+  height: 36px;
+  width: 36px;
+  padding: 2px;
 }
 
 button:active {
@@ -315,12 +317,10 @@ button .outline {
 }
 
 button:disabled {
-  opacity: 10%;
+  opacity: 50%;
   background-color: #636363;
-  color: #909090;
   border: none;
 }
-
 
 
 button:hover:disabled {

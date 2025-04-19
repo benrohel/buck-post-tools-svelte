@@ -291,6 +291,17 @@
     return missing;
   }
 
+  //Function to load output module from a node id
+  function findOutputModule(id: string) {
+    const node = findNodeById(pathStructure, id);
+    if (node && node.outputModule) {
+      selectedOutputModule = node.outputModule;
+      selectedOutputModuleMenuItem = outputModulesSelectItems.find(
+        (om) => om.value === node.outputModule
+      );
+    }
+  }
+
   // Function to add a new folder
   function addFolder(parentId: string | null = null) {
     const newFolder = {
@@ -906,6 +917,7 @@
                 on:click={(e) => {
                   e.stopPropagation();
                   selectedItemId = node.id;
+                  findOutputModule(node.id);
                 }}
                 use:floatingRef
               >

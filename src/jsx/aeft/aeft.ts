@@ -1,5 +1,5 @@
 import { Key } from 'lucide-svelte';
-import { padStart, openFolderDialog, forEach } from '../utils/utils';
+import { padStart, forEach } from '../utils/utils';
 import { findCompByName } from './aeft-utils';
 export {
   findCompByName,
@@ -8,6 +8,7 @@ export {
   getSelectedCompsForRender,
   getProjectFile,
   selectFolder,
+  appVersion,
 } from './aeft-utils';
 
 export const helloWorld = () => {

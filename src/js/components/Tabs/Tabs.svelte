@@ -29,7 +29,7 @@
             position="bottom"
             delay={1000}
           >
-            <svelte:component this={item.icon} size="12" />
+            <svelte:component this={item.icon} size="16" />
           </Tooltip>
         {:else}
           {item.label}

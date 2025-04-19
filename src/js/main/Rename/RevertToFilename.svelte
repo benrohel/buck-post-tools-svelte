@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { ArrowLeftRight } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
-  import Button from '../../components/Button/Button.svelte';
 
   const handleRevertToFilename = async () => {
     await evalES('renameToFile()');

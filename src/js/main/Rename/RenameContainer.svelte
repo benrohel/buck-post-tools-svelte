@@ -7,6 +7,7 @@
   import ReplaceAndRelink from './ReplaceAndRelink.svelte';
   import VersionUp from './VersionUp.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import QuickRenameTools from './QuickRenameTools.svelte';
 
   const renameModes = [
     { value: 'replace', label: 'Find and Replace', component: FindAndReplace },

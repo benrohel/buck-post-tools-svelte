@@ -22,8 +22,8 @@
     showChevron={openable()}
     disabled={!openable()}
     on:change={() => {
-      focus = false;
       onChange(value);
+      focus = false;
     }}
     bind:focused={focus}
     bind:listOpen={focus}

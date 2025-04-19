@@ -1,3 +1,7 @@
+export const appVersion = () => {
+  return app.version;
+};
+
 export const selectFolder = (
   msg: string = 'Select a Folder'
 ): string | false => {

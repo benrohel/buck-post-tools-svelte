@@ -30,7 +30,7 @@
       <img src={buckLogo} alt="Buck5 Logo" />
     </div>
     <div style={$buck5Server ? 'color:green' : 'color:red;'}>
-      <Server strokeWidth={4} />
+      <Server strokeWidth={1} size={16} />
     </div>
   </div>
   <div id="buck-version" style="font-size:10px">BUCK 2025 {pkg.version}</div>

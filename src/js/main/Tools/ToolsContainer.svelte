@@ -1,39 +1,45 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-  
-  import NukeToAe from './NukeToAE.svelte';
-  import {getScriptsList} from '../../api/scripts/tools-scripts';
-
+  import { onMount } from 'svelte';
+  import { appStore, appVersion } from '../../stores/app-store';
+  import {
+    getLocalScripts,
+    type Script,
+  } from '../../api/scripts/tools-scripts';
   import ToolCard from '../../components/ClipCard/ToolCard.svelte';
-  
- interface ToolData {
-  name: string;
-  version: string;
-  description: string;
-  filepath: string;
-  author?: string;
-  icon?: string;
-  apps?: string[];
-}
+
+  interface ToolData {
+    name: string;
+    version: string;
+    description: string;
+    filepath: string;
+    author?: string;
+    icon?: string;
+    apps?: string[];
+  }
 
   interface ToolItem {
     [key: string]: ToolData;
   }
-  import toolList from "./tools.json";
-  const tools  = toolList as ToolItem;
+  import toolList from './tools.json';
+  const tools = toolList as ToolItem;
+  const appId = $appStore.appId;
 
+  console.log(getLocalScripts(appId, $appVersion));
 
+  let localScripts: Script[] = [];
+  $: localScripts = getLocalScripts(appId, $appVersion);
 
-  const appId = getContext('appId') as string;
+  $: buckToolArray = () => {
+    return Object.keys(tools)
+      .filter((t) => {
+        return tools[t].apps.includes(appId);
+      })
+      .map((k) => {
+        return { value: tools[k], label: k };
+      });
+  };
 
-  console.log(getScriptsList(appId));
-
-  $: toolArray = ()=> {return Object.keys(tools).filter((t)=>{return tools[t].apps.includes(appId)}).map((k)=>{
-      return {value: tools[k], label: k}
-    })};
-  
-
-    $:console.log(toolArray())
+  $: console.log(buckToolArray());
 
   interface SelectToolItem {
     value: string;
@@ -42,23 +48,90 @@
     apps: string[];
   }
 
-
-  const renameModes = [
-    {
-      value: 'nukeToAe',
-      label: 'Import Nuke Corner Pin',
-      apps: ['AEFT'],
-      component: NukeToAe,
-    },
-  ];
-
- 
- 
+  onMount(() => {
+    localScripts = getLocalScripts(appId, $appVersion);
+  });
 </script>
 
-<div>
-  {#each toolArray() as tool}
-   <ToolCard scripTool={tool.value}/>
-  {/each}
-
+<div class="tools-container">
+  <div class="tools-section">
+    <div class="settings-header">
+      <h3>Buck Scripts</h3>
+    </div>
+    <div class="tools-list">
+      {#each buckToolArray() as tool}
+        <ToolCard scripTool={tool.value} />
+      {/each}
+    </div>
+  </div>
+  <div class="tools-section">
+    <div class="settings-header">
+      <h3>Local Scripts</h3>
+    </div>
+    <div class="tools-list grid-layout">
+      {#each localScripts as script}
+        <ToolCard scripTool={script} />
+      {/each}
+    </div>
+  </div>
 </div>
+
+<style lang="scss">
+  @use '../../variables.scss' as *;
+
+  .tools-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .tools-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-self: flex-start;
+    justify-items: start;
+  }
+  h3 {
+    color: $font;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .settings-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    color: $font;
+    width: 100%;
+    gap: 2px;
+    margin-bottom: 0px;
+    margin-left: 8px;
+  }
+  .tools-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 28px;
+    gap: 4px;
+    width: 100%;
+  }
+
+  @media (max-width: 600px) {
+    .grid-layout {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 400px) {
+    .grid-layout {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+</style>

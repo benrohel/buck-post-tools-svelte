@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 import { appId } from '../lib/utils/cep';
 
+export const appVersion = writable('');
+
 export interface AppStore {
   showTooltips: boolean;
   appId: string;
