@@ -14,10 +14,9 @@
 </script>
 
 <script lang="ts">
-  import CodeEditor from '../../components/CodeEditor/CodeEditor.svelte';
   import { Highlight, LineNumbers } from 'svelte-highlight';
   import 'svelte-highlight/styles/atom-one-dark.css';
-
+  import { appStore } from '../../stores/app-store';
   import horizonDark from 'svelte-highlight/styles/horizon-dark';
   import { evalES } from '../../lib/utils/bolt';
   import {
@@ -31,6 +30,7 @@
   } from 'lucide-svelte';
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import { CodeJar } from '@novacbn/svelte-codejar';
+  import { Tooltip } from '@svelte-plugins/tooltips';
   // import { GptRequest } from '../../api/chat-gpt/chat-gpt';
   export let onClose: Function = () => {};
   export let onApplyCode: Function = () => {};
@@ -128,16 +128,19 @@
     <CircleX />
   </div>
   <div id="modal-content">
-    <h4 style="text-align:center">
+    <h3 style="text-align:center; color:#1473e6">
       {`${expression.values.Name.toUpperCase()} ${
         isScript ? 'SCRIPT' : 'EXPRESSION'
       }`}
-    </h4>
+    </h3>
     {#if variables}
       <div id="variables-list">
+        <div style="text-align:center; margin-bottom:4px; font-size:14px">
+          Variables
+        </div>
         {#each variables as variable, id}
           <div id="filter-row">
-            <div style="display:flex; gap:8px">
+            <div style="display:flex; gap:2px">
               <label style="padding-left:0px" for="name">{variable.label}</label
               >
               {#if variable.label == 'propertyReference'}
@@ -155,22 +158,57 @@
             />
           </div>
         {/each}
-        <div style="display:flex; gap:8px">
+        <div style="display:flex; justify-content:flex-end; width:100%">
           {#if expression.id === 'null'}
             <div
-              style="display:flex; gap:8px; align-items:center; flex-direction:row"
+              style="display:flex; gap:8px; justify-content:flex-start; width:100%"
             >
-              <Braces />
-              <Toggle bind:checked={isScript} />
-              <Code />
+              <div
+                style="display:flex; gap:8px; align-items:center; flex-direction:row"
+              >
+                <Tooltip
+                  action={$appStore.showTooltips ? 'hover' : 'none'}
+                  content="Edit Expression"
+                  position="right"
+                  delay={1000}
+                >
+                  <Braces />
+                </Tooltip>
+                <Toggle bind:checked={isScript} />
+                <Tooltip
+                  action={$appStore.showTooltips ? 'hover' : 'none'}
+                  content="Edit Script"
+                  position="right"
+                  delay={1000}
+                >
+                  <Code />
+                </Tooltip>
+              </div>
+              <Tooltip
+                action={$appStore.showTooltips ? 'hover' : 'none'}
+                content="Load Expression from Selected Property"
+                position="bottom"
+                delay={1000}
+              >
+                <button class="active" on:click={handleLoadFromAe}>
+                  <ArrowUpFromLine />
+                </button>
+              </Tooltip>
             </div>
-            <button on:click={handleLoadFromAe}>
-              <ArrowUpFromLine />
-            </button>
           {/if}
-          <button on:click={handleApplyCode}>
-            <ArrowDownToLine />
-          </button>
+
+          <div style="display:flex; justify-content:flex-end; width:100%">
+            <Tooltip
+              action={$appStore.showTooltips ? 'hover' : 'none'}
+              content="Apply Expression"
+              position="left"
+              delay={1000}
+            >
+              <button class="active" on:click={handleApplyCode}>
+                Apply to Selected Property
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     {/if}
@@ -210,7 +248,6 @@
     width: 100vw;
     background: $darker;
     display: flex;
-    padding-top: 40px;
     align-items: flex-start;
     justify-content: center;
   }
@@ -249,19 +286,18 @@
     z-index: 998;
   }
   #variables-list {
-    width: 90%;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 8px;
-    align-items: flex-end;
+    align-items: flex-start;
   }
   #filter-row {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 4px;
-    align-items: flex-start;
+    align-items: center;
   }
   label {
     color: #777777;
@@ -285,5 +321,11 @@
   #fav-icon:hover {
     cursor: pointer;
     filter: brightness(1.25);
+  }
+
+  textarea {
+    background-color: $extra-dark;
+    border: 1px solid $dimmed-font-color;
+    border-radius: 4px;
   }
 </style>

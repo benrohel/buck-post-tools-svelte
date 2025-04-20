@@ -70,6 +70,7 @@
     right: 0;
     bottom: 0;
     background-color: $darker;
+    border: 1px solid $dimmed-font-color;
     transition: 0.3s;
     border-radius: 20px;
   }
@@ -79,8 +80,8 @@
     content: '';
     height: 12px;
     width: 12px;
-    left: 4px;
-    bottom: 2px;
+    left: 2px;
+    bottom: 1px;
     background-color: $font;
     transition: 0.3s;
     border-radius: 50%;
