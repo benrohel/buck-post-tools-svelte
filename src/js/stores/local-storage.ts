@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, Writable } from 'svelte/store';
 import type * as BUCK5 from '../api/buck5/index.d';
 import { defaultAppStore, type AppStore } from '../stores/app-store';
 const safeload = (key: string) => {
@@ -206,16 +206,46 @@ storedExportRootFolder.subscribe((value) => {
 });
 
 // Replace Search Folder
-export const localAppStore = writable<AppStore>(
-  //@ts-ignore
-  JSON.parse(
-    localStorage.getItem('lacalappstore') ?? JSON.stringify(defaultAppStore)
-  )
+// export const localAppStore = writable<AppStore>();
+// localAppStore.subscribe((value) => {
+//   if (value === null) {
+//     return;
+//   } else {
+//     localStorage.setItem('localappstore', JSON.stringify(value));
+//   }
+// });
+
+export function createLocalStore<T>(key: string, initialValue: T): Writable<T> {
+  // Safely load from localStorage
+  const safeLoad = (): T => {
+    try {
+      const storedValue = localStorage.getItem(key);
+      if (storedValue === null) {
+        return initialValue;
+      }
+      return JSON.parse(storedValue);
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error);
+      return initialValue;
+    }
+  };
+
+  // Create the store with stored value or initial value
+  const store = writable<T>(safeLoad());
+
+  // Subscribe to changes and update localStorage
+  store.subscribe((value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error saving ${key} to localStorage:`, error);
+    }
+  });
+
+  return store;
+}
+
+export const localAppStore: Writable<AppStore> = createLocalStore(
+  'localappstore',
+  defaultAppStore
 );
-localAppStore.subscribe((value) => {
-  if (value === null) {
-    return;
-  } else {
-    localStorage.setItem('localappstore', JSON.stringify(value));
-  }
-});

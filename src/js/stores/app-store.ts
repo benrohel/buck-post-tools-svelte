@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, Writable } from 'svelte/store';
 import { appId } from '../lib/utils/cep';
 
 export const appVersion = writable('');
@@ -10,6 +10,7 @@ export interface AppStore {
   rememberLastExportPath: boolean;
   rememberLastExportPreset: boolean;
   showVersionWarnings: boolean;
+  favoriteExpressions: string[];
 }
 
 export const defaultAppStore: AppStore = {
@@ -19,6 +20,7 @@ export const defaultAppStore: AppStore = {
   rememberLastExportPath: true,
   rememberLastExportPreset: true,
   showVersionWarnings: true,
+  favoriteExpressions: [],
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);

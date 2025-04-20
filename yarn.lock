@@ -1519,6 +1519,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@novacbn/svelte-codejar@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "@novacbn/svelte-codejar@npm:0.1.2"
+  dependencies:
+    codejar: "npm:^3.5.0"
+    svelte: "npm:^3.42.3"
+  checksum: 9fb3879a09bef33e46e8e6904cd9906f3289450c2a076d81bca32224d3d7a3c80e0ea9fedbfbe27f4bc760243b8672229c417af0fd08ad994fcda1fe82e5c93f
+  languageName: node
+  linkType: hard
+
 "@npmcli/agent@npm:^3.0.0":
   version: 3.0.0
   resolution: "@npmcli/agent@npm:3.0.0"
@@ -1886,6 +1896,13 @@ __metadata:
   version: 16.18.126
   resolution: "@types/node@npm:16.18.126"
   checksum: 5c137eb141d33de32b16ff26047ff6d449432b58d0d25f7cced2040c97727d81fe1099a7581eb336d14a6840f5b09e363bdd43d7a6995e8e81eb47aa51e413fc
+  languageName: node
+  linkType: hard
+
+"@types/prismjs@npm:^1":
+  version: 1.26.5
+  resolution: "@types/prismjs@npm:1.26.5"
+  checksum: 5619cb449e0d8df098c8759d6f47bf8fdd510abf5dbdfa999e55c6a2545efbd1e209cc85a33d8d9f4ff2898089a1a6d9a70737c9baffaae635c46852c40d384a
   languageName: node
   linkType: hard
 
@@ -2979,6 +2996,7 @@ __metadata:
     "@babel/preset-typescript": "npm:^7.16.0"
     "@babel/runtime": "npm:^7.16.3"
     "@floating-ui/dom": "npm:^1.6.13"
+    "@novacbn/svelte-codejar": "npm:^0.1.2"
     "@rollup/plugin-babel": "npm:^5.3.1"
     "@rollup/plugin-commonjs": "npm:^21.0.2"
     "@rollup/plugin-image": "npm:^2.1.1"
@@ -2991,19 +3009,24 @@ __metadata:
     "@tsconfig/svelte": "npm:^3.0.0"
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^16.11.7"
+    "@types/prismjs": "npm:^1"
     "@types/smpte-timecode": "npm:^1"
     "@types/trusted-types": "npm:^2.0.2"
     axios: "npm:^1.6.2"
     babel-plugin-transform-scss: "npm:^1.1.0"
     babel-preset-env: "npm:^1.7.0"
     buck-client: ../buck5/javascript/lib/buck-client
+    codejar: "npm:^4.2.0"
     core-js: "npm:3"
     cross-env: "npm:^7.0.3"
     date-fns: "npm:^2.30.0"
     dotenv: "npm:^16.4.5"
     ffmpeg-ffprobe-static: "npm:^6.1.2-rc.1"
+    freezeframe: "npm:^5.0.2"
     fs-extra: "npm:^10.0.0"
     lucide-svelte: "npm:^0.477.0"
+    markdown-to-txt: "npm:^2.0.1"
+    prismjs: "npm:^1.30.0"
     rimraf: "npm:^6.0.1"
     rollup: "npm:^2.68.0"
     rollup-plugin-multi-input: "npm:^1.3.1"
@@ -3015,6 +3038,7 @@ __metadata:
     svelte-check: "npm:^2.9.2"
     svelte-file-dropzone: "npm:^2.0.9"
     svelte-floating-ui: "npm:^1.6.2"
+    svelte-highlight: "npm:^7.8.3"
     svelte-icons: "npm:^2.1.0"
     svelte-loading-spinners: "npm:^0.3.6"
     svelte-preprocess: "npm:^4.10.7"
@@ -3029,6 +3053,20 @@ __metadata:
     yarn: "npm:^1.22.17"
   languageName: unknown
   linkType: soft
+
+"codejar@npm:^3.5.0":
+  version: 3.7.0
+  resolution: "codejar@npm:3.7.0"
+  checksum: 5c22fcc0bf38d3d6c0167eb092fa203de9663b39f48856f751d08a4c59e16ca781126c1d36470bcfe633d9e021420fddffc2143b429a29b57e5fcd607cfcad59
+  languageName: node
+  linkType: hard
+
+"codejar@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "codejar@npm:4.2.0"
+  checksum: 4085826f9c05a2c6f2c0d43ed4861e68b881c1fd842d1c7464ef988d6e0af2c909d5955766878aeb0502a7d4c4105ef59e5a6062ba2bd797c2bbff9e37d638ae
+  languageName: node
+  linkType: hard
 
 "color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
   version: 1.9.3
@@ -3701,6 +3739,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"freezeframe@npm:^5.0.2":
+  version: 5.0.2
+  resolution: "freezeframe@npm:5.0.2"
+  checksum: 1318e8083fef780fea8d2208e438e4ab24dd4037fcd1c7caf2275d35b8afbac337a5ef6e81eedd2fdcadf7b0dee63b64074c3127c740ba8397fdb39ad100f046
+  languageName: node
+  linkType: hard
+
 "fs-constants@npm:^1.0.0":
   version: 1.0.0
   resolution: "fs-constants@npm:1.0.0"
@@ -3929,6 +3974,13 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 3769d434703b8ac66b209a4cca0737519925bbdb61dd887f93a16372b14694c63ff4e797686d87c90f08168e81082248b9b028bad60d4da9e0d1148766f56eb9
+  languageName: node
+  linkType: hard
+
+"highlight.js@npm:11.11.1":
+  version: 11.11.1
+  resolution: "highlight.js@npm:11.11.1"
+  checksum: 40f53ac19dac079891fcefd5bd8a21cf2e8931fd47da5bd1dca73b7e4375c1defed0636fc39120c639b9c44119b7d110f7f0c15aa899557a5a1c8910f3c0144c
   languageName: node
   linkType: hard
 
@@ -4356,6 +4408,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.escape@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "lodash.escape@npm:4.0.1"
+  checksum: 90ade409cec05b6869090476952fdfb84d4d87b1ff4a0e03ebd590f980d9a1248d93ba14579f10d80c6429e4d6af13ba137c28db64cae6dadb71442e54a3ad2b
+  languageName: node
+  linkType: hard
+
 "lodash.flatten@npm:^4.4.0":
   version: 4.4.0
   resolution: "lodash.flatten@npm:4.4.0"
@@ -4367,6 +4426,13 @@ __metadata:
   version: 4.0.6
   resolution: "lodash.isplainobject@npm:4.0.6"
   checksum: afd70b5c450d1e09f32a737bed06ff85b873ecd3d3d3400458725283e3f2e0bb6bf48e67dbe7a309eb371a822b16a26cca4a63c8c52db3fc7dc9d5f9dd324cbb
+  languageName: node
+  linkType: hard
+
+"lodash.unescape@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "lodash.unescape@npm:4.0.1"
+  checksum: b050d4e71a1459a397e615833ea296dd679e851ae13f7b2c91d6c2a5cd9a07e9a5be070a1cac3e27ee1c0dd0433d13bc8d3eda426c205cb5c2704a7c077f062a
   languageName: node
   linkType: hard
 
@@ -4475,6 +4541,26 @@ __metadata:
     promise-retry: "npm:^2.0.1"
     ssri: "npm:^12.0.0"
   checksum: c40efb5e5296e7feb8e37155bde8eb70bc57d731b1f7d90e35a092fde403d7697c56fb49334d92d330d6f1ca29a98142036d6480a12681133a0a1453164cb2f0
+  languageName: node
+  linkType: hard
+
+"markdown-to-txt@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "markdown-to-txt@npm:2.0.1"
+  dependencies:
+    lodash.escape: "npm:^4.0.1"
+    lodash.unescape: "npm:^4.0.1"
+    marked: "npm:^4.0.14"
+  checksum: af5b9c80b0f234123a73652faeb7b3cf74830f297370d4816c957724b206e9f31010a2541a359a19e272db21492e647a81a8a873858b49190f19fe4b66a55902
+  languageName: node
+  linkType: hard
+
+"marked@npm:^4.0.14":
+  version: 4.3.0
+  resolution: "marked@npm:4.3.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 0013463855e31b9c88d8bb2891a611d10ef1dc79f2e3cbff1bf71ba389e04c5971298c886af0be799d7fa9aa4593b086a136062d59f1210b0480b026a8c5dc47
   languageName: node
   linkType: hard
 
@@ -4915,6 +5001,13 @@ __metadata:
   version: 1.2.0
   resolution: "prettify-xml@npm:1.2.0"
   checksum: 66a27d758cf66ec2506d22aea3f43097ab2e9bb5de0b7f5128a3387d274392e821e5418b1b1cc27ec2fd225600242e7f979e454a9689750e3f074c051c646cef
+  languageName: node
+  linkType: hard
+
+"prismjs@npm:^1.30.0":
+  version: 1.30.0
+  resolution: "prismjs@npm:1.30.0"
+  checksum: f56205bfd58ef71ccfcbcb691fd0eb84adc96c6ff21b0b69fc6fdcf02be42d6ef972ba4aed60466310de3d67733f6a746f89f2fb79c00bf217406d465b3e8f23
   languageName: node
   linkType: hard
 
@@ -5656,6 +5749,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"svelte-highlight@npm:^7.8.3":
+  version: 7.8.3
+  resolution: "svelte-highlight@npm:7.8.3"
+  dependencies:
+    highlight.js: "npm:11.11.1"
+  checksum: 0fc3b2d8ad1421ac0af2eac69e105b5eb3723be69b509d8ebd1f0c11eea4273b01145d2fb4e320e53b81e76dc7912d527794a7c336740fe572f7d66ca7ef78e6
+  languageName: node
+  linkType: hard
+
 "svelte-hmr@npm:^0.15.1":
   version: 0.15.3
   resolution: "svelte-hmr@npm:0.15.3"
@@ -5737,7 +5839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svelte@npm:^3.53.1":
+"svelte@npm:^3.42.3, svelte@npm:^3.53.1":
   version: 3.59.2
   resolution: "svelte@npm:3.59.2"
   checksum: 3482d020b291c6784e372315d63e3ab5530b8389adbd739a369d69ec995929276ebbc1cbdf8e5382c9dd887a55ec655702769de85836270e1a4a0ab3e0247b34

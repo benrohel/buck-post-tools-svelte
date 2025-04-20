@@ -378,3 +378,54 @@ export const goToFrame = (nodeId: number) => {
   }
   return true;
 };
+
+export const applyExpressionToSelectedProperty = (exp: string) => {
+  app.beginUndoGroup('Apply BUCK Expression');
+  var comp = app.project.activeItem as CompItem;
+  var hasPropertSelect5ed = false;
+  if (comp instanceof CompItem) {
+    var layers = comp.layers;
+    for (var l = 1; l <= layers.length; l++) {
+      var currentLayer = comp.layer(l);
+      var props = currentLayer.selectedProperties;
+      if (props.length > 0) {
+        hasPropertSelect5ed = true;
+        for (var p = 0; p < props.length; p++) {
+          var prop = currentLayer.selectedProperties[p] as Property;
+          if (prop && prop.selected && prop.canSetExpression) {
+            prop.expression = exp;
+          }
+        }
+      }
+    }
+  } else {
+    alert('A composition needs to be active');
+  }
+  if (!hasPropertSelect5ed) {
+    alert('No property selected.');
+  }
+  app.endUndoGroup();
+};
+
+export const getSelectedExpression = () => {
+  app.beginUndoGroup('Get Selected Expression');
+  var comp = app.project.activeItem as CompItem;
+  if (comp instanceof CompItem) {
+    var layers = comp.layers;
+    for (var l = 1; l <= layers.length; l++) {
+      var currentLayer = comp.layer(l);
+      var props = currentLayer.selectedProperties;
+      if (props.length > 0) {
+        for (var p = 0; p < props.length; p++) {
+          var prop = currentLayer.selectedProperties[p] as Property;
+          if (prop && prop.selected && prop.canSetExpression) {
+            return prop.expression;
+          }
+        }
+      }
+    }
+  } else {
+    alert('A composition needs to be active');
+  }
+  app.endUndoGroup();
+};

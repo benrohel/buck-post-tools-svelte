@@ -7,6 +7,7 @@
     label: string;
     icon?: any;
     component?: any;
+    apps: string[];
   }
 
   export let items: TabItem[] = [];
