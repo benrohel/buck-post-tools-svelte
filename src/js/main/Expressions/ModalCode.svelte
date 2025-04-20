@@ -139,24 +139,33 @@
           Variables
         </div>
         {#each variables as variable, id}
-          <div id="filter-row">
-            <div style="display:flex; gap:2px">
-              <label style="padding-left:0px" for="name">{variable.label}</label
-              >
-              {#if variable.label == 'propertyReference'}
-                <div id="fav-icon" on:click={getPropertyReference}>
-                  <ChevronDown />
-                </div>
-              {/if}
+          <Tooltip
+            action={$appStore.showTooltips ? 'hover' : 'none'}
+            content="Edit ReferencedVariable"
+            position="right"
+            delay={1000}
+          >
+            <div id="filter-row">
+              <div style="display:flex; gap:2px">
+                <label style="padding-left:0px" for="name"
+                  >{variable.label}</label
+                >
+                {#if variable.label == 'propertyReference'}
+                  <div id="fav-icon" on:click={getPropertyReference}>
+                    <ChevronDown />
+                  </div>
+                {/if}
+              </div>
+
+              <input
+                type="text"
+                bind:value={variable.value}
+                on:change={() => {
+                  handleVariableChange(variable);
+                }}
+              />
             </div>
-            <input
-              type="text"
-              bind:value={variable.value}
-              on:change={() => {
-                handleVariableChange(variable);
-              }}
-            />
-          </div>
+          </Tooltip>
         {/each}
         <div style="display:flex; justify-content:flex-end; width:100%">
           {#if expression.id === 'null'}
@@ -246,6 +255,7 @@
     border: 1px solid $dimmed-font-color;
     bottom: 0;
     width: 100vw;
+    max-height: calc(100vh - 76px);
     background: $darker;
     display: flex;
     align-items: flex-start;
@@ -271,7 +281,7 @@
   #modal-content {
     width: 100%;
     max-width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
+    max-height: calc(100vh - 110px);
     overflow: auto;
   }
 
@@ -282,7 +292,7 @@
     right: 0;
     /* bottom: 0; */
     left: 0;
-    height: 100vh;
+    height: calc(100vh - 110px);
     z-index: 998;
   }
   #variables-list {

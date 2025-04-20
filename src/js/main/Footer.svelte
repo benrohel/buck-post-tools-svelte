@@ -6,7 +6,8 @@
 
   import SettingsContainer from './Settings/SettingsContainer.svelte';
   import ModalSettings from '../components/Modal/ModalSettings.svelte';
-
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { appStore } from '../stores/app-store';
   export let authenticated: boolean = false;
   $: showSettings = false;
 
@@ -27,28 +28,56 @@
         ? 'opacity:1;width:16px; height:16px;'
         : 'opacity:0.3;width:16px; height:16px'}
     >
-      <img src={buckLogo} alt="Buck5 Logo" />
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Buck 5"
+        position="right"
+        delay={1000}
+      >
+        <img src={buckLogo} alt="Buck5 Logo" />
+      </Tooltip>
     </div>
     <div style={$buck5Server ? 'color:green' : 'color:red;'}>
-      <Server strokeWidth={1} size={16} />
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content={'Connected to Buck Server'}
+        position="right"
+        delay={1000}
+      >
+        <Server strokeWidth={1} size={16} />
+      </Tooltip>
     </div>
   </div>
   <div id="buck-version" style="font-size:10px">BUCK 2025 {pkg.version}</div>
   <div style="display:flex; flex-direction:row; align-items:center; gap:4px">
-    <button
-      class="icon"
-      style="margin-right:8px; cursor:pointer; background-color:transparent"
-      on:click={() => (showSettings = !showSettings)}
+    <Tooltip
+      action={$appStore.showTooltips ? 'hover' : 'none'}
+      content="Edit Settings"
+      position="left"
+      delay={1000}
     >
-      <Settings color="white" />
-    </button>
-    <button
-      class="icon"
-      style="margin-right:8px; cursor:pointer; background-color:transparent"
-      on:click={refreshPage}
+      <button
+        class="icon"
+        style="margin-right:8px; cursor:pointer; background-color:transparent"
+        on:click={() => (showSettings = !showSettings)}
+      >
+        <Settings color="white" />
+      </button>
+    </Tooltip>
+    <Tooltip
+      action={$appStore.showTooltips ? 'hover' : 'none'}
+      content="Reload Panel"
+      position="left"
+      delay={1000}
     >
-      <RefreshCw color="white" />
-    </button>
+      <button
+        class="icon"
+        style="margin-right:8px; cursor:pointer; background-color:transparent"
+        on:click={refreshPage}
+      >
+        <RefreshCw color="white" />
+      </button>
+    </Tooltip>
   </div>
   {#if showSettings}
     <ModalSettings {onClose}>
