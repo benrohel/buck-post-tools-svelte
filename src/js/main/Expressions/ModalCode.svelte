@@ -205,10 +205,10 @@
     position: fixed;
     top: 40px;
     border-radius: 4px;
-    border: 1px solid #232323;
+    border: 1px solid $dimmed-font-color;
     bottom: 0;
     width: 100vw;
-    background: $extra-dark;
+    background: $darker;
     display: flex;
     padding-top: 40px;
     align-items: flex-start;

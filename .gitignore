@@ -5,3 +5,4 @@ dist
 tokens.json
 .yarn
 yarn.lock
+secrets.ts

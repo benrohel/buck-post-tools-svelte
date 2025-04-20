@@ -1,6 +1,5 @@
 import markdownToTxt from 'markdown-to-txt';
-import { config } from 'dotenv';
-config();
+import { CODA_TOKEN } from '../../../../secrets';
 interface Header {
   [key: string]: string;
 }
@@ -37,7 +36,7 @@ export const CodaRequest = async (
 ): Promise<any> => {
   const url = `${CODA_URL}${requestOptions.request}`;
   const headers: HeadersInit = {
-    Authorization: `Bearer d3c19655-53da-4362-9ee6-a164cd9a54af`,
+    Authorization: `Bearer ${CODA_TOKEN}`,
   };
 
   // Set Content-Type header only if data is present or explicitly provided
@@ -46,6 +45,7 @@ export const CodaRequest = async (
   } else if (requestOptions.contentType) {
     headers['Content-Type'] = requestOptions.contentType;
   }
+  console.log('headers', headers);
 
   const fetchOptions: RequestInit = {
     method: requestOptions.method,
@@ -97,7 +97,7 @@ export const GetTable = async (docUrl: string, tableId: string) => {
     request: `/docs/${docId}/tables/${tableId}`,
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${process.env.CODA_TOKEN}`,
+      Authorization: `Bearer ${CODA_TOKEN}`,
     },
   };
 
@@ -126,7 +126,7 @@ export const GetExpressions = async (
     request: `/docs/${docId}/tables/${tableId}/rows?useColumnNames=true&valueFormat=rich&sortBy=natural`,
     method: 'GET',
     headers: {
-      Authorization: `Bearer 65adcef0-8e30-4d57-bbaf-e2067981a3c5`,
+      Authorization: `Bearer ${CODA_TOKEN}`,
     },
   };
 
