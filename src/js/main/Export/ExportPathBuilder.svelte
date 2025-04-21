@@ -177,6 +177,7 @@ let hasTask = false;
   }
 
   function handleOnChangeExportPreset(value: { value: string; label: string }) {
+  
     const missingOm = checkOutputModuleTemplate();
     if (missingOm.length > 0) {
       notifications.warning(
@@ -285,10 +286,12 @@ let hasTask = false;
 
   //Function to check if  outputModule template exists.
   function checkOutputModuleTemplate(): string[] {
-    const om = findNodesByType(pathStructure, 'file');
+    const fileNodes: PathItem[] = findNodesByType(pathStructure, 'file');
+    console.log('fileNodes', fileNodes);
     let missing: string[] = [];
-    om.forEach((node) => {
-      if (node.outputModule != selectedOutputModule) {
+    fileNodes.forEach((node) => {
+      
+      if (!outputModules.find((o) => o === node.outputModule)) {
         missing.push(node.outputModule);
       }
     });
