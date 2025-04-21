@@ -76,6 +76,7 @@
   let pathStructure: PathItem[] = [];
   let version = 0;
   let taskName = '';
+ 
 let hasTask = false;
   $: console.log(pathStructure);
 
@@ -88,8 +89,8 @@ let hasTask = false;
   }));
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule = outputModules.find(
-    (module) => module === selectedOutputModuleMenuItem.value
-  );
+    (module) => module === selectedOutputModuleMenuItem?.value
+  ) || outputModules[0];
 
   let rootFolder = '';
 
@@ -262,6 +263,7 @@ let hasTask = false;
     const updatedExportPresets = exportPresets.map((preset) =>
       preset.name === selectedExportPreset.name ? updatedExportPreset : preset
     );
+    console.log('updatedExportPresets', updatedExportPresets);
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
         exportPresets = updatedExportPresets;
@@ -911,7 +913,7 @@ let hasTask = false;
             </div>
           {/if}
         {:else}
-          <p class="no-selection">Select a folder or file to see actions</p>
+          <p class="no-selection">{selectedExportPreset.description ?? 'Select a folder or file to see actions'}</p>
         {/if}
         <div class="container">
           <div class="tree-structure">
@@ -998,6 +1000,12 @@ let hasTask = false;
                     {:else}
                       <div
                         class="item-info"
+                        on:keydown={(e) => {
+                          e.preventDefault();
+                          if(e.key === 'Enter') {
+                            editItem(node.id);
+                          }
+                        }}
                         on:dblclick={() => editItem(node.id)}
                       >
                         <span class="item-name">{node.name}</span>

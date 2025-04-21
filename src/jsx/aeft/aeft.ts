@@ -267,7 +267,7 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
     // Apply the template
     try {
-      alert(rqItem.numOutputModules);
+     
       om.applyTemplate(presetName);
       om.file = new File(presetPath);
     } catch (e: any) {
