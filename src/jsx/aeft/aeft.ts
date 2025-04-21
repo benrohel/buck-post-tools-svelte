@@ -430,3 +430,40 @@ export const getSelectedExpression = () => {
   }
   app.endUndoGroup();
 };
+
+export const getSelectedProperty = () => {
+  var comp = app.project.activeItem;
+  if (comp instanceof CompItem) {
+    var layers = comp.layers;
+    for (var l = 1; l <= layers.length; l++) {
+      var currentLayer = comp.layer(l);
+      var props = currentLayer.selectedProperties;
+      if (props.length > 0) {
+        for (var p = 0; p < props.length; p++) {
+          var prop = currentLayer.selectedProperties[p] as Property;
+          if (prop && prop.selected && prop.canSetExpression) {
+            return prop;
+          }
+        }
+      }
+    }
+  } else {
+    alert('A composition needs to be active');
+  }
+};
+
+const traverseProperty = (nestedProp: any, path: string): string => {
+  var parent = nestedProp.parentProperty;
+  if (parent == null) {
+    path = 'thisComp.layer("' + nestedProp.name + '")' + path;
+    return path;
+  } else {
+    path = '("' + nestedProp.name + '")' + path;
+    return traverseProperty(parent, path);
+  }
+};
+
+export const getSelectedPropertyPath = () => {
+  var prop = getSelectedProperty();
+  return traverseProperty(prop, '');
+};

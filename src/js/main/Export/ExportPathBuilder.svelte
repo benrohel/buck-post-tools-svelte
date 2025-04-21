@@ -1230,7 +1230,6 @@
     flex: 1;
     position: relative;
     display: flex;
-    z-index: 500; /* Add z-index to ensure content stays above other elements */
   }
 
   .item-name {

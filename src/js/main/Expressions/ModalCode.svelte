@@ -152,7 +152,7 @@
                 >
                 {#if variable.label == 'propertyReference'}
                   <div id="fav-icon" on:click={getPropertyReference}>
-                    <ChevronDown />
+                    <ArrowUpFromLine />
                   </div>
                 {/if}
               </div>
@@ -222,13 +222,13 @@
       </div>
     {/if}
     <hr />
-
-    <div style="display:flex; flex-direction:row">
+    <!-- Chat AI-->
+    <!-- <div style="display:flex; flex-direction:row">
       <textarea id="gpt-input" bind:value={gptMessage} />
       <button on:click={handleGptRequest}>
         <MessageCircleCode />
       </button>
-    </div>
+    </div> -->
 
     <CodeJar
       class="hljs"
@@ -337,5 +337,6 @@
     background-color: $extra-dark;
     border: 1px solid $dimmed-font-color;
     border-radius: 4px;
+    color: $font;
   }
 </style>
