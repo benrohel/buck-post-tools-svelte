@@ -157,16 +157,18 @@
     <h3>Code</h3>
   </div>
   <div class="flex-row-between setting-row">
-    <label for="remember-last-export-path">AI Service</label>
-    <MenuSelect
-      items={aiServices}
-      bind:value={selectedService}
-      onChange={handleServiceChange}
-    />
+    <label style="flex: 1;" for="remember-last-export-path">AI Service</label>
+    <div>
+      <MenuSelect
+        items={aiServices}
+        bind:value={selectedService}
+        onChange={handleServiceChange}
+      />
+    </div>
   </div>
   <div class="flex-row-between setting-row">
-    <label for="remember-last-export-path">Api Key</label>
-    <input type="text" bind:value={apiKey} />
+    <label style="flex-grow: 1;" for="remember-last-export-path">Api Key</label>
+    <input type="text" bind:value={apiKey} style="width:80%" />
   </div>
 
   <div class="flex-row-end action-row">
@@ -237,5 +239,12 @@
     margin: 0px 0px 0px 0px;
 
     padding: 2px 8px;
+  }
+  .action-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 12px;
   }
 </style>

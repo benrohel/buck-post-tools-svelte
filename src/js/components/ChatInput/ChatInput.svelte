@@ -4,6 +4,7 @@
   import { ArrowUp } from 'lucide-svelte';
   import { notifications } from '../../stores/notifications-store';
   import { localAppStore } from '../../stores/local-storage';
+
   let textarea: HTMLTextAreaElement | null = null;
   export let inputValue: string = '';
   const dispatch = createEventDispatcher();
@@ -53,14 +54,14 @@
       on:input={handleInput}
       on:keydown={handleKeydown}
       class="textarea"
-      placeholder="Reply to Claude..."
+      placeholder={`Ask ${$localAppStore.aiService.name}`}
       rows="1"
     ></textarea>
   </div>
 
   <div class="button-row">
     <div class="send-controls">
-      <div class="model-selector">Claude 3.7 Sonnet</div>
+      <div class="model-selector">{$localAppStore.aiService.name ?? ''}</div>
       <button
         class="send-button"
         on:click={submitMessage}

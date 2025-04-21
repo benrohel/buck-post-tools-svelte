@@ -95,8 +95,9 @@
         authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
+
     console.log('$localAppStore', $localAppStore);
-    console.log('$appVersion', $appVersion);
+    console.log(import.meta.env);
   });
 </script>
 

@@ -1,20 +1,22 @@
 import { CLAUDE_TOKEN } from '../../../../secrets';
-
+import afterEffectsAgentSystemRole from './after-effects-agent-system-role';
 // Define the proxy URL - use proxy server for local development
 const PROXY_URL = 'http://localhost:3001/api/anthropic/messages';
-
+const BASE_URL = 'https://api.anthropic.com/v1/messages';
 // Check if API key is available
 if (!CLAUDE_TOKEN) {
   console.error('ERROR: CLAUDE_TOKEN is not defined in secrets.ts');
 }
+
+const URL = import.meta.env.DEV ? PROXY_URL : BASE_URL;
 
 export async function callAnthropicAPI(
   prompt: string,
   apiKey: string
 ): Promise<string> {
   try {
-    console.log('Calling Claude API with prompt:', prompt);
-    const response = await fetch(PROXY_URL, {
+    console.log('Calling Claude API on', URL, 'with prompt:', prompt);
+    const response = await fetch(URL, {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
@@ -24,6 +26,7 @@ export async function callAnthropicAPI(
         model: 'claude-3-7-sonnet-20250219',
         max_tokens: 20000,
         stream: true, // Changed to false to get complete response at once
+        system: afterEffectsAgentSystemRole,
         messages: [
           {
             role: 'user',
