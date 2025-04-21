@@ -1,21 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { openFile } from '../../lib/utils/utils';
-
   import { SquareCode, Eye, ChevronDown, ChevronUp } from 'lucide-svelte';
   import { evalFile } from '../../lib/utils/bolt';
-  import is from 'date-fns/locale/is';
-  import { fs } from '../../lib/cep/node';
+  import { fs, os } from '../../lib/cep/node';
+  import path from 'path';
+  import { SHARED_FOLDER } from '../../api/files/files';
   interface ToolData {
     name: string;
-    filepath: string;
+    filename: string;
+    filepath:string;
     version?: string;
     description?: string;
     author?: string;
     icon?: string;
   }
 
-  export let scripTool: ToolData;
+
+  export let scriptTool: ToolData;
   let isMenuOpen = false;
   export let selected = false;
 
@@ -30,16 +31,21 @@
   };
 
   const handleOpenToolInfo = () => {
-    console.log(scripTool);
+    console.log(scriptTool);
   };
 
   const handleLaunchTool = () => {
-    evalFile(scripTool.filepath);
-    console.log(scripTool);
+    let filepath = scriptTool.filepath;
+    if(os.platform()==='win32'){
+    filepath = scriptTool.filepath.replace(/\\/g, '\\\\');
+    }
+    console.log('filePath', filepath);
+   evalFile(filepath);
+    
   };
 
   onMount(() => {
-    offline = !fs.existsSync(scripTool.filepath);
+    offline = !fs.existsSync(scriptTool.filepath);
   });
 </script>
 
@@ -48,7 +54,7 @@
   on:keydown={handleOpenToolInfo}
 >
   <div class="tool-card-container">
-    {#if scripTool}
+    {#if scriptTool}
       <div
         style="display:flex; flex-direction:row; justify-content:space-between"
       >
@@ -66,10 +72,10 @@
             <SquareCode />
           </button>
           <div id="shot-label" class="clip-name-header noselect">
-            {scripTool.name}
+            {scriptTool.name}
           </div>
         </div>
-        {#if scripTool.description}
+        {#if scriptTool.description}
           <div class="tool-card-action">
             <button class="icon" on:click={handleMenuOpen}>
               {#if isMenuOpen}
@@ -84,7 +90,7 @@
       {#if isMenuOpen}
         <div style="display:flex; flex-direction:row;margin-left:2px;gap:2px">
           <!-- <img src={scripTool.icon} alt="icon" style="width:20px;height:20px"/> -->
-          <d class="tool-description">{scripTool.description}</d>
+          <d class="tool-description">{scriptTool.description}</d>
         </div>
       {/if}
     {/if}

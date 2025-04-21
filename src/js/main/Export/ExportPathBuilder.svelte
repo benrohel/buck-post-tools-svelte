@@ -14,7 +14,7 @@
   import { generateId } from '../../lib/utils/utils';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { lastFolderExport } from '../../stores/local-storage';
+  import { lastFolderExport, selectedExportPreset } from '../../stores/local-storage';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import {
@@ -42,6 +42,7 @@
   let isEditing = false;
   let activeElement: HTMLInputElement | null = null;
   let tokenDropdownRef: HTMLDivElement | null = null;
+
 
   const [floatingRef, floatingContent] = createFloatingActions({
     strategy: 'absolute',
@@ -74,8 +75,8 @@
 
   let pathStructure: PathItem[] = [];
   let version = 0;
-  $: versionString = `v${version.toString().padStart(3, '0')}`;
-
+  let taskName = '';
+let hasTask = false;
   $: console.log(pathStructure);
 
   // Default exporters for different file types
@@ -188,6 +189,7 @@
       (preset) => preset.name === value.value
     );
     pathStructure = selectedExportPreset.path;
+    hasTask = selectedExportPreset.previewPath.includes('{task}');
   }
 
   function handleOnChangeOutputModule(
@@ -706,7 +708,7 @@
         outputModules: outputModules,
         appId: appId,
         version: version,
-        selectedTask: '',
+        selectedTask: taskName ?? '',
       };
       console.log('options', options);
       await addToRenderQueue(comp, options);
@@ -793,6 +795,12 @@
         </button>
       </Tooltip>
     </div>
+    {#if hasTask}
+      <div class="flex-row-end">
+        <label for="task-name">Task Name: </label>
+        <input type="text" placeholder="Task" bind:value={taskName} />
+      </div>
+    {/if}
     <div class="flex-row-end">
       <label for="increment">Version Number: </label>
       <input type="number" placeholder="Version" bind:value={version} />

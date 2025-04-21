@@ -1,7 +1,8 @@
 import { match } from 'assert';
-import { fs, path } from '../../lib/cep/node';
+import { fs, os, path } from '../../lib/cep/node';
 import { ca, fi } from 'date-fns/locale';
 import { posix } from 'path';
+
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -133,6 +134,8 @@ export const GetRenamedFiles = async (
   to: string
 ) => {
   let renamedFile = path.basename(filepath).replace(from, to);
+
+  console.log('renamedFile', renamedFile);
   renamedFile = renamedFile.replaceAll(/v\d+/g, '');
   const files = fs.readdirSync(rootFolder);
   let renamedFiles: string[] = [];
@@ -299,5 +302,15 @@ export const getAeOutputModulesAEP = () => {
     'aeTemplates',
     'buckOutputModules.aep'
   );
-  return templateFilePath;
+
+  return  os.platform() === 'win32' ? templateFilePath.replace(/\\/g, '\\\\') : templateFilePath;
 };
+
+
+export const SHARED_FOLDER = () => {
+  const platformRoot = os.platform() === 'win32'
+    ? '\\\\buck'
+    : '/buck';
+
+  return path.join(platformRoot,'GlobalPrefs','SHARED');
+}

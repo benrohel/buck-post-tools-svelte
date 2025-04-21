@@ -1,4 +1,4 @@
-import {path, child_process} from "../../lib/cep/node";
+import {path, child_process, os} from "../../lib/cep/node";
 interface VideoInfosCheck {
   width: number;
   height: number;
@@ -30,8 +30,8 @@ interface VideoError {
 export const checkVideoFileUpdate = (source: string, destination: string) : Promise<VideoError[]> => {
 
 
-  
-const ffprobePath = path.join(__dirname, 'ffprobe');
+const ffprobePath = path.join(__dirname, os.platform() === 'win32' ? 'ffprobe.exe' : 'ffprobe');
+
   const checkSource = child_process.execSync(`"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${source}"`).toString();
   const checkDestination = child_process.execSync(`"${ffprobePath}" -v quiet -print_format json -show_format -show_streams ${destination}`).toString();
   const sourceJson: VideoInfosCheck = GetVideoInfos(checkSource);

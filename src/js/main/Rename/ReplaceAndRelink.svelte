@@ -137,13 +137,13 @@
   };
 
   const searchFiles = async () => {
+    console.log("searching files")
     if (!rootFolder || !find || !replace) {
       return;
     }
     isLoading = true;
     await getClips();
     const currentFiles = sequenceClips;
-
     for (let file of currentFiles) {
       const res = await GetRenamedFiles(
         file.filepath,

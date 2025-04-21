@@ -1,5 +1,6 @@
 import App from './main.svelte';
 import { initBolt } from '../lib/utils/bolt';
+
 // import { config } from 'dotenv';
 // config();
 console.log(import.meta.env.VITE_CODA_TOKEN);
