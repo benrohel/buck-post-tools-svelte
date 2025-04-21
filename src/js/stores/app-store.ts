@@ -3,6 +3,11 @@ import { appId } from '../lib/utils/cep';
 
 export const appVersion = writable('');
 
+interface AiService {
+  name: string;
+  apiKey: string;
+}
+
 export interface AppStore {
   showTooltips: boolean;
   appId: string;
@@ -11,6 +16,7 @@ export interface AppStore {
   rememberLastExportPreset: boolean;
   showVersionWarnings: boolean;
   favoriteExpressions: string[];
+  aiService: AiService;
 }
 
 export const defaultAppStore: AppStore = {
@@ -21,6 +27,10 @@ export const defaultAppStore: AppStore = {
   rememberLastExportPreset: true,
   showVersionWarnings: true,
   favoriteExpressions: [],
+  aiService: {
+    name: 'Claude AI',
+    apiKey: '',
+  },
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);

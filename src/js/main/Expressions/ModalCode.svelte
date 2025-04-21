@@ -3,7 +3,11 @@
   // exports to match the function signatures that `CodeJar` Component expects
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
-
+  import {
+    callAnthropicAPI,
+    extractCodeFromMarkdown,
+  } from '../../api/ai/chat-claude';
+  import ChatInput from '../../components/ChatInput/ChatInput.svelte';
   hljs.registerLanguage('javascript', javascript);
 
   // `highlight` takes the input code and returns the highlighted HTML markup
@@ -14,28 +18,23 @@
 </script>
 
 <script lang="ts">
-  import { Highlight, LineNumbers } from 'svelte-highlight';
+  import { fs, path } from '../../lib/cep/node';
+  import { Circle3 } from 'svelte-loading-spinners';
   import 'svelte-highlight/styles/atom-one-dark.css';
   import { appStore } from '../../stores/app-store';
   import horizonDark from 'svelte-highlight/styles/horizon-dark';
-  import { evalES } from '../../lib/utils/bolt';
-  import {
-    ArrowUpFromLine,
-    ChevronDown,
-    Braces,
-    Code,
-    CircleX,
-    MessageCircleCode,
-    ArrowDownToLine,
-  } from 'lucide-svelte';
+  import { evalES, evalFile, evalTS } from '../../lib/utils/bolt';
+  import { ArrowUpFromLine, Braces, Code, CircleX } from 'lucide-svelte';
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import { CodeJar } from '@novacbn/svelte-codejar';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  // import { GptRequest } from '../../api/chat-gpt/chat-gpt';
+  import { localAppStore } from '../../stores/local-storage';
+  import { notifications } from '../../stores/notifications-store';
   export let onClose: Function = () => {};
   export let onApplyCode: Function = () => {};
   export let expression: ExpressionSnippet;
   let isScript: boolean = false;
+  let isLoading: boolean = false;
   const setVariables = () => {
     if (expression.values.Variables) {
       const vars = [...new Set(expression.values.Variables)];
@@ -49,8 +48,21 @@
 
   $: variables = setVariables();
   let gptMessage = '';
+  $: codeString = '';
 
-  let codeExpression = () => {
+  const generateRandomString = (length: number = 8): string => {
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
+  };
+
+  let codeExpression = (): string => {
     const reg = new RegExp(/{{|}}/, 'g');
     let formattedCode = expression.values.Expression.replace(reg, '');
     if (variables) {
@@ -63,7 +75,7 @@
     return formattedCode;
   };
 
-  $: code = codeExpression();
+  $: code = isScript ? codeString : codeExpression();
 
   const handleVariableChange = (e: any) => {
     const currentVariableIndex = variables.findIndex((v) => {
@@ -99,8 +111,21 @@
     }
   };
 
-  const handleEvalScript = () => {
-    evalES(code, true);
+  $: console.log(codeString);
+  const handleEvalScript = async () => {
+    const tempFile = path.join(
+      __dirname,
+      'dist',
+      generateRandomString() + '.jsx'
+    );
+    if (!fs.existsSync(path.dirname(tempFile))) {
+      fs.mkdirSync(path.dirname(tempFile));
+    }
+    fs.writeFileSync(tempFile, code, 'utf-8');
+    if (fs.existsSync(tempFile)) {
+      await evalFile(tempFile);
+      fs.unlinkSync(tempFile);
+    }
   };
 
   const handleLoadFromAe = async () => {
@@ -112,9 +137,24 @@
     }
   };
 
-  const handleGptRequest = async () => {
-    // const res = await GptRequest(gptMessage);
-    // code = res;
+  const handleChatRequest = async () => {
+    console.log('gptMessage', gptMessage);
+    if (!$localAppStore.aiService.apiKey) {
+      notifications.error('AI Service API key is not set', 2000);
+      return;
+    } else {
+      const res = await callAnthropicAPI(
+        gptMessage,
+        $localAppStore.aiService.apiKey
+      );
+      console.log(res);
+      if (isScript) {
+        codeString = extractCodeFromMarkdown(res);
+      } else {
+        code = extractCodeFromMarkdown(res);
+      }
+      isLoading = false;
+    }
   };
 </script>
 
@@ -209,12 +249,16 @@
           <div style="display:flex; justify-content:flex-end; width:100%">
             <Tooltip
               action={$appStore.showTooltips ? 'hover' : 'none'}
-              content="Apply Expression"
+              content={isScript
+                ? 'Run Script'
+                : 'Apply Expression to Selected Property'}
               position="left"
               delay={1000}
             >
               <button class="active" on:click={handleApplyCode}>
-                Apply to Selected Property
+                {isScript
+                  ? 'Run Script'
+                  : 'Apply Expression to Selected Property'}
               </button>
             </Tooltip>
           </div>
@@ -223,19 +267,30 @@
     {/if}
     <hr />
     <!-- Chat AI-->
-    <!-- <div style="display:flex; flex-direction:row">
-      <textarea id="gpt-input" bind:value={gptMessage} />
-      <button on:click={handleGptRequest}>
+    <div style="display:flex; flex-direction:row">
+      {#if isLoading}
+        <Circle3 size={20} />
+      {/if}
+      <ChatInput
+        on:submit={() => {
+          isLoading = true;
+          handleChatRequest();
+        }}
+        bind:inputValue={gptMessage}
+      />
+      <!-- <textarea id="gpt-input" bind:value={gptMessage} />
+      <button on:click={handleChatRequest}>
         <MessageCircleCode />
-      </button>
-    </div> -->
+      </button> -->
+    </div>
 
     <CodeJar
       class="hljs"
       syntax="javascript"
       {highlight}
-      value={code}
+      bind:value={code}
       withLineNumbers={true}
+      style="overflow: auto;"
     />
   </div>
 </div>

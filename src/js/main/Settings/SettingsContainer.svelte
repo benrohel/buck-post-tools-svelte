@@ -5,12 +5,40 @@
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import { type AppStore, appStore } from '../../stores/app-store';
   import { notifications } from '../../stores/notifications-store';
+  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { onMount } from 'svelte';
+
+  let aiServices = [
+    { label: 'Claude AI', value: 'Claude AI' },
+    { label: 'OpenAI', value: 'OpenAI' },
+  ];
+
+  let apiKey = '';
+  let selectedService = aiServices[0];
 
   const handleChange = (key: keyof AppStore, value: boolean) => {
     appStore.update((s: AppStore) => ({ ...s, [key]: value }));
   };
 
+  const handleServiceChange = () => {
+    appStore.update((s: AppStore) => ({
+      ...s,
+      aiService: { apiKey, name: selectedService.value },
+    }));
+
+    if (
+      $localAppStore.aiService.name !== selectedService.value &&
+      $localAppStore.aiService.apiKey !== null
+    ) {
+      apiKey = $localAppStore.aiService.apiKey;
+    } else {
+      apiKey = '';
+    }
+  };
+
   const saveSettings = () => {
+    const aiService = { apiKey, name: selectedService.value };
+    appStore.update((s: AppStore) => ({ ...s, aiService }));
     localAppStore.set($appStore);
     if ($localAppStore === $appStore) {
       notifications.success('Settings saved successfully', 2000);
@@ -23,6 +51,14 @@
     const aepFilepath = getAeOutputModulesAEP();
     await evalES(`importProjectAndSaveOutputModules("${aepFilepath}")`);
   };
+
+  onMount(() => {
+    apiKey = $appStore.aiService.apiKey;
+    selectedService = {
+      label: $appStore.aiService.name,
+      value: $appStore.aiService.name,
+    };
+  });
 </script>
 
 <div class="container">
@@ -83,6 +119,7 @@
           handleChange('showVersionWarnings', !$appStore.showVersionWarnings)}
       />
     </div>
+    <!-- Export Settings -->
     <div class="settings-header">
       <h3>Export</h3>
     </div>
@@ -114,6 +151,22 @@
           )}
       />
     </div>
+  </div>
+  <!-- Code Settings -->
+  <div class="settings-header">
+    <h3>Code</h3>
+  </div>
+  <div class="flex-row-between setting-row">
+    <label for="remember-last-export-path">AI Service</label>
+    <MenuSelect
+      items={aiServices}
+      bind:value={selectedService}
+      onChange={handleServiceChange}
+    />
+  </div>
+  <div class="flex-row-between setting-row">
+    <label for="remember-last-export-path">Api Key</label>
+    <input type="text" bind:value={apiKey} />
   </div>
 
   <div class="flex-row-end action-row">

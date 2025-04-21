@@ -33,7 +33,7 @@
 
 <style lang="scss">
   .svelte-select-container {
-    width: 400px;
+    width: 100%;
     margin-bottom: 0px;
     z-index: 1000;
   }

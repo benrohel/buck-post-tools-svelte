@@ -60,6 +60,7 @@ export default defineConfig({
   clearScreen: false,
   server: {
     port: cepConfig.port,
+    cors: true,
   },
   preview: {
     port: cepConfig.servePort,
