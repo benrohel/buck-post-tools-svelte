@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { evalES } from '../../lib/utils/bolt';
+  import { getAeOutputModulesAEP } from '../../api/files/files';
   import { localAppStore } from '../../stores/local-storage';
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import { type AppStore, appStore } from '../../stores/app-store';
@@ -16,6 +18,11 @@
       notifications.error('Failed to save settings', 2000);
     }
   };
+
+  const handleImportProjectAndSaveOutputModules = async () => {
+    const aepFilepath = getAeOutputModulesAEP();
+    await evalES(`importProjectAndSaveOutputModules("${aepFilepath}")`);
+  };
 </script>
 
 <div class="container">
@@ -24,6 +31,16 @@
   >
     <h2>Settings</h2>
   </div>
+  <div class="flex-row-between setting-row">
+    <label for="show-tooltips">Load Output Module Templates</label>
+    <button
+      class="active"
+      on:click={() => handleImportProjectAndSaveOutputModules()}
+    >
+      Import
+    </button>
+  </div>
+  <!-- App Settings -->
   <div class="settings-container">
     <div class="settings-header">
       <h3>App</h3>
@@ -36,6 +53,7 @@
         onChange={() => handleChange('showTooltips', !$appStore.showTooltips)}
       />
     </div>
+    <!-- Rename Settings -->
     <div class="settings-header">
       <h3>Rename</h3>
     </div>
@@ -97,6 +115,7 @@
       />
     </div>
   </div>
+
   <div class="flex-row-end action-row">
     <button class="active" on:click={saveSettings}>Save Settings</button>
   </div>

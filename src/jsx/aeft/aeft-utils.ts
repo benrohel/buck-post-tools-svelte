@@ -191,3 +191,103 @@ export const getProjectFile = () => {
   }
   return app.project.file;
 };
+
+// Function to import a project, scan render queue items, and save output modules as templates
+export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
+  app.beginUndoGroup('Import and Save Output Modules');
+  // Store current project to reopen later if needed
+  var currentProject = app.project;
+  var currentProjectFile = app.project.file;
+  var reopenCurrentProject = true;
+
+  // If there's an open project with unsaved changes, ask before closing
+  if (currentProject && app.project.dirty) {
+    reopenCurrentProject = confirm(
+      'Current project has unsaved changes. Save it before proceeding?'
+    );
+    if (reopenCurrentProject) {
+      currentProject.save();
+    }
+  }
+
+  // Try to import the specified project
+  var projectFile = new File(projectFilePath);
+  if (!projectFile.exists) {
+    alert('Project file does not exist: ' + projectFilePath);
+    return false;
+  }
+
+  //function to loop through existing templaters and check if a template with the same name exists
+
+  try {
+    // Open the specified project
+    app.open(projectFile);
+    // Array to store template names we've saved to avoid duplicates
+    var savedTemplates: string[] = [];
+    var newTemplates: string[] = [];
+    // Process all render queue items
+
+    const checkTemplateExists = (templateName: string) => {
+      for (let i = 1; i <= savedTemplates.length; i++) {
+        if (savedTemplates[i] === templateName) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    for (var i = 1; i <= app.project.renderQueue.numItems; i++) {
+      var renderItem = app.project.renderQueue.item(i);
+      if (i === 1) {
+        savedTemplates = renderItem.outputModule(1).templates;
+      }
+
+      // Check if this render queue item has output modules
+      if (renderItem.numOutputModules > 0) {
+        // Process each output module for this render queue item
+        for (var j = 1; j <= renderItem.numOutputModules; j++) {
+          var outputModule = renderItem.outputModule(j);
+
+          try {
+            // Generate a template name based on project and comp
+            var templateName = outputModule.name;
+
+            if (!checkTemplateExists(templateName)) {
+              outputModule.saveAsTemplate(templateName);
+              savedTemplates.push(templateName);
+              newTemplates.push(templateName);
+            }
+
+            // Save the output module settings as a template
+          } catch (e) {
+            alert(
+              'Error saving output module ' +
+                j +
+                ' from item ' +
+                i +
+                ': ' +
+                e.toString()
+            );
+          }
+        }
+      }
+    }
+
+    alert('Successfully saved ' + newTemplates.length + ' output modules.');
+
+    // Close the imported project
+    app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);
+
+    // Reopen the original project if needed
+    if (reopenCurrentProject && currentProjectFile) {
+      app.open(currentProjectFile);
+    }
+
+    app.endUndoGroup();
+    return true;
+  } catch (e) {
+    app.endUndoGroup();
+    alert('Error processing project: ' + e.toString());
+    return false;
+  }
+};

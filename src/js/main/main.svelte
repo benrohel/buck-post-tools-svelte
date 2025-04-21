@@ -18,7 +18,7 @@
   import RenameContainer from './Rename/RenameContainer.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
-  import ToolsContainer from './Tools/ToolsContainer.svelte';
+  import ToolsContainer from './Tools/ScriptsContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import { appStore, defaultAppStore, appVersion } from '../stores/app-store';

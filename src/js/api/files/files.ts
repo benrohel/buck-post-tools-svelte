@@ -291,3 +291,13 @@ export const GetFilesLibrary = (dir: string): Array<any> => {
     .flat();
   return [...shotsArray, ...assetsArray];
 };
+
+export const getAeOutputModulesAEP = () => {
+  const templateFilePath = path.join(
+    __dirname,
+    'assets',
+    'aeTemplates',
+    'buckOutputModules.aep'
+  );
+  return templateFilePath;
+};

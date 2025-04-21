@@ -1,14 +1,11 @@
 {
-    "nuke-to-ae-tracker":{
-
-        "version":"1.0.0",
-        "description":"Converts Nuke's corner pin tracker to After Effects corner pin tracker.",
-        "filepath":"/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx",
-        "name":"Nuke to AE Tracker",
-        "author":"Ben Rohel",
-        "icon":"nuke-to-ae-tracker.png",
-        "apps":[
-            "AEFT"
-        ]
-    }
+  "nuke-to-ae-tracker": {
+    "version": "1.0.0",
+    "description": "Converts Nuke's corner pin tracker to After Effects corner pin tracker.",
+    "filepath": "/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx",
+    "name": "Nuke Corner Pin to AE",
+    "author": "Ben Rohel",
+    "icon": "nuke-to-ae-tracker.png",
+    "apps": ["AEFT"]
+  }
 }
