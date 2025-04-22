@@ -227,7 +227,7 @@
   }
 
   #property-text {
-    color: $font;
+    color: $dimmed-font-color;
   }
 
   #fav-icon {
