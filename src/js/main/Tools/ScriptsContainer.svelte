@@ -28,7 +28,6 @@
 
   console.log(getLocalScripts(appId, $appVersion));
 
-
   $: localScripts = getLocalScripts(appId, $appVersion);
   $: buckScripts = getBuckScripts(appId);
 
@@ -43,7 +42,7 @@
   // };
 
   // $: console.log(buckToolArray());
-  $: console.log("local scripts", localScripts)
+  $: console.log('local scripts', localScripts);
 
   interface SelectToolItem {
     value: string;
@@ -55,7 +54,6 @@
   onMount(() => {
     localScripts = getLocalScripts(appId, $appVersion);
     buckScripts = getBuckScripts(appId);
-    console.log("buck scripts", buckScripts)
   });
 </script>
 

@@ -12,6 +12,9 @@ export interface Script {
 }
 
 export const getBuckScripts = (appId: string): Script[] => {
+
+  
+
   let scriptsFolder = '';
   if (appId === 'AEFT') {
     scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
@@ -19,12 +22,15 @@ export const getBuckScripts = (appId: string): Script[] => {
     scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 'scripts');
   }
 
+  // scriptsFolder = "/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts"
   console.log(scriptsFolder);
   if (!fs.existsSync(scriptsFolder)) {
+    console.log('Buck scripts folder not found');
     return [];
   }
 
-  
+  const folderFiles = fs.readdirSync(scriptsFolder);
+  console.log('Buck scripts folder', folderFiles);
 
   const scriptFiles = fs
     .readdirSync(scriptsFolder)
@@ -38,6 +44,7 @@ export const getBuckScripts = (appId: string): Script[] => {
         filename: file
       };
     });
+  console.log('Buck scripts files', scriptFiles);
   return scriptFiles;
 };
 
@@ -46,7 +53,7 @@ export const installTool = (toolFilePath: string, appId: string) => {
   if (appId === 'AEFT') {
     scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
   } else if (appId === 'PPRO') {
-    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 'scripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 's          cripts');
   }
 
   fs.copyFileSync(toolFilePath, toolFilePath);

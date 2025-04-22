@@ -98,6 +98,7 @@
     }
     console.log('$localAppStore', $localAppStore);
     console.log('$appVersion', $appVersion);
+    console.log('env', import.meta.env);
   });
 </script>
 
