@@ -88,6 +88,7 @@
   onMount(async () => {
     if (window.cep) {
       // subscribeBackgroundColor((c: string) => (backgroundColor = c));
+
       await connectToDaemon();
       appVersion.set(await evalES(`appVersion()`));
       appItems = items.filter((item) => item.apps.includes(appId));

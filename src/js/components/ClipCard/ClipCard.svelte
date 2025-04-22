@@ -6,10 +6,9 @@
   import { evalES } from '../../lib/utils/bolt';
   import { GetFileVersion } from '../../api/files/files';
   import { checkVideoFileUpdate } from '../../api/video/video';
-  import { showWarnings } from '../../stores/settings-store';
-  import { Tooltip } from '@svelte-plugins/tooltips';
   import { appStore } from '../../stores/app-store';
   import { fs, path } from '../../lib/cep/node';
+  import { Tooltip } from '@svelte-plugins/tooltips';
   export let clip: any;
   export let id = 0;
   export let selected = false;
@@ -24,14 +23,13 @@
   $: isVideoMatch = true;
   let videoDifferences: any[] = [];
   let isMissing = false;
+  let showWarnings = $appStore.showVersionWarnings;
 
   export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
 
   export const FileUrl = (tb: string) => {
     return `${BUCK_DAEMON_URL}${tb}`;
   };
-
-  let tb: string = 'https://via.placeholder.com/71x40';
 
   const handleSelectTask = async () => {
     if (onSelect) {
@@ -77,11 +75,13 @@
   };
 
   const handleCheckNewVersion = async () => {
+    console.log('Checking new version');
     if (!clip.selectedVersion?.filepath) return;
     const result = await checkVideoFileUpdate(
       clip.filepath,
       clip.selectedVersion.filepath
     );
+    console.log(result);
     if (result.length > 0) {
       console.log(`Clip ${clip.shotName} is different: ${result}`);
       videoDifferences = result;
@@ -107,7 +107,7 @@
     if (isSynced) {
       color = 'color: #3caea3';
     }
-    if (!isVideoMatch && $showWarnings) {
+    if (!isVideoMatch && showWarnings) {
       color = 'color: #ed553b';
     }
     return color;
@@ -131,7 +131,7 @@
       publishedVersion = '';
     }
     editVersion = GetFileVersion(clip.filepath) ?? '';
-    if ($showWarnings) {
+    if (showWarnings) {
       handleCheckNewVersion();
     }
   };
@@ -145,6 +145,7 @@
   };
 
   onMount(() => {
+    showWarnings = $appStore.showVersionWarnings;
     initCard();
   });
 </script>
@@ -174,7 +175,7 @@
               class="clip-name-header noselect"
               style={getSyncedColor()}
             >
-              {#if !isVideoMatch && $showWarnings}
+              {#if !isVideoMatch && showWarnings}
                 {clip.shotName}
               {:else}
                 {clip.shotName}
@@ -209,7 +210,7 @@
         >
           <div class="tooltip-container">
             <button
-              class={$showWarnings && !isVideoMatch
+              class={showWarnings && !isVideoMatch
                 ? 'icon error'
                 : 'icon active'}
               on:click={handleReplaceClip}

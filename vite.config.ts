@@ -79,6 +79,7 @@ export default defineConfig({
         format: 'cjs',
       },
     },
+
     target: 'chrome74',
     outDir,
   },
