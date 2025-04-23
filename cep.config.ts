@@ -44,7 +44,7 @@ const config: CEP_Config = {
     province: 'CA',
     org: 'MyCompany',
     password: 'mypassword',
-    tsa: 'http://timestamp.digicert.com/',
+    tsa: 'http://timestamp.apple.com/ts01',
     sourceMap: false,
     jsxBin: 'off',
   },

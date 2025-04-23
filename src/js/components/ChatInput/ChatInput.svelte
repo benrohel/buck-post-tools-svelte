@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { createEventDispatcher } from 'svelte';
-  import { ArrowUp } from 'lucide-svelte';
+  import { ArrowUp, FileClock } from 'lucide-svelte';
   import { notifications } from '../../stores/notifications-store';
   import { localAppStore } from '../../stores/local-storage';
 
   let textarea: HTMLTextAreaElement | null = null;
+  let keepHistory: boolean = false;
   export let inputValue: string = '';
   const dispatch = createEventDispatcher();
   // Auto-resize the textarea as content grows
@@ -16,6 +17,7 @@
     }
   }
 
+  $: console.log('keepHistory', keepHistory);
   function handleInput() {
     adjustTextareaHeight();
   }
@@ -62,13 +64,24 @@
   <div class="button-row">
     <div class="send-controls">
       <div class="model-selector">{$localAppStore.aiService.name ?? ''}</div>
-      <button
-        class="send-button"
-        on:click={submitMessage}
-        disabled={inputValue.trim() === '' || !$localAppStore.aiService.apiKey}
-      >
-        <ArrowUp />
-      </button>
+      <div class="send-button-container">
+        <button
+          class={keepHistory === true ? 'send-button active' : 'send-button'}
+          on:click={() => {
+            keepHistory = !keepHistory;
+          }}
+        >
+          <FileClock />
+        </button>
+        <button
+          class="send-button active"
+          on:click={submitMessage}
+          disabled={inputValue.trim() === '' ||
+            !$localAppStore.aiService.apiKey}
+        >
+          <ArrowUp />
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -165,7 +178,6 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background-color: $active;
     border: none;
     display: flex;
     align-items: center;
@@ -175,7 +187,12 @@
     transition: background-color 0.2s;
   }
 
-  .send-button:hover {
-    background-color: #aa7744;
+  // .send-button:hover {
+  //   background-color: #aa7744;
+  // }
+
+  .send-button-container {
+    display: flex;
+    gap: 8px;
   }
 </style>

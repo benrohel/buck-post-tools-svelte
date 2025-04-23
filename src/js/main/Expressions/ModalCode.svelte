@@ -49,6 +49,7 @@
   $: variables = setVariables();
   let gptMessage = '';
   $: codeString = '';
+  let launchScript: boolean = false;
 
   const generateRandomString = (length: number = 8): string => {
     const characters =
@@ -56,7 +57,7 @@
     let result = '';
     for (let i = 0; i < length; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
+        Math.floor(Math.random() * characters.length),
       );
     }
     return result;
@@ -116,7 +117,7 @@
     const tempFile = path.join(
       __dirname,
       'dist',
-      generateRandomString() + '.jsx'
+      generateRandomString() + '.jsx',
     );
     if (!fs.existsSync(path.dirname(tempFile))) {
       fs.mkdirSync(path.dirname(tempFile));
@@ -145,7 +146,7 @@
     } else {
       const res = await callAnthropicAPI(
         gptMessage,
-        $localAppStore.aiService.apiKey
+        $localAppStore.aiService.apiKey,
       );
       console.log(res);
       if (isScript) {
@@ -154,7 +155,14 @@
         code = extractCodeFromMarkdown(res);
       }
       isLoading = false;
+      if (launchScript) {
+        handleEvalScript();
+      }
     }
+  };
+
+  const handleSaveScript = async () => {
+    console.log('handleSaveScript');
   };
 </script>
 
@@ -246,7 +254,10 @@
             </div>
           {/if}
 
-          <div style="display:flex; justify-content:flex-end; width:100%">
+          <div
+            style="display:flex; justify-content:flex-end; width:100%; gap:8px; align-items:center"
+          >
+            <Toggle bind:checked={launchScript} />
             <Tooltip
               action={$appStore.showTooltips ? 'hover' : 'none'}
               content={isScript
@@ -278,10 +289,6 @@
         }}
         bind:inputValue={gptMessage}
       />
-      <!-- <textarea id="gpt-input" bind:value={gptMessage} />
-      <button on:click={handleChatRequest}>
-        <MessageCircleCode />
-      </button> -->
     </div>
 
     <CodeJar
@@ -292,6 +299,20 @@
       withLineNumbers={true}
       style="overflow: auto;"
     />
+    <div id="save-row">
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content={isScript
+          ? 'Save Script'
+          : 'Save Expression to Selected Property'}
+        position="left"
+        delay={1000}
+      >
+        <button class="active" on:click={handleSaveScript}>
+          {isScript ? 'Save Script' : 'Save Expression'}
+        </button>
+      </Tooltip>
+    </div>
   </div>
 </div>
 
@@ -336,7 +357,7 @@
   #modal-content {
     width: 100%;
     max-width: calc(100vw - 20px);
-    max-height: calc(100vh - 110px);
+    max-height: calc(100vh - 75px);
     overflow: auto;
   }
 
@@ -393,5 +414,11 @@
     border: 1px solid $dimmed-font-color;
     border-radius: 4px;
     color: $font;
+  }
+
+  #save-row {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
   }
 </style>

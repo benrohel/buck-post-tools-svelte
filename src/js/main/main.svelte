@@ -88,6 +88,7 @@
   onMount(async () => {
     if (window.cep) {
       // subscribeBackgroundColor((c: string) => (backgroundColor = c));
+
       await connectToDaemon();
       appVersion.set(await evalES(`appVersion()`));
       appItems = items.filter((item) => item.apps.includes(appId));
@@ -97,7 +98,8 @@
     }
 
     console.log('$localAppStore', $localAppStore);
-    console.log(import.meta.env);
+    console.log('$appVersion', $appVersion);
+    console.log('env', import.meta.env);
   });
 </script>
 
