@@ -62,14 +62,14 @@
   let presetFilter: string = '';
 
   $: filteredPresets = videoResolutions.resolutions.filter((f) =>
-    f.label.includes(presetFilter)
+    f.label.includes(presetFilter),
   );
 
   const getMasterSequence = async () => {
     let selectedSequences = true;
     const aeResult = await evalES(
       `getSelectedSequencesForNode(${selectedSequences})`,
-      false
+      false,
     );
     const aeJson = JSON.parse(aeResult);
     masterSequence = aeJson.sequences[0];
@@ -108,7 +108,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate
+        option.framerate,
       );
 
       if (sqp) {
@@ -117,10 +117,12 @@
           presetPath: sqp,
           uuid: uuidv4(),
         };
+
         const seqId = await evalES(
-          `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
-          false
+          `createNewSequenceFromSQP(${JSON.stringify(sequenceOptions)})`,
+          false,
         );
+        console.log(seqId);
         const insertOption = {
           toInsert: masterSequence.nodeId,
           inSequence: seqId,
@@ -191,7 +193,7 @@
           <li style="margin-left:2px">{item.label}</li>
           <div
             style="width: {getItemWidth(
-              item
+              item,
             )}; height: 20px; border: 1px solid grey; border-radius: 2px;margin-right: 2px;"
           />
         </div>

@@ -441,13 +441,64 @@ const renameClipFromSource = (shot: any) => {
   }
 };
 
-export const renameToFile = () => {
-  var clips = getAlltracksSelectedClips();
-  for (var c = 0; c < clips.length; c++) {
-    renameClipFromSource(clips[c]);
-  }
-  return true;
-};
+// export const renameToFile = () => {
+//   var clips = getAlltracksSelectedClips();
+//   for (var c = 0; c < clips.length; c++) {
+//     renameClipFromSource(clips[c]);
+//   }
+//   return true;
+// };
+
+export const renameToFile = () =>{
+  // Script to revert selected footage clip names to original file names
+// For Adobe Premiere Pro
+
+
+
+try {
+    // Get the current project
+    var project = app.project;
+    
+    // Get all selected items in the project panel
+    var selectedItems = getProjectSelection();
+    
+    // Counter to track how many items were renamed
+    var renamedCount = 0;
+    
+    // Process each selected item
+    for (var i = 0; i < selectedItems.length; i++) {
+        var item = selectedItems[i];
+        
+        // Check if the item is footage (not a sequence, bin, or other project item)
+        if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
+            // Get the file path
+            var filePath = item.getMediaPath();
+            var file = new File(filePath);
+            // Extract just the filename from the path
+            var fileName = file.name;
+            
+            // Remove the file extension if desired (comment out these lines to keep extension)
+            // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+            // fileName = fileNameWithoutExt;
+            
+            // Set the clip name to the file name
+            item.name = fileName;
+            
+            // Increment the counter
+            renamedCount++;
+        }
+    }
+    
+    // Show result in alert
+    return("Renamed " + renamedCount + " footage items to their original file names.");
+    
+} catch (error:any) {
+  return ("Error renaming files")
+    
+}
+
+
+}
 
 const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
   // var medias = [];
@@ -890,6 +941,19 @@ export const newSequenceFromPreset = ({
   return newSeq.projectItem.nodeId;
 };
 
+export const createNewSequenceFromSQP = ({
+  sequenceName,
+  presetPath,
+  uuid,
+}: NewSequenceOptions) => {
+  app.enableQE();
+  var presetFile = new File(presetPath);
+  qe.project.newSequence(uuid, presetFile.fsName);
+  const newSeq = getSequenceFromName(uuid!);
+  newSeq.projectItem.name = sequenceName;
+  return newSeq.projectItem.nodeId;
+};
+
 declare interface InsertSequenceOptions {
   toInsert: string;
   inSequence: string;
@@ -954,7 +1018,7 @@ export const versionUpNames = () => {
       return false;
     }
     const version = parseInt(currentVersion[1]) + 1;
-    const versionString = padStart(version.toString(), '000');
+    const versionString = padStart(version.toString(),3 ,'0');
     const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
     selection[c].name = newName;
   }
