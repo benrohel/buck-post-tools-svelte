@@ -14,7 +14,10 @@
   import { generateId } from '../../lib/utils/utils';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { lastFolderExport } from '../../stores/local-storage';
+  import {
+    lastFolderExport,
+    selectedExportPreset,
+  } from '../../stores/local-storage';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import {
@@ -74,8 +77,9 @@
 
   let pathStructure: PathItem[] = [];
   let version = 0;
-  $: versionString = `v${version.toString().padStart(3, '0')}`;
+  let taskName = '';
 
+  let hasTask = false;
   $: console.log(pathStructure);
 
   // Default exporters for different file types
@@ -86,16 +90,17 @@
     label: module,
   }));
   let selectedOutputModuleMenuItem = { label: '', value: '' };
-  $: selectedOutputModule = outputModules.find(
-    (module) => module === selectedOutputModuleMenuItem.value
-  );
+  $: selectedOutputModule =
+    outputModules.find(
+      (module) => module === selectedOutputModuleMenuItem?.value,
+    ) || outputModules[0];
 
   let rootFolder = '';
 
   // Preset Name
   let presetName = '';
   $: presetNameExists = exportPresets.some(
-    (preset) => preset.name === presetName
+    (preset) => preset.name === presetName,
   );
 
   $: validPresetName = presetName.length < 5 || presetNameExists;
@@ -134,10 +139,10 @@
     }
 
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
+      await evalES('getOutputModulesTemplates()'),
     );
     outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN')
+      (p: string) => !p.startsWith('_HIDDEN'),
     );
 
     selectedOutputModule = outputModules[0];
@@ -153,7 +158,7 @@
     }
     if ($appStore.rememberLastExportPreset) {
       selectedExportPreset = exportPresets.find(
-        (preset: Exporter) => preset.name === $storedExportSettings
+        (preset: Exporter) => preset.name === $storedExportSettings,
       );
       if (selectedExportPreset) {
         pathStructure = selectedExportPreset.path;
@@ -166,7 +171,6 @@
 
   // Function to set the Root Folder
   function setRootFolder(path: string) {
-    lastFolderExport.set(path);
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
@@ -179,24 +183,25 @@
     if (missingOm.length > 0) {
       notifications.warning(
         `Missing Output modules : ${missingOm.join(', ')} `,
-        2000
+        2000,
       );
     }
     selectedExportPresetMenuItem = value;
 
     selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value
+      (preset) => preset.name === value.value,
     );
     pathStructure = selectedExportPreset.path;
+    hasTask = selectedExportPreset.previewPath.includes('{task}');
   }
 
   function handleOnChangeOutputModule(
     id: string,
-    value: { value: string; label: string }
+    value: { value: string; label: string },
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value
+      (module) => module === value.value,
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
@@ -210,7 +215,7 @@
     if (exportPresets.some((preset) => preset.name === name)) {
       notifications.error(
         'Exporter preset with this name already exists',
-        2000
+        2000,
       );
       return;
     }
@@ -258,8 +263,9 @@
       path: pathStructure,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
     );
+    console.log('updatedExportPresets', updatedExportPresets);
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
         exportPresets = updatedExportPresets;
@@ -268,7 +274,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name
+          (preset) => preset.value === selectedExportPreset.name,
         );
         pathStructure = selectedExportPreset.path;
 
@@ -281,10 +287,11 @@
 
   //Function to check if  outputModule template exists.
   function checkOutputModuleTemplate(): string[] {
-    const om = findNodesByType(pathStructure, 'file');
+    const fileNodes: PathItem[] = findNodesByType(pathStructure, 'file');
+    console.log('fileNodes', fileNodes);
     let missing: string[] = [];
-    om.forEach((node) => {
-      if (node.outputModule != selectedOutputModule) {
+    fileNodes.forEach((node) => {
+      if (!outputModules.find((o) => o === node.outputModule)) {
         missing.push(node.outputModule);
       }
     });
@@ -297,7 +304,7 @@
     if (node && node.outputModule) {
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
-        (om) => om.value === node.outputModule
+        (om) => om.value === node.outputModule,
       );
     }
   }
@@ -350,7 +357,7 @@
   function addChildToNode(
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem
+    newChild: PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -442,7 +449,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem
+    updateFn: (node: PathItem) => PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -488,7 +495,7 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken.substring(1))
+          token.name.toLowerCase().includes(partialToken.substring(1)),
       );
 
       showSuggestions = suggestedTokens.length > 0;
@@ -550,7 +557,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[]
+    nodes: PathItem[],
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -706,7 +713,7 @@
         outputModules: outputModules,
         appId: appId,
         version: version,
-        selectedTask: '',
+        selectedTask: taskName ?? '',
       };
       console.log('options', options);
       await addToRenderQueue(comp, options);
@@ -793,6 +800,12 @@
         </button>
       </Tooltip>
     </div>
+    {#if hasTask}
+      <div class="flex-row-end">
+        <label for="task-name">Task Name: </label>
+        <input type="text" placeholder="Task" bind:value={taskName} />
+      </div>
+    {/if}
     <div class="flex-row-end">
       <label for="increment">Version Number: </label>
       <input type="number" placeholder="Version" bind:value={version} />
@@ -880,7 +893,7 @@
                     onChange={() =>
                       handleOnChangeOutputModule(
                         selectedNode.id,
-                        selectedOutputModuleMenuItem
+                        selectedOutputModuleMenuItem,
                       )}
                   />
                 </Tooltip>
@@ -903,7 +916,10 @@
             </div>
           {/if}
         {:else}
-          <p class="no-selection">Select a folder or file to see actions</p>
+          <p class="no-selection">
+            {selectedExportPreset.description ??
+              'Select a folder or file to see actions'}
+          </p>
         {/if}
         <div class="container">
           <div class="tree-structure">
@@ -990,6 +1006,12 @@
                     {:else}
                       <div
                         class="item-info"
+                        on:keydown={(e) => {
+                          e.preventDefault();
+                          if (e.key === 'Enter') {
+                            editItem(node.id);
+                          }
+                        }}
                         on:dblclick={() => editItem(node.id)}
                       >
                         <span class="item-name">{node.name}</span>

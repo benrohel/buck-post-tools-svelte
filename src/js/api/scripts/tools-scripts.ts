@@ -1,24 +1,36 @@
 import { fs, path, os } from '../../lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
-const SHARED_FOLDER = '/buck/globalprefs/SHARED';
+
+import { SHARED_FOLDER } from '../files/files';
+import { platform } from 'os';
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx
 
 export interface Script {
   name: string;
+  filename: string;
   filepath: string;
 }
 
-export const getScriptsList = (appId: string): Script[] => {
+export const getBuckScripts = (appId: string): Script[] => {
+
+  
+
   let scriptsFolder = '';
   if (appId === 'AEFT') {
-    scriptsFolder = path.join(SHARED_FOLDER, 'AFTER_EFFECTS', 'scripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
   } else if (appId === 'PPRO') {
-    scriptsFolder = path.join(SHARED_FOLDER, 'PREMIERE', 'scripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 'scripts');
   }
 
+  // scriptsFolder = "/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts"
+  console.log(scriptsFolder);
   if (!fs.existsSync(scriptsFolder)) {
+    console.log('Buck scripts folder not found');
     return [];
   }
+
+  const folderFiles = fs.readdirSync(scriptsFolder);
+  console.log('Buck scripts folder', folderFiles);
 
   const scriptFiles = fs
     .readdirSync(scriptsFolder)
@@ -29,17 +41,19 @@ export const getScriptsList = (appId: string): Script[] => {
       return {
         name: name,
         filepath: path.join(scriptsFolder, file),
+        filename: file
       };
     });
+  console.log('Buck scripts files', scriptFiles);
   return scriptFiles;
 };
 
 export const installTool = (toolFilePath: string, appId: string) => {
   let scriptsFolder = '';
   if (appId === 'AEFT') {
-    scriptsFolder = path.join(SHARED_FOLDER, 'AFTER_EFFECTS', 'scripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
   } else if (appId === 'PPRO') {
-    scriptsFolder = path.join(SHARED_FOLDER, 'PREMIERE', 'scripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 's          cripts');
   }
 
   fs.copyFileSync(toolFilePath, toolFilePath);
@@ -59,8 +73,9 @@ export const getLocalScripts = (
 
   if (os.platform() === 'win32') {
     scriptsFolder = path.join(
-      'Applications',
-      `Adobe After Effects ${major}`,
+      'C:\\Program Files\\Adobe',
+      `Adobe After Effects 20${major}`,
+      'Support Files',
       'Scripts'
     );
   } else if (os.platform() === 'darwin') {
@@ -87,7 +102,10 @@ export const getLocalScripts = (
       return {
         name: name,
         filepath: path.join(scriptsFolder, file),
+        filename: file
       };
     });
   return localScripts;
 };
+
+

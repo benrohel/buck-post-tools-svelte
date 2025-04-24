@@ -69,6 +69,7 @@
     if (variables) {
       variables.forEach((v) => {
         console.log(`${v.label}, ${v.value}`);
+
         formattedCode = formattedCode.replace(v.label, v.value);
       });
     }
@@ -82,6 +83,7 @@
     const currentVariableIndex = variables.findIndex((v) => {
       return v.label === e.label;
     });
+
     let newVariables = variables;
     newVariables[currentVariableIndex] = e;
     variables = [...newVariables];

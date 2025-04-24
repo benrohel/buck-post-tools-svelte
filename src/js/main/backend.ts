@@ -5,7 +5,7 @@ import { notifications } from '../stores/notifications-store';
 const maxConnectionAttempts = 20;
 let connectionAttempt = 0;
 let launched = false;
-let developmentBackend = true;
+let developmentBackend = import.meta.env.DEV;
 
 /**
  * Represents a connection to the Daemon.
@@ -55,7 +55,7 @@ export async function connectToDaemon(
   });
 
   client.interceptors.request.use((req: any) => {
-    req.headers.append('X-BUCK-APP', 'desktop2');
+    req.headers.append('X-BUCK-APP', 'cep-panel');
     return req;
   });
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import Freezeframe from 'freezeframe';
-  import buckLogo from '../../assets/BUCK_ICON_WHITE.svg';
+  import buckLogo from '../../../assets/BUCK_ICON_WHITE.svg';
   import { fly } from 'svelte/transition';
   import markdownToTxt from 'markdown-to-txt';
   import { Star } from 'lucide-svelte';
@@ -11,13 +11,12 @@
   export let selected = false;
   export let onSelect: Function;
   export let onUpdate: Function;
-  export let playing = false;
+
   let open = false;
   const reg = new RegExp(/```/, 'g');
   let tb: string = '';
   let freeze: Freezeframe;
   let hasPreview = false;
-  let isPlaying = false;
 
   const handleSelectExpression = async () => {
     if (freeze) {
@@ -228,7 +227,7 @@
   }
 
   #property-text {
-    color: $font;
+    color: $dimmed-font-color;
   }
 
   #fav-icon {

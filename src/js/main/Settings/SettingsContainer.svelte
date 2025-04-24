@@ -67,15 +67,17 @@
   >
     <h2>Settings</h2>
   </div>
-  <div class="flex-row-between setting-row">
-    <label for="show-tooltips">Load Output Module Templates</label>
-    <button
-      class="active"
-      on:click={() => handleImportProjectAndSaveOutputModules()}
-    >
-      Import
-    </button>
-  </div>
+  {#if appId === 'AEFT'}
+    <div class="flex-row-between setting-row">
+      <label for="show-tooltips">Load Output Module Templates</label>
+      <button
+        class="active"
+        on:click={() => handleImportProjectAndSaveOutputModules()}
+      >
+        Import
+      </button>
+    </div>
+  {/if}
   <!-- App Settings -->
   <div class="settings-container">
     <div class="settings-header">
@@ -103,7 +105,7 @@
         onChange={() =>
           handleChange(
             'rememberLastFolderSearch',
-            !$appStore.rememberLastFolderSearch
+            !$appStore.rememberLastFolderSearch,
           )}
       />
     </div>
@@ -133,24 +135,26 @@
         onChange={() =>
           handleChange(
             'rememberLastExportPath',
-            !$appStore.rememberLastExportPath
+            !$appStore.rememberLastExportPath,
           )}
       />
     </div>
-    <div class="flex-row-between setting-row">
-      <label for="remember-last-export-preset"
-        >Remember last export preset</label
-      >
-      <Toggle
-        checked={$appStore.rememberLastExportPreset}
-        id="remember-last-export-preset"
-        onChange={() =>
-          handleChange(
-            'rememberLastExportPreset',
-            !$appStore.rememberLastExportPreset
-          )}
-      />
-    </div>
+    {#if appId === 'AEFT'}
+      <div class="flex-row-between setting-row">
+        <label for="remember-last-export-preset"
+          >Remember last export preset</label
+        >
+        <Toggle
+          checked={$appStore.rememberLastExportPreset}
+          id="remember-last-export-preset"
+          onChange={() =>
+            handleChange(
+              'rememberLastExportPreset',
+              !$appStore.rememberLastExportPreset,
+            )}
+        />
+      </div>
+    {/if}
   </div>
   <!-- Code Settings -->
   <div class="settings-header">

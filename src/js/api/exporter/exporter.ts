@@ -29,6 +29,7 @@ export interface Exporter {
   name: string;
   previewPath: string;
   path: PathItem[];
+  description?: string;
   rootFolder?: string;
   latestVersion?: number;
 }
@@ -59,6 +60,7 @@ export const buildRenderPath = (
         .replace(/{shot}/g, compData.compName)
         .replace(/{task}/g, selectedTask ?? '')
         .replace(/{version}/g, `v${version.toString().padStart(3, '0')}`)
+        .replace(/{app}/,"ae")
         .replace(/#{1,}/g, '')
         .replace(/\.{ext}/g, '');
       break;
@@ -69,6 +71,7 @@ export const buildRenderPath = (
         .replace(/{shot}/g, compData.compName)
         .replace(/{shot}/g, compData.compName)
         .replace(/{task}/g, selectedTask ?? '')
+        .replace(/{app}/,"ppro")
         .replace(/{projectVersion}/g, projectVersionString)
         .replace(/{version}/g, `v${version.toString().padStart(3, '0')}`)
         .replace(/frameNumber}/g, '#'.padStart(numberOfFrames, '#'))
@@ -76,7 +79,7 @@ export const buildRenderPath = (
       break;
   }
 
-  return path.posix.join(rootFolder, dataString);
+  return path.join(rootFolder, dataString);
 };
 
 export interface IAddToRenderQueueOptions {

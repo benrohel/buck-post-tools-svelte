@@ -1,8 +1,14 @@
 <script lang="ts">
   import { evalES } from '../../lib/utils/bolt';
-
+  import { notifications } from '../../stores/notifications-store';
   const handleRevertToFilename = async () => {
-    await evalES('renameToFile()');
+    await evalES('renameToFile()').then((res) => {
+      if (res.startsWith('Error')) {
+        notifications.error(res, 2000);
+      } else {
+        notifications.success(res, 2000);
+      }
+    });
   };
 </script>
 

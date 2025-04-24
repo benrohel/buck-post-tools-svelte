@@ -2,7 +2,7 @@
   import { Server, RefreshCw, Settings } from 'lucide-svelte';
   import { buck5Server } from '../stores/server-store';
   import pkg from '../../../package.json';
-  import buckLogo from '../assets/BUCK_ICON_WHITE.svg';
+  import buckLogo from '../../assets/BUCK_ICON_WHITE.svg';
 
   import SettingsContainer from './Settings/SettingsContainer.svelte';
   import ModalSettings from '../components/Modal/ModalSettings.svelte';

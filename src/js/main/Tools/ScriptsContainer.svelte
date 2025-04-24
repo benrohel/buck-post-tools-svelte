@@ -3,6 +3,7 @@
   import { appStore, appVersion } from '../../stores/app-store';
   import {
     getLocalScripts,
+    getBuckScripts,
     type Script,
   } from '../../api/scripts/tools-scripts';
   import ToolCard from '../../components/ClipCard/ToolCard.svelte';
@@ -11,6 +12,7 @@
     name: string;
     version: string;
     description: string;
+    filename: string;
     filepath: string;
     author?: string;
     icon?: string;
@@ -21,25 +23,26 @@
     [key: string]: ToolData;
   }
   import toolList from './tools.json';
-  const tools = toolList as ToolItem;
+
   const appId = $appStore.appId;
 
   console.log(getLocalScripts(appId, $appVersion));
 
-  let localScripts: Script[] = [];
   $: localScripts = getLocalScripts(appId, $appVersion);
+  $: buckScripts = getBuckScripts(appId);
 
-  $: buckToolArray = () => {
-    return Object.keys(tools)
-      .filter((t) => {
-        return tools[t].apps.includes(appId);
-      })
-      .map((k) => {
-        return { value: tools[k], label: k };
-      });
-  };
+  // $: buckToolArray = () => {
+  //   return Object.keys(tools)
+  //     .filter((t) => {
+  //       return tools[t].apps.includes(appId);
+  //     })
+  //     .map((k) => {
+  //       return { value: tools[k], label: k };
+  //     });
+  // };
 
-  $: console.log(buckToolArray());
+  // $: console.log(buckToolArray());
+  $: console.log('local scripts', localScripts);
 
   interface SelectToolItem {
     value: string;
@@ -50,6 +53,7 @@
 
   onMount(() => {
     localScripts = getLocalScripts(appId, $appVersion);
+    buckScripts = getBuckScripts(appId);
   });
 </script>
 
@@ -59,8 +63,8 @@
       <h3>Buck Scripts</h3>
     </div>
     <div class="tools-list">
-      {#each buckToolArray() as tool}
-        <ToolCard scripTool={tool.value} />
+      {#each buckScripts as script}
+        <ToolCard scriptTool={script} />
       {/each}
     </div>
   </div>
@@ -70,7 +74,7 @@
     </div>
     <div class="tools-list grid-layout">
       {#each localScripts as script}
-        <ToolCard scripTool={script} />
+        <ToolCard scriptTool={script} />
       {/each}
     </div>
   </div>

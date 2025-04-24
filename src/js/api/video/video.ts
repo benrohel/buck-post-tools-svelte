@@ -1,4 +1,4 @@
-import {path, child_process} from "../../lib/cep/node";
+import { path, child_process, os } from '../../lib/cep/node';
 interface VideoInfosCheck {
   width: number;
   height: number;
@@ -17,33 +17,46 @@ const GetVideoInfos = (probeOutput: string) => {
     nb_frames: json.streams[0].nb_frames,
     start_time: json.format.start_time,
     time_base: json.format.time_base,
-    nb_of_streams: json.streams.length
+    nb_of_streams: json.streams.length,
   };
 };
 
 interface VideoError {
   source: any;
   destination: any;
-  name:string
+  name: string;
 }
 
-export const checkVideoFileUpdate = (source: string, destination: string) : Promise<VideoError[]> => {
+export const checkVideoFileUpdate = (
+  source: string,
+  destination: string
+): Promise<VideoError[]> => {
+  const ffprobePath = path.join(
+    __dirname,
+    'externals',
+    os.platform() === 'win32' ? 'ffprobe.exe' : 'ffprobe'
+  );
 
-
-  
-const ffprobePath = path.join(__dirname, 'ffprobe');
-  const checkSource = child_process.execSync(`"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${source}"`).toString();
-  const checkDestination = child_process.execSync(`"${ffprobePath}" -v quiet -print_format json -show_format -show_streams ${destination}`).toString();
+  const checkSource = child_process
+    .execSync(
+      `"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${source}"`
+    )
+    .toString();
+  const checkDestination = child_process
+    .execSync(
+      `"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${destination}"`
+    )
+    .toString();
   const sourceJson: VideoInfosCheck = GetVideoInfos(checkSource);
   const destinationJson: VideoInfosCheck = GetVideoInfos(checkDestination);
 
   const errors: VideoError[] = [];
-  Object.keys(sourceJson ).forEach(key => {
+  Object.keys(sourceJson).forEach((key) => {
     if (sourceJson[key] !== destinationJson[key]) {
       errors.push({
         source: sourceJson[key],
         destination: destinationJson[key],
-        name: key
+        name: key,
       });
     }
   });
@@ -53,4 +66,3 @@ const ffprobePath = path.join(__dirname, 'ffprobe');
   }
   return Promise.resolve([]);
 };
-  

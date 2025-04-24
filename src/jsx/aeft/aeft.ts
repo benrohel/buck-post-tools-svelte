@@ -267,7 +267,7 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
     // Apply the template
     try {
-      alert(rqItem.numOutputModules);
+     
       om.applyTemplate(presetName);
       om.file = new File(presetPath);
     } catch (e: any) {
@@ -354,7 +354,7 @@ export const versionUpNames = () => {
       return false;
     }
     const version = parseInt(currentVersion[1], 10);
-    const versionString = padStart((version + 1).toString(), 3, '00');
+    const versionString = padStart((version + 1).toString(), 3, '0');
     const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
     selection[c].name = newName;
   }
