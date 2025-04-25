@@ -314,3 +314,12 @@ export const SHARED_FOLDER = () => {
 
   return path.join(platformRoot,'globalprefs','SHARED');
 }
+
+export const PRODUCTION_ROOT = (projectPath: string) => {
+  const productionRegex = /^(.*?)Production/;
+ const productionDir = projectPath.match(productionRegex)[0];
+  if (!fs.existsSync(productionDir)) return null;
+  const posixRoot = path.posix.normalize(productionDir);
+  const rootFolder = posixRoot.match(productionRegex)[0];
+  return rootFolder;
+}

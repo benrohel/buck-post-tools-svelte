@@ -56,7 +56,9 @@
     ) {
       hasPreview = true;
       tb = expression.values.Thumbnail[0].url;
+
       const imgEL = document.getElementById(`${expression.id}`);
+      console.log('expression id', expression.values.Name, imgEL);
       if (imgEL) {
         freeze = new Freezeframe(imgEL, {
           trigger: 'hover',

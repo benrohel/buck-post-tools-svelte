@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { Server, RefreshCw, Settings } from 'lucide-svelte';
+  import { Server, RefreshCw, Settings, LibraryBig } from 'lucide-svelte';
   import { buck5Server } from '../stores/server-store';
   import pkg from '../../../package.json';
   import buckLogo from '../../assets/BUCK_ICON_WHITE.svg';
-
   import SettingsContainer from './Settings/SettingsContainer.svelte';
   import ModalSettings from '../components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { appStore } from '../stores/app-store';
+  import ResourcesContainer from './Settings/ResourcesContainer.svelte';
   export let authenticated: boolean = false;
   $: showSettings = false;
+  $: showResources = false;
 
   const refreshPage = () => {
     window.location.reload();
@@ -18,6 +19,10 @@
   const onClose = () => {
     console.log('Settings modal closed');
     showSettings = false;
+  };
+  const onResourcesClose = () => {
+    console.log('Resources modal closed');
+    showResources = false;
   };
 </script>
 
@@ -59,6 +64,20 @@
       <button
         class="icon"
         style="margin-right:8px; cursor:pointer; background-color:transparent"
+        on:click={() => (showResources = !showResources)}
+      >
+        <LibraryBig color="white" />
+      </button>
+    </Tooltip>
+    <Tooltip
+      action={$appStore.showTooltips ? 'hover' : 'none'}
+      content="Edit Settings"
+      position="left"
+      delay={1000}
+    >
+      <button
+        class="icon"
+        style="margin-right:8px; cursor:pointer; background-color:transparent"
         on:click={() => (showSettings = !showSettings)}
       >
         <Settings color="white" />
@@ -84,6 +103,11 @@
       <SettingsContainer />
     </ModalSettings>
   {/if}
+  {#if showResources}
+    <ModalSettings onClose={onResourcesClose}>
+      <ResourcesContainer />
+    </ModalSettings>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -101,7 +125,6 @@
     margin-bottom: 4px;
     bottom: 2px;
   }
-
   #buck-version {
     color: $font;
     opacity: 0.75;

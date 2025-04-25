@@ -35,6 +35,7 @@
   export let expression: ExpressionSnippet;
   let isScript: boolean = false;
   let isLoading: boolean = false;
+
   const setVariables = () => {
     if (expression.values.Variables) {
       const vars = [...new Set(expression.values.Variables)];
@@ -149,6 +150,7 @@
       const res = await callAnthropicAPI(
         gptMessage,
         $localAppStore.aiService.apiKey,
+        isScript ? 'scripts' : 'expressions',
       );
       console.log(res);
       if (isScript) {
@@ -183,7 +185,7 @@
         isScript ? 'SCRIPT' : 'EXPRESSION'
       }`}
     </h3>
-    {#if variables}
+    {#if variables.length > 0}
       <div id="variables-list">
         <div style="text-align:center; margin-bottom:4px; font-size:14px">
           Variables
@@ -217,67 +219,65 @@
             </div>
           </Tooltip>
         {/each}
-        <div style="display:flex; justify-content:flex-end; width:100%">
-          {#if expression.id === 'null'}
-            <div
-              style="display:flex; gap:8px; justify-content:flex-start; width:100%"
-            >
-              <div
-                style="display:flex; gap:8px; align-items:center; flex-direction:row"
-              >
-                <Tooltip
-                  action={$appStore.showTooltips ? 'hover' : 'none'}
-                  content="Edit Expression"
-                  position="right"
-                  delay={1000}
-                >
-                  <Braces />
-                </Tooltip>
-                <Toggle bind:checked={isScript} />
-                <Tooltip
-                  action={$appStore.showTooltips ? 'hover' : 'none'}
-                  content="Edit Script"
-                  position="right"
-                  delay={1000}
-                >
-                  <Code />
-                </Tooltip>
-              </div>
-              <Tooltip
-                action={$appStore.showTooltips ? 'hover' : 'none'}
-                content="Load Expression from Selected Property"
-                position="bottom"
-                delay={1000}
-              >
-                <button class="active" on:click={handleLoadFromAe}>
-                  <ArrowUpFromLine />
-                </button>
-              </Tooltip>
-            </div>
-          {/if}
-
-          <div
-            style="display:flex; justify-content:flex-end; width:100%; gap:8px; align-items:center"
-          >
-            <Toggle bind:checked={launchScript} />
-            <Tooltip
-              action={$appStore.showTooltips ? 'hover' : 'none'}
-              content={isScript
-                ? 'Run Script'
-                : 'Apply Expression to Selected Property'}
-              position="left"
-              delay={1000}
-            >
-              <button class="active" on:click={handleApplyCode}>
-                {isScript
-                  ? 'Run Script'
-                  : 'Apply Expression to Selected Property'}
-              </button>
-            </Tooltip>
-          </div>
-        </div>
       </div>
     {/if}
+    <div style="display:flex; justify-content:flex-end; width:100%">
+      {#if expression.id === 'null'}
+        <div
+          style="display:flex; gap:8px; justify-content:flex-start; width:100%"
+        >
+          <div
+            style="display:flex; gap:8px; align-items:center; flex-direction:row"
+          >
+            <Tooltip
+              action={$appStore.showTooltips ? 'hover' : 'none'}
+              content="Edit Expression"
+              position="right"
+              delay={1000}
+            >
+              <Braces />
+            </Tooltip>
+            <Toggle bind:checked={isScript} />
+            <Tooltip
+              action={$appStore.showTooltips ? 'hover' : 'none'}
+              content="Edit Script"
+              position="right"
+              delay={1000}
+            >
+              <Code />
+            </Tooltip>
+          </div>
+          <Tooltip
+            action={$appStore.showTooltips ? 'hover' : 'none'}
+            content="Load Expression from Selected Property"
+            position="bottom"
+            delay={1000}
+          >
+            <button class="active" on:click={handleLoadFromAe}>
+              <ArrowUpFromLine />
+            </button>
+          </Tooltip>
+        </div>
+      {/if}
+
+      <div
+        style="display:flex; justify-content:flex-end; width:100%; gap:8px; align-items:center"
+      >
+        <Toggle bind:checked={launchScript} />
+        <Tooltip
+          action={$appStore.showTooltips ? 'hover' : 'none'}
+          content={isScript
+            ? 'Run Script'
+            : 'Apply Expression to Selected Property'}
+          position="left"
+          delay={1000}
+        >
+          <button class="active" on:click={handleApplyCode}>
+            {isScript ? 'Run Script' : 'Apply Expression to Selected Property'}
+          </button>
+        </Tooltip>
+      </div>
+    </div>
     <hr />
     <!-- Chat AI-->
     <div style="display:flex; flex-direction:row">

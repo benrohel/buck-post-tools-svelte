@@ -1,5 +1,6 @@
 import { CLAUDE_TOKEN } from '../../../../secrets';
 import afterEffectsAgentSystemRole from './after-effects-agent-system-role';
+import afterEffectsExpressionsSystemRole from './after-effects-expressions-system-role';
 // Define the proxy URL - use proxy server for local development
 const PROXY_URL = 'http://localhost:3001/api/anthropic/messages';
 const BASE_URL = 'https://api.anthropic.com/v1/messages';
@@ -12,7 +13,8 @@ const URL = import.meta.env.DEV ? PROXY_URL : BASE_URL;
 
 export async function callAnthropicAPI(
   prompt: string,
-  apiKey: string
+  apiKey: string,
+  systemRole: "scripts" | "expressions"
 ): Promise<string> {
   try {
     console.log('Calling Claude API on', URL, 'with prompt:', prompt);
@@ -26,7 +28,7 @@ export async function callAnthropicAPI(
         model: 'claude-3-7-sonnet-20250219',
         max_tokens: 20000,
         stream: true, // Changed to false to get complete response at once
-        system: afterEffectsAgentSystemRole,
+        system: systemRole === 'scripts' ? afterEffectsAgentSystemRole : afterEffectsExpressionsSystemRole,
         messages: [
           {
             role: 'user',

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { getContext } from 'svelte';
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
+  import Tools from './Tools.svelte';
   import { appId } from '../../lib/utils/cep';
 
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
@@ -27,11 +27,12 @@
       apps: ['PPRO'],
       component: AspectRatios,
     },
-    // {
-    //   label: 'Tools',
-    //   value: 'tools',
-    //   component: Tools,
-    // },
+    {
+      label: 'Tools',
+      value: 'tools',
+      component: Tools,
+      apps: ['AEFT'],
+    },
   ];
 
   let selectedMode = toolList[0];

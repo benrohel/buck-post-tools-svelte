@@ -7,7 +7,7 @@
   import { notifications } from '../../stores/notifications-store';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
-
+  import { appId } from '../../lib/utils/cep';
   let aiServices = [
     { label: 'Claude AI', value: 'Claude AI' },
     { label: 'OpenAI', value: 'OpenAI' },
