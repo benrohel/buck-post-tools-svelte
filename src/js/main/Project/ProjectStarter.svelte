@@ -9,6 +9,10 @@
   import { getProjectTemplate } from '../../api/buck-library';
   import { buck5Server } from '../../stores/server-store';
   import { appId } from '../../lib/utils/cep';
+  import {
+    getProjectSettingsTemplate,
+    setProjectSettingsTemplate,
+  } from '../../api/files/files';
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },
@@ -55,7 +59,7 @@
 
   $: console.log(
     'file template path:',
-    getProjectTemplate(appId, template.value)
+    getProjectTemplate(appId, template.value),
   );
 
   $: console.log(framerate);
@@ -80,7 +84,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate
+        option.framerate,
       );
       if (sqp) {
         const sequenceOptions = {
@@ -93,7 +97,7 @@
 
         await evalES(
           `newSequenceFromPreset(${JSON.stringify(sequenceOptions)})`,
-          false
+          false,
         );
         fs.unlinkSync(sqp);
       }
@@ -107,12 +111,12 @@
         name: sequenceName,
         projectFile: path.posix.join(
           rootFolder,
-          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
+          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`,
         ),
       };
       await evalES(
         `newSequenceFromPreset(${JSON.stringify(aeOptions)})`,
-        false
+        false,
       );
     }
   };

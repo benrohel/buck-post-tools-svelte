@@ -291,3 +291,46 @@ export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
     return false;
   }
 };
+
+declare interface ProjectSettings {
+  bitsPerChannel: number;
+  compensateForSceneReferredProfiles: boolean;
+  workingSpace: string;
+  workingGamma: 2.2 | 2.4;
+  linearizeWorkingSpace: boolean;
+  linearBlending: boolean;
+}
+
+export const getProjectSettings = () => {
+  var project = app.project;
+  var projectSettings = {
+    bitsPerChannel: project.bitsPerChannel,
+    compensateForSceneReferredProfiles:
+      project.compensateForSceneReferredProfiles,
+    workingSpace: project.workingSpace,
+    workingGamma: project.workingGamma,
+    linearizeWorkingSpace: project.linearizeWorkingSpace,
+    linearBlending: project.linearBlending,
+  };
+  return JSON.stringify(projectSettings);
+};
+
+export const setProjectSettings = (projectSettings: ProjectSettings) => {
+  var project = app.project;
+  project.bitsPerChannel = projectSettings.bitsPerChannel;
+  project.workingGamma = projectSettings.workingGamma;
+  project.workingSpace = projectSettings.workingSpace;
+  if (
+    project.bitsPerChannel === projectSettings.bitsPerChannel &&
+    project.workingGamma === projectSettings.workingGamma &&
+    project.workingSpace === projectSettings.workingSpace
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+  project.compensateForSceneReferredProfiles =
+    projectSettings.compensateForSceneReferredProfiles;
+  project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
+  project.linearBlending = projectSettings.linearBlending;
+};

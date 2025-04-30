@@ -2,6 +2,7 @@ import { match } from 'assert';
 import { fs, os, path } from '../../lib/cep/node';
 import { ca, fi } from 'date-fns/locale';
 import { posix } from 'path';
+import { setProjectSettings } from 'src/jsx/aeft/aeft-utils';
 
 
 export function* readAllFiles(dir: string): Generator<string> {
@@ -323,3 +324,43 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
   const rootFolder = posixRoot.match(productionRegex)[0];
   return rootFolder;
 }
+
+
+export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
+  const productionFolder= PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  return path.join(productionFolder, "Common", "Meta", "aeft");
+}
+
+
+export declare interface ProjectSettings {
+  bitsPerChannel: number;
+  compensateForSceneReferredProfiles: boolean;
+  workingSpace: string;
+  workingGamma: 2.2 | 2.4;
+  linearizeWorkingSpace: boolean;
+  linearBlending: boolean;
+}
+
+
+export const getProjectSettingsTemplate = (projectPath: string) => {
+  const productionFolder= PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  const projectSettingsPath = path.join(PROJECT_AEFT_META_FOLDER(projectPath), 'project-settings.json');
+  if (!fs.existsSync(projectSettingsPath)) {
+    return null;
+  }
+  const projectSettings = JSON.parse(fs.readFileSync(projectSettingsPath, 'utf8'));
+  return projectSettings;
+};
+
+export const setProjectSettingsTemplate = (projectPath: string, projectSettings: ProjectSettings) => {
+  const productionFolder= PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return false;
+  const projectSettingsPath = path.join(PROJECT_AEFT_META_FOLDER(projectPath), 'project-settings.json');
+  if(!fs.existsSync(path.dirname(projectSettingsPath))) {
+    return false;
+  }
+  fs.writeFileSync(projectSettingsPath, JSON.stringify(projectSettings, null, 2));
+  return true;
+};
