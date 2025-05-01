@@ -334,3 +334,5 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
   project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
   project.linearBlending = projectSettings.linearBlending;
 };
+
+

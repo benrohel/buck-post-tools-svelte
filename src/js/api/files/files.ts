@@ -336,6 +336,7 @@ export declare interface ProjectSettings {
   workingGamma: 2.2 | 2.4;
   linearizeWorkingSpace: boolean;
   linearBlending: boolean;
+  [key:string]: any;
 }
 
 export const getProjectSettingsTemplate = (projectPath: string) => {

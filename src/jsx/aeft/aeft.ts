@@ -10,6 +10,8 @@ export {
   selectFolder,
   appVersion,
   importProjectAndSaveOutputModules,
+  getProjectSettings,
+  setProjectSettings,
 } from './aeft-utils';
 
 export const helloWorld = () => {
