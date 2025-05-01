@@ -3,7 +3,7 @@
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
-  import Tools from './Tools.svelte';
+  import ColorManagement from './ColorManagement.svelte';
   import { appId } from '../../lib/utils/cep';
 
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
@@ -28,9 +28,9 @@
       component: AspectRatios,
     },
     {
-      label: 'Tools',
-      value: 'tools',
-      component: Tools,
+      label: 'Color Management',
+      value: 'colorManagement',
+      component: ColorManagement,
       apps: ['AEFT'],
     },
   ];

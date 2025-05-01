@@ -3,7 +3,6 @@ import { fs, os, path } from '../../lib/cep/node';
 import { ca, fi } from 'date-fns/locale';
 import { posix } from 'path';
 
-
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -303,23 +302,74 @@ export const getAeOutputModulesAEP = () => {
     'buckOutputModules.aep'
   );
 
-  return  os.platform() === 'win32' ? templateFilePath.replace(/\\/g, '\\\\') : templateFilePath;
+  return os.platform() === 'win32'
+    ? templateFilePath.replace(/\\/g, '\\\\')
+    : templateFilePath;
 };
 
-
 export const SHARED_FOLDER = () => {
-  const platformRoot = os.platform() === 'win32'
-    ? '\\\\buck'
-    : '/System/Volumes/Data/buck';
+  const platformRoot =
+    os.platform() === 'win32' ? '\\\\buck' : '/System/Volumes/Data/buck';
 
-  return path.join(platformRoot,'globalprefs','SHARED');
-}
+  return path.join(platformRoot, 'globalprefs', 'SHARED');
+};
 
 export const PRODUCTION_ROOT = (projectPath: string) => {
   const productionRegex = /^(.*?)Production/;
- const productionDir = projectPath.match(productionRegex)[0];
+  const productionDir = projectPath.match(productionRegex)[0];
   if (!fs.existsSync(productionDir)) return null;
   const posixRoot = path.posix.normalize(productionDir);
   const rootFolder = posixRoot.match(productionRegex)[0];
   return rootFolder;
+};
+
+export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
+  const productionFolder = PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  return path.join(productionFolder, 'Common', 'Meta', 'aeft');
+};
+
+export declare interface ProjectSettings {
+  bitsPerChannel: number;
+  compensateForSceneReferredProfiles: boolean;
+  workingSpace: string;
+  workingGamma: 2.2 | 2.4;
+  linearizeWorkingSpace: boolean;
+  linearBlending: boolean;
 }
+
+export const getProjectSettingsTemplate = (projectPath: string) => {
+  const productionFolder = PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  const projectSettingsPath = path.join(
+    PROJECT_AEFT_META_FOLDER(projectPath),
+    'project-settings.json'
+  );
+  if (!fs.existsSync(projectSettingsPath)) {
+    return null;
+  }
+  const projectSettings = JSON.parse(
+    fs.readFileSync(projectSettingsPath, 'utf8')
+  );
+  return projectSettings;
+};
+
+export const setProjectSettingsTemplate = (
+  projectPath: string,
+  projectSettings: ProjectSettings
+) => {
+  const productionFolder = PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return false;
+  const projectSettingsPath = path.join(
+    PROJECT_AEFT_META_FOLDER(projectPath),
+    'project-settings.json'
+  );
+  if (!fs.existsSync(path.dirname(projectSettingsPath))) {
+    return false;
+  }
+  fs.writeFileSync(
+    projectSettingsPath,
+    JSON.stringify(projectSettings, null, 2)
+  );
+  return true;
+};
