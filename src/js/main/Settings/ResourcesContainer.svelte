@@ -15,7 +15,7 @@
       author: 'Adobe',
     },
     {
-      label: 'After Extendscript Guide',
+      label: 'Adobe Extendscript Guide',
       value: 'https://extendscript.docsforadobe.dev',
       author: 'Adobe',
     },
@@ -31,6 +31,11 @@
       label: 'AE Reference',
       author: 'Chris Zachary',
       value: 'https://aereference.com/expressions',
+    },
+    {
+      label: 'AE Expressions Library',
+      author: 'PlainlyVideos',
+      value: 'https://www.plainlyvideos.com/after-effects-expressions-library',
     },
     {
       label: 'Motion Scripts',
