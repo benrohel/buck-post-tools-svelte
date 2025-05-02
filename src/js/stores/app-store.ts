@@ -1,7 +1,7 @@
 import { writable, Writable } from 'svelte/store';
 import { appId } from '../lib/utils/cep';
-
 export const appVersion = writable('');
+
 
 interface AiService {
   name: string;
@@ -17,6 +17,7 @@ export interface AppStore {
   showVersionWarnings: boolean;
   favoriteExpressions: string[];
   aiService: AiService;
+  devMode: boolean;
 }
 
 export const defaultAppStore: AppStore = {
@@ -31,6 +32,7 @@ export const defaultAppStore: AppStore = {
     name: 'Claude AI',
     apiKey: '',
   },
+  devMode: false,
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);

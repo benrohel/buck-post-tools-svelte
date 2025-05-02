@@ -156,24 +156,29 @@
       </div>
     {/if}
   </div>
-  <!-- Code Settings -->
-  <div class="settings-header">
-    <h3>Code</h3>
-  </div>
-  <div class="flex-row-between setting-row">
-    <label style="flex: 1;" for="remember-last-export-path">AI Service</label>
-    <div>
-      <MenuSelect
-        items={aiServices}
-        bind:value={selectedService}
-        onChange={handleServiceChange}
-      />
+
+  {#if $appStore.devMode === true}
+    <!-- Code Settings -->
+    <div class="settings-header">
+      <h3>Code</h3>
     </div>
-  </div>
-  <div class="flex-row-between setting-row">
-    <label style="flex-grow: 1;" for="remember-last-export-path">Api Key</label>
-    <input type="text" bind:value={apiKey} style="width:80%" />
-  </div>
+    <div class="flex-row-between setting-row">
+      <label style="flex: 1;" for="remember-last-export-path">AI Service</label>
+      <div>
+        <MenuSelect
+          items={aiServices}
+          bind:value={selectedService}
+          onChange={handleServiceChange}
+        />
+      </div>
+    </div>
+    <div class="flex-row-between setting-row">
+      <label style="flex-grow: 1;" for="remember-last-export-path"
+        >Api Key</label
+      >
+      <input type="text" bind:value={apiKey} style="width:80%" />
+    </div>
+  {/if}
 
   <div class="flex-row-end action-row">
     <button class="active" on:click={saveSettings}>Save Settings</button>
