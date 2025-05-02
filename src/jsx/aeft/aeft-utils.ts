@@ -320,19 +320,22 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
   project.bitsPerChannel = projectSettings.bitsPerChannel;
   project.workingGamma = projectSettings.workingGamma;
   project.workingSpace = projectSettings.workingSpace;
+  project.compensateForSceneReferredProfiles =
+  projectSettings.compensateForSceneReferredProfiles;
+  project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
+  project.linearBlending = projectSettings.linearBlending;
   if (
     project.bitsPerChannel === projectSettings.bitsPerChannel &&
     project.workingGamma === projectSettings.workingGamma &&
-    project.workingSpace === projectSettings.workingSpace
+    project.workingSpace === projectSettings.workingSpace &&
+    project.compensateForSceneReferredProfiles === projectSettings.compensateForSceneReferredProfiles &&
+    project.linearizeWorkingSpace === projectSettings.linearizeWorkingSpace &&
+    project.linearBlending === projectSettings.linearBlending
   ) {
     return true;
   } else {
     return false;
   }
-  project.compensateForSceneReferredProfiles =
-    projectSettings.compensateForSceneReferredProfiles;
-  project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
-  project.linearBlending = projectSettings.linearBlending;
 };
 
 
