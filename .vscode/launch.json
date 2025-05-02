@@ -9,14 +9,30 @@
       "port": 8961,
       "request": "attach",
       "type": "chrome",
-      "webRoot": "${workspaceFolder}/dist/main"
+      "webRoot": "${workspaceFolder}/dist/cep/main"
     },
     {
       "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against localhost",
       "url": "http://localhost:8961",
-      "webRoot": "${workspaceFolder}/dist/main"
-    }
-  ]
+      "webRoot": "${workspaceFolder}/dist/cep"
+    },
+    {
+      "type": "extendscript-debug",
+      "request": "attach",
+      "name": "Attach to ExtendScript Engine",
+      "hostAppSpecifier": "aftereffects-24.0"
+  },
+ 
+  ],
+  "compounds": [
+        {
+            "name": "[Compound] Debug CEP",
+            "configurations": [
+                "Launch Chrome against localhost",
+                  "Attach to ExtendScript Engine"
+            ]
+        }
+    ]
 }
