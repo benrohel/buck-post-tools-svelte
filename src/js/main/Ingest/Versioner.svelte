@@ -26,6 +26,7 @@
   import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
   import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
+  import { id } from 'date-fns/locale';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
@@ -34,7 +35,6 @@
   $: totalCount = 10;
   $: progressPercentage = 0;
 
-  $: clips = [] as any[];
   $: sequenceClips = [] as any[];
 
   const handleClipSelect = (task: any) => {
@@ -142,6 +142,7 @@
 
   const handleReloadClips = () => {
     isLoading = true;
+
     getClips().then((clips) => {
       if (clips.length > 0) {
         console.log('clips', clips);
@@ -262,13 +263,12 @@
     </div>
 
     <div class="card-list">
-      {#each sequenceClips as clip, id}
-        {#key clip.nodeId}
+      {#each sequenceClips as clip, id (`${clip.nodeId}-${new Date().getTime()}`)}
+        {#key id}
           <ClipCard
             {clip}
             onSelect={handleClipSelect}
             selected={false}
-            {id}
             onReplace={handleReplaceClip}
             onImport={handleImportClip}
             onChange={handleClipOnChange}
@@ -277,27 +277,6 @@
       {/each}
     </div>
   </div>
-  <!-- <div class="coda-header">
-    <div class="form-row"></div>
-    <div
-      style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:2px;gap:2px"
-    >
-      <button
-        class="icon"
-        on:click={refreshShots}
-        disabled={storedProject == null ? true : false}
-      >
-        <RefreshCw />
-      </button>
-      <button
-        class="icon"
-        on:click={openTracker}
-        disabled={$sessionProject == null}
-      >
-        <ExternalLink />
-      </button>
-    </div>
-  </div> -->
 </div>
 
 <style lang="scss">

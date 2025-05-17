@@ -1024,3 +1024,30 @@ export const versionUpNames = () => {
   }
   return true;
 };
+
+
+// Metadata Helpers
+
+export const getPrMetadata = (nodeId: string) => {
+  const projectItem = getItemFromNodeId(app.project.rootItem, nodeId);
+  // alert(projectItem.nodeId);
+  //   let PProMetaURI = 'http://ns.adobe.com/premierePrivateProjectMetaData/1.0/';
+  //   if (ExternalObject.AdobeXMPScript === undefined) {
+  //     ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
+  //   }
+  //   if (!app.isDocumentOpen() || !ExternalObject.AdobeXMPScript || !XMPMeta) {
+  //     return {};
+  //   }
+   
+  //   let xmp = new XMPMeta(projectItem.getProjectMetadata());
+  //   let result: {
+  //     [key: string]: string;
+  //   } = {};
+  //   for (let i = 0; i < fields.length; i++) {
+  //     if (xmp.doesPropertyExist(PProMetaURI, fields[i])) {
+  //       result[fields[i]] = xmp.getProperty(PProMetaURI, fields[i]).value;
+  //     }
+  //   }
+  //   return result;
+  return projectItem.getProjectMetadata();
+  };

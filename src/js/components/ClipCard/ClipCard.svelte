@@ -79,7 +79,7 @@
     if (!clip.selectedVersion?.filepath) return;
     const result = await checkVideoFileUpdate(
       clip.filepath,
-      clip.selectedVersion.filepath
+      clip.selectedVersion.filepath,
     );
     console.log(result);
     if (result.length > 0) {
@@ -100,7 +100,7 @@
     const timelineVersion = parseInt(fileVersion);
     if (selectedVersion.version == undefined) return 'color: #f6d55c';
     const intSelectedVersion = parseInt(
-      selectedVersion.version?.match(/\d+/)[0]
+      selectedVersion.version?.match(/\d+/)[0],
     );
     let isSynced = intSelectedVersion == timelineVersion;
     let color = 'color: #f6d55c';
@@ -113,9 +113,13 @@
     return color;
   };
 
-  $: initCard = () => {
+  $: initCard = async () => {
+    console.log('init card', clip);
+
+    const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
+    console.log(metadata);
     if (!fs.existsSync(clip.filepath)) {
-      console.log(`Clip ${clip.shotName} is missing`);
+      console.log(`init card : Clip ${clip.shotName} is missing`);
       isMissing = true;
     }
     if (clip) {
