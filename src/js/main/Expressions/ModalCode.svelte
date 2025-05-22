@@ -284,13 +284,15 @@
       {#if isLoading}
         <Circle3 size={20} />
       {/if}
-      <ChatInput
-        on:submit={() => {
-          isLoading = true;
-          handleChatRequest();
-        }}
-        bind:inputValue={gptMessage}
-      />
+      {#if $appStore.devMode === true}
+        <ChatInput
+          on:submit={() => {
+            isLoading = true;
+            handleChatRequest();
+          }}
+          bind:inputValue={gptMessage}
+        />
+      {/if}
     </div>
 
     <CodeJar

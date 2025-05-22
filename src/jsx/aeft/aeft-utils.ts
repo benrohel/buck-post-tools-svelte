@@ -201,6 +201,7 @@ export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
   var reopenCurrentProject = true;
 
   // If there's an open project with unsaved changes, ask before closing
+  // @ts-ignore
   if (currentProject && app.project.dirty) {
     reopenCurrentProject = confirm(
       'Current project has unsaved changes. Save it before proceeding?'
@@ -259,7 +260,7 @@ export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
             }
 
             // Save the output module settings as a template
-          } catch (e) {
+          } catch (e: any) {
             alert(
               'Error saving output module ' +
                 j +
@@ -285,7 +286,7 @@ export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
 
     app.endUndoGroup();
     return true;
-  } catch (e) {
+  } catch (e: any) {
     app.endUndoGroup();
     alert('Error processing project: ' + e.toString());
     return false;
@@ -320,17 +321,21 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
   project.bitsPerChannel = projectSettings.bitsPerChannel;
   project.workingGamma = projectSettings.workingGamma;
   project.workingSpace = projectSettings.workingSpace;
+  project.compensateForSceneReferredProfiles =
+    projectSettings.compensateForSceneReferredProfiles;
+  project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
+  project.linearBlending = projectSettings.linearBlending;
   if (
     project.bitsPerChannel === projectSettings.bitsPerChannel &&
     project.workingGamma === projectSettings.workingGamma &&
-    project.workingSpace === projectSettings.workingSpace
+    project.workingSpace === projectSettings.workingSpace &&
+    project.compensateForSceneReferredProfiles ===
+      projectSettings.compensateForSceneReferredProfiles &&
+    project.linearizeWorkingSpace === projectSettings.linearizeWorkingSpace &&
+    project.linearBlending === projectSettings.linearBlending
   ) {
     return true;
   } else {
     return false;
   }
-  project.compensateForSceneReferredProfiles =
-    projectSettings.compensateForSceneReferredProfiles;
-  project.linearizeWorkingSpace = projectSettings.linearizeWorkingSpace;
-  project.linearBlending = projectSettings.linearBlending;
 };

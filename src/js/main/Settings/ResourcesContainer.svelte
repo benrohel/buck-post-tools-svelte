@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES, openLinkInBrowser } from '../../lib/utils/bolt';
   import { getAeOutputModulesAEP } from '../../api/files/files';
   import { localAppStore } from '../../stores/local-storage';
   import Toggle from '../../components/Toggle/Toggle.svelte';
@@ -8,11 +8,52 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
   import { appId } from '../../lib/utils/cep';
-  let resources = [
-    { label: 'Claude AI', value: 'Claude AI' },
-    { label: 'OpenAI', value: 'OpenAI' },
+  let scriptResources = [
+    {
+      label: 'After Effects Scripting Guide',
+      value: 'https://ae-scripting.docsforadobe.dev/',
+      author: 'Adobe',
+    },
+    {
+      label: 'Adobe Extendscript Guide',
+      value: 'https://extendscript.docsforadobe.dev',
+      author: 'Adobe',
+    },
   ];
 
+  let expressionResources = [
+    {
+      label: 'After Effects Expressions Guide',
+      value: 'https://ae-expressions.docsforadobe.dev',
+      author: 'Adobe',
+    },
+    {
+      label: 'AE Reference',
+      author: 'Chris Zachary',
+      value: 'https://aereference.com/expressions',
+    },
+    {
+      label: 'AE Expressions Library',
+      author: 'PlainlyVideos',
+      value: 'https://www.plainlyvideos.com/after-effects-expressions-library',
+    },
+    {
+      label: 'Motion Scripts',
+      author: 'Dan Ebberts',
+      value: 'https://www.motionscript.com',
+    },
+    {
+      label: "Everything About Expressions You Didn't Know",
+      author: 'Zack Lovatt',
+      value:
+        'https://www.schoolofmotion.com/blog/everything-expressions-you-didnt-know-part-4',
+    },
+  ];
+
+  const openLink = (value: string) => {
+    console.log(value);
+    openLinkInBrowser(value);
+  };
   onMount(() => {});
 </script>
 
@@ -23,17 +64,35 @@
     <h2>Resources</h2>
   </div>
 
-  <!-- App Settings -->
   <div class="settings-container">
     <div class="settings-header">
       <h3>Scripting</h3>
     </div>
-    <div class="flex-row-between setting-row">
-      <label for="show-tooltips">Show Tooltips</label>
-      <a href="https://ae-scripting.docsforadobe.dev/" target="_blank"
-        >After Effects Scripting Guide</a
-      >
+    {#each scriptResources as resource}
+      <div class="flex-row-between setting-row">
+        <label for="show-tooltips"
+          >{resource.label} <span>by {resource.author}</span></label
+        >
+        <button class="active" on:click={() => openLink(resource.value)}
+          >Open Link</button
+        >
+      </div>
+    {/each}
+  </div>
+  <div class="settings-container">
+    <div class="settings-header">
+      <h3>Expressions</h3>
     </div>
+    {#each expressionResources as resource}
+      <div class="flex-row-between setting-row">
+        <label for="show-tooltips"
+          >{resource.label} <span>by {resource.author}</span></label
+        >
+        <button class="active" on:click={() => openLink(resource.value)}
+          >Open Link</button
+        >
+      </div>
+    {/each}
   </div>
 </div>
 
@@ -107,5 +166,9 @@
     align-items: center;
     justify-content: flex-end;
     margin-top: 12px;
+  }
+
+  span {
+    color: $dimmed-font-color-light;
   }
 </style>

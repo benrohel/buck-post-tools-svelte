@@ -140,3 +140,38 @@ export const setExporterPresets = async (
     throw e;
   }
 };
+
+interface ShotHistory {
+  shotName: string;
+  versions: string[];
+}
+
+interface History {
+ [key: string]: ShotHistory[];
+}
+
+export const getShotsHistory = async () => {
+ const historyFile = path.join(preferencesDir, 'shots-history.json');
+ if (!fs.existsSync(historyFile)) {
+   fs.mkdirSync(path.dirname(historyFile), { recursive: true });
+   fs.writeFileSync(historyFile, '[]', 'utf-8');
+   return [];
+ }
+ return JSON.parse(fs.readFileSync(historyFile, 'utf-8'));
+};
+
+export const setShotsHistory = async (shotsProjectHistory: any) => {
+ const historyFile = path.join(preferencesDir, 'shots-history.json');
+ if (!fs.existsSync(historyFile)) {
+   fs.mkdirSync(path.dirname(historyFile), { recursive: true });
+ }
+ try {
+   fs.writeFileSync(historyFile, JSON.stringify(shotsProjectHistory, null, 2), 'utf-8');
+   return true;
+ } catch (e) {
+   console.error('Failed to write preferences', e);
+   throw e;
+ }
+};
+ 
+

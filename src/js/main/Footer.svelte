@@ -35,7 +35,7 @@
     >
       <Tooltip
         action={$appStore.showTooltips ? 'hover' : 'none'}
-        content="Buck 5"
+        content="Buck 5 status"
         position="right"
         delay={1000}
       >
@@ -45,7 +45,7 @@
     <div style={$buck5Server ? 'color:green' : 'color:red;'}>
       <Tooltip
         action={$appStore.showTooltips ? 'hover' : 'none'}
-        content={'Connected to Buck Server'}
+        content={'Buck Server status'}
         position="right"
         delay={1000}
       >
@@ -57,7 +57,7 @@
   <div style="display:flex; flex-direction:row; align-items:center; gap:4px">
     <Tooltip
       action={$appStore.showTooltips ? 'hover' : 'none'}
-      content="Edit Settings"
+      content="Resources library"
       position="left"
       delay={1000}
     >
@@ -66,7 +66,7 @@
         style="margin-right:8px; cursor:pointer; background-color:transparent"
         on:click={() => (showResources = !showResources)}
       >
-        <LibraryBig color="white" />
+        <LibraryBig />
       </button>
     </Tooltip>
     <Tooltip
@@ -80,7 +80,7 @@
         style="margin-right:8px; cursor:pointer; background-color:transparent"
         on:click={() => (showSettings = !showSettings)}
       >
-        <Settings color="white" />
+        <Settings />
       </button>
     </Tooltip>
     <Tooltip
@@ -94,7 +94,7 @@
         style="margin-right:8px; cursor:pointer; background-color:transparent"
         on:click={refreshPage}
       >
-        <RefreshCw color="white" />
+        <RefreshCw />
       </button>
     </Tooltip>
   </div>

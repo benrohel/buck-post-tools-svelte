@@ -40,11 +40,13 @@
   import { offset, flip, shift } from 'svelte-floating-ui/dom';
   import { appId } from '../../lib/utils/cep';
   import { notifications } from '../../stores/notifications-store';
+  import ModalConfirm from '../../components/Modal/ModalConfirm.svelte';
 
   //
   let isEditing = false;
   let activeElement: HTMLInputElement | null = null;
   let tokenDropdownRef: HTMLDivElement | null = null;
+  let modalConfirmOpen = false;
 
   const [floatingRef, floatingContent] = createFloatingActions({
     strategy: 'absolute',
@@ -56,15 +58,15 @@
   // Available tokens for path construction
   const aeAvailableTokens = [
     { name: 'Comp Name', token: '{shot}' },
-    { name: 'Project Version', token: '{project_version}' },
-    { name: 'Project Name', token: '{project_name}' },
+    { name: 'Project Version', token: '{projectVersion}' },
+    { name: 'Project Name', token: '{projectName}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
   const pproAvailableTokens = [
     { name: 'Sequence Name', token: '{sequence}' },
-    { name: 'Project Version', token: '{project_version}' },
-    { name: 'Project Name', token: '{project_name}' },
+    { name: 'Project Version', token: '{projectVersion}' },
+    { name: 'Project Name', token: '{projectName}' },
     { name: 'Version', token: '{version}' },
     { name: 'Task Name', token: '{task}' },
   ];
@@ -250,12 +252,6 @@
     return newExporter;
   }
 
-  //duplicate preset
-  function duplicatePreset() {
-    const newExporter = addExporter(selectedExportPreset.name);
-    newExporter.name = `${selectedExportPreset.name} (copy)`;
-  }
-
   // Function to save the current preset
   function saveExporter() {
     const updatedExportPreset = {
@@ -336,9 +332,9 @@
     const newFile = {
       id: generateId(),
       type: 'file' as const,
-      name: '{comp}_{version}.####.{ext}',
+      name: '{shot}_{version}.{ext}',
       isEditing: true,
-      path: '{comp}_{version}.####.{ext}',
+      path: '{shot}_{version}.{ext}',
       outputModule: selectedOutputModule,
       parentId: parentId,
       children: [] as PathItem[],
@@ -727,6 +723,45 @@
     }
   }
 
+  async function deleteExporter() {
+    const updatedExportPresets = exportPresets.filter(
+      (preset) => preset.name !== selectedExportPreset.name,
+    );
+    setExporterPresets(appId, updatedExportPresets).then((result) => {
+      if (result) {
+        exportPresets = updatedExportPresets;
+        exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+          value: preset.name,
+          label: preset.name,
+        }));
+        selectedExportPreset = null;
+        selectedExportPresetMenuItem = null;
+      }
+    });
+
+    const storedExportPresets = await getExporterPresets(appId);
+    if (storedExportPresets.length > 0) {
+      exportPresets = storedExportPresets;
+      selectedExportPreset = exportPresets[0];
+      exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+        value: preset.name,
+        label: preset.name,
+      }));
+      selectedExportPresetMenuItem = exportPresetsSelectItems[0];
+    }
+
+    if (exportPresets.length > 0) {
+      pathStructure = exportPresets[0].path;
+    }
+  }
+
+  function handleDeleteExporter(value: boolean) {
+    if (value) {
+      deleteExporter();
+    }
+    modalConfirmOpen = false;
+  }
+
   // Reactive variables for UI updates
   $: pathPreviews = selectedNode ? selectedNode.path : '';
   $: selectedNode = selectedItemId
@@ -792,7 +827,7 @@
       >
         <button
           on:click={() => {
-            showBuildPreset = true;
+            modalConfirmOpen = true;
           }}
           class="outline"
         >
@@ -1116,6 +1151,14 @@
       </div>
     </div>
   </ModalSettings>
+{/if}
+
+{#if modalConfirmOpen}
+  <ModalConfirm
+    question="Are you sure you want to delete this preset?"
+    onClose={() => (modalConfirmOpen = false)}
+    onConfirm={handleDeleteExporter}
+  />
 {/if}
 
 <style lang="scss">

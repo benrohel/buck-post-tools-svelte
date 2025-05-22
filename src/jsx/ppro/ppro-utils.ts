@@ -169,27 +169,7 @@ export const qeGetClipAt = (track: Track, index: number) => {
   }
 };
 
-// Metadata Helpers
 
-export const getPrMetadata = (projectItem: ProjectItem, fields: string[]) => {
-  let PProMetaURI = 'http://ns.adobe.com/premierePrivateProjectMetaData/1.0/';
-  if (ExternalObject.AdobeXMPScript === undefined) {
-    ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript');
-  }
-  if (!app.isDocumentOpen() || !ExternalObject.AdobeXMPScript || !XMPMeta) {
-    return {};
-  }
-  let xmp = new XMPMeta(projectItem.getProjectMetadata());
-  let result: {
-    [key: string]: string;
-  } = {};
-  for (let i = 0; i < fields.length; i++) {
-    if (xmp.doesPropertyExist(PProMetaURI, fields[i])) {
-      result[fields[i]] = xmp.getProperty(PProMetaURI, fields[i]).value;
-    }
-  }
-  return result;
-};
 
 // Motion Graphics Template ( MOGRT ) Helpers
 
