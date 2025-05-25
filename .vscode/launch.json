@@ -23,16 +23,21 @@
       "request": "attach",
       "name": "Attach to ExtendScript Engine",
       "hostAppSpecifier": "aftereffects-24.0"
-  },
- 
+    },
+    {
+      "type": "bun",
+      "request": "launch",
+      "name": "Launch Bun",
+      "program": "${file}"
+    }
   ],
   "compounds": [
-        {
-            "name": "[Compound] Debug CEP",
-            "configurations": [
-                "Launch Chrome against localhost",
-                  "Attach to ExtendScript Engine"
-            ]
-        }
-    ]
+    {
+      "name": "[Compound] Debug CEP",
+      "configurations": [
+        "Launch Chrome against localhost",
+        "Attach to ExtendScript Engine"
+      ]
+    }
+  ]
 }
