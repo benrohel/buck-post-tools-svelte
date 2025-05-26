@@ -1,8 +1,5 @@
-import { match } from 'assert';
 import { fs, os, path } from '../../lib/cep/node';
-import { ca, fi } from 'date-fns/locale';
-import { posix } from 'path';
-
+import CSInterface, { SystemPath } from '../../lib/cep/csinterface';
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -336,7 +333,7 @@ export declare interface ProjectSettings {
   workingGamma: 2.2 | 2.4;
   linearizeWorkingSpace: boolean;
   linearBlending: boolean;
-  [key:string]: any;
+  [key: string]: any;
 }
 
 export const getProjectSettingsTemplate = (projectPath: string) => {
@@ -373,4 +370,16 @@ export const setProjectSettingsTemplate = (
     JSON.stringify(projectSettings, null, 2)
   );
   return true;
+};
+
+export const getUserFontsFolder = () => {
+  const userFolder = os.homedir();
+  const fontFolder = path.join(userFolder, 'Library', 'Fonts');
+  return fontFolder;
+};
+
+export const getExtensionFolder = () => {
+  const csInterface = new CSInterface();
+  console.log(csInterface.getSystemPath(SystemPath.EXTENSION));
+  return csInterface.getSystemPath(SystemPath.EXTENSION);
 };

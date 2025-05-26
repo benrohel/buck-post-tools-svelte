@@ -1,6 +1,7 @@
 import { Key } from 'lucide-svelte';
-import { padStart, forEach } from '../utils/utils';
+import { padStart, forEach, selectFolder, selectFile } from '../utils/utils';
 import { findCompByName } from './aeft-utils';
+export { selectFile } from '../utils/utils';
 export {
   findCompByName,
   findFolderByName,
@@ -269,7 +270,6 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
     // Apply the template
     try {
-     
       om.applyTemplate(presetName);
       om.file = new File(presetPath);
     } catch (e: any) {

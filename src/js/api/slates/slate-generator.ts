@@ -1,9 +1,8 @@
 // BUCK Slate Generator using FFmpeg for Adobe CEP Panel
-import * as fs from 'fs';
-import * as path from 'path';
-import { exec } from 'child_process';
+import { fs, path, child_process, os } from '../../lib/cep/node';
 import Papa from 'papaparse';
-
+import { getUserFontsFolder, getExtensionFolder } from '../files/files';
+import { ffmpegPath } from '../video/video';
 // Type definitions
 interface SlateData {
   masterSequence?: string;
@@ -43,16 +42,15 @@ interface GenerationResult {
   filename?: string;
 }
 
-type PresetName = 'buck' | 'simple' | 'corporate' | 'minimal';
 type OutputFormat = 'image' | 'video';
 
 class BuckSlateGenerator {
   private ffmpegPath: string;
-  private presets: Record<PresetName, PresetConfig>;
+  private presets: Record<string, PresetConfig>;
   private resolutions: Record<string, Resolution>;
 
-  constructor(ffmpegPath?: string) {
-    this.ffmpegPath = ffmpegPath || 'ffmpeg';
+  constructor() {
+    this.ffmpegPath = ffmpegPath;
 
     // Preset configurations
     this.presets = {
@@ -70,9 +68,8 @@ class BuckSlateGenerator {
         safeAreaPercentage: 0.9,
         logoBottomMargin: 100,
         logoHeight: 100, // Scale logo to 50px tall
-        fontPath: '~/Library/Fonts/mabry-regular.otf',
-        logoPath:
-          '/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck-post-tools-svelte/src/assets/BUCK_WORDMARK_WHITE.png',
+        fontPath: getUserFontsFolder() + '/mabry-regular.otf',
+        logoPath: getExtensionFolder() + '/assets/BUCK_WORDMARK_WHITE.png',
       },
       simple: {
         width: 1920,
@@ -199,7 +196,7 @@ class BuckSlateGenerator {
   // Generate slate using FFmpeg
   async generateSlate(
     data: SlateData,
-    preset: PresetName,
+    preset: string,
     outputPath: string
   ): Promise<void> {
     const config = this.presets[preset];
@@ -279,8 +276,11 @@ class BuckSlateGenerator {
       }
     });
 
+    console.log('Config:', config);
+
     // Add logo if path is provided
     if (config.logoPath && fs.existsSync(config.logoPath)) {
+      console.log('Adding logo:', config.logoPath);
       const logoY = resolution.height - config.logoBottomMargin - 100;
 
       // Build logo filter with optional scaling
@@ -295,7 +295,7 @@ class BuckSlateGenerator {
       filterComplex += `[0:v];${logoFilter};[0:v][logo]overlay=x=${leftMargin}:y=${logoY}`;
     }
 
-    const command = `${this.ffmpegPath} -y -f lavfi -i "${filterComplex}" -frames:v 1 "${outputPath}"`;
+    const command = `"${this.ffmpegPath}" -y -f lavfi -i "${filterComplex}" -frames:v 1 "${outputPath}"`;
 
     await this.executeFFmpeg(command);
   }
@@ -303,7 +303,7 @@ class BuckSlateGenerator {
   // Generate video slate with fade-in animation
   async generateVideoSlate(
     data: SlateData,
-    preset: PresetName,
+    preset: string,
     outputPath: string,
     duration: number = 5
   ): Promise<void> {
@@ -369,6 +369,7 @@ class BuckSlateGenerator {
 
     // Add logo with fade
     if (config.logoPath && fs.existsSync(config.logoPath)) {
+      console.log('Adding logo:', config.logoPath);
       const logoY = resolution.height - config.logoBottomMargin - 100;
       const expandedLogoPath = config.logoPath;
       filterComplex += `[0:v];movie=${expandedLogoPath}[logo];[0:v][logo]overlay=x=${leftMargin}:y=${logoY}:enable='gte(t,0.5)'`;
@@ -429,23 +430,27 @@ class BuckSlateGenerator {
           const newCommand = `${this.ffmpegPath} -y -filter_complex_script "${tempFile}" -frames:v 1 "${outputPath}"`;
           console.log('Executing with temp file:', newCommand);
 
-          exec(newCommand, { timeout: 30000 }, (error, stdout, stderr) => {
-            // Clean up temp file
-            try {
-              fs.unlinkSync(tempFile);
-            } catch (e) {
-              console.warn('Could not delete temp file:', tempFile);
-            }
+          child_process.exec(
+            newCommand,
+            { timeout: 30000 },
+            (error, stdout, stderr) => {
+              // Clean up temp file
+              try {
+                fs.unlinkSync(tempFile);
+              } catch (e) {
+                console.warn('Could not delete temp file:', tempFile);
+              }
 
-            if (error) {
-              console.error('FFmpeg error:', error.message);
-              console.error('FFmpeg stderr:', stderr);
-              reject(error);
-              return;
+              if (error) {
+                console.error('FFmpeg error:', error.message);
+                console.error('FFmpeg stderr:', stderr);
+                reject(error);
+                return;
+              }
+              console.log('FFmpeg completed successfully');
+              resolve({ stdout, stderr });
             }
-            console.log('FFmpeg completed successfully');
-            resolve({ stdout, stderr });
-          });
+          );
         } else {
           reject(new Error('Could not parse filter complex from command'));
         }
@@ -455,16 +460,20 @@ class BuckSlateGenerator {
           'Executing normal command:',
           command.substring(0, 100) + '...'
         );
-        exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
-          if (error) {
-            console.error('FFmpeg error:', error.message);
-            console.error('FFmpeg stderr:', stderr);
-            reject(error);
-            return;
+        child_process.exec(
+          command,
+          { timeout: 30000 },
+          (error, stdout, stderr) => {
+            if (error) {
+              console.error('FFmpeg error:', error.message);
+              console.error('FFmpeg stderr:', stderr);
+              reject(error);
+              return;
+            }
+            console.log('FFmpeg completed successfully');
+            resolve({ stdout, stderr });
           }
-          console.log('FFmpeg completed successfully');
-          resolve({ stdout, stderr });
-        });
+        );
       }
     });
   }
@@ -486,7 +495,7 @@ class BuckSlateGenerator {
   }
 
   // Set logo path for a specific preset
-  setLogoPath(preset: PresetName, logoPath: string): void {
+  setLogoPath(preset: string, logoPath: string): void {
     if (fs.existsSync(this.expandPath(logoPath))) {
       this.presets[preset].logoPath = logoPath;
     } else {
@@ -497,7 +506,7 @@ class BuckSlateGenerator {
   // Batch process CSV to generate slates
   async batchGenerateSlates(
     csvPath: string,
-    preset: PresetName,
+    preset: string,
     outputDir: string,
     format: OutputFormat = 'image',
     onProgress?: (current: number, total: number, filename: string) => void
@@ -593,5 +602,4 @@ class BuckSlateGenerator {
   }
 }
 
-// Export for slate generation
 export { BuckSlateGenerator, type SlateData, type GenerationResult };

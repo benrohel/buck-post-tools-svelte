@@ -1,7 +1,7 @@
-import { padLeft, selectFolder ,padStart} from '../utils/utils';
-export { selectFolder };
+import { padLeft, selectFolder, padStart, selectFile } from '../utils/utils';
+export { selectFolder, selectFile };
 
-import { getProjectFile } from './ppro-utils';
+import { getProjectFile, findBinByName } from './ppro-utils';
 export { getProjectFile };
 declare var JSON: any;
 declare const qe: undefined | any;
@@ -449,56 +449,52 @@ const renameClipFromSource = (shot: any) => {
 //   return true;
 // };
 
-export const renameToFile = () =>{
+export const renameToFile = () => {
   // Script to revert selected footage clip names to original file names
-// For Adobe Premiere Pro
+  // For Adobe Premiere Pro
 
-
-
-try {
+  try {
     // Get the current project
     var project = app.project;
-    
+
     // Get all selected items in the project panel
     var selectedItems = getProjectSelection();
-    
+
     // Counter to track how many items were renamed
     var renamedCount = 0;
-    
+
     // Process each selected item
     for (var i = 0; i < selectedItems.length; i++) {
-        var item = selectedItems[i];
-        
-        // Check if the item is footage (not a sequence, bin, or other project item)
-        if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
-            // Get the file path
-            var filePath = item.getMediaPath();
-            var file = new File(filePath);
-            // Extract just the filename from the path
-            var fileName = file.name;
-            
-            // Remove the file extension if desired (comment out these lines to keep extension)
-            // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-            // fileName = fileNameWithoutExt;
-            
-            // Set the clip name to the file name
-            item.name = fileName;
-            
-            // Increment the counter
-            renamedCount++;
-        }
+      var item = selectedItems[i];
+
+      // Check if the item is footage (not a sequence, bin, or other project item)
+      if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
+        // Get the file path
+        var filePath = item.getMediaPath();
+        var file = new File(filePath);
+        // Extract just the filename from the path
+        var fileName = file.name;
+
+        // Remove the file extension if desired (comment out these lines to keep extension)
+        // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        // fileName = fileNameWithoutExt;
+
+        // Set the clip name to the file name
+        item.name = fileName;
+
+        // Increment the counter
+        renamedCount++;
+      }
     }
-    
+
     // Show result in alert
-    return("Renamed " + renamedCount + " footage items to their original file names.");
-    
-} catch (error:any) {
-  return ("Error renaming files")
-    
-}
-
-
-}
+    return (
+      'Renamed ' + renamedCount + ' footage items to their original file names.'
+    );
+  } catch (error: any) {
+    return 'Error renaming files';
+  }
+};
 
 const getSequenceMedias = (seq: Sequence, medias: Array<any>) => {
   // var medias = [];
@@ -928,7 +924,7 @@ export const newSequenceFromPreset = ({
   templatePath,
   presetPath,
   uuid,
-  projectFile
+  projectFile,
 }: NewSequenceOptions) => {
   app.enableQE();
   app.openDocument(templatePath);
@@ -1004,7 +1000,6 @@ export const exportSequenceXml = (filepath: string, sequenceId: string) => {
   return filepath;
 };
 
-
 export const versionUpNames = () => {
   var selection = getSelectedSequences();
   if (selection.length === 0) {
@@ -1018,13 +1013,12 @@ export const versionUpNames = () => {
       return false;
     }
     const version = parseInt(currentVersion[1]) + 1;
-    const versionString = padStart(version.toString(),3 ,'0');
+    const versionString = padStart(version.toString(), 3, '0');
     const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
     selection[c].name = newName;
   }
   return true;
 };
-
 
 // Metadata Helpers
 
@@ -1038,7 +1032,7 @@ export const getPrMetadata = (nodeId: string) => {
   //   if (!app.isDocumentOpen() || !ExternalObject.AdobeXMPScript || !XMPMeta) {
   //     return {};
   //   }
-   
+
   //   let xmp = new XMPMeta(projectItem.getProjectMetadata());
   //   let result: {
   //     [key: string]: string;
@@ -1050,4 +1044,15 @@ export const getPrMetadata = (nodeId: string) => {
   //   }
   //   return result;
   return projectItem.getProjectMetadata();
-  };
+};
+
+export const importSlatesToSelectedBin = (filePaths: string[]) => {
+  // const selection = getProjectSelection();
+  let bin = findBinByName('Slates');
+  if (!bin) {
+    bin = app.project.rootItem.createBin('Slates');
+  }
+
+  app.project.importFiles(filePaths, true, bin, false);
+  return true;
+};

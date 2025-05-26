@@ -27,16 +27,22 @@ interface VideoError {
   name: string;
 }
 
+export const ffmpegPath = path.join(
+  __dirname,
+  'externals',
+  os.platform() === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'
+);
+
+export const ffprobePath = path.join(
+  __dirname,
+  'externals',
+  os.platform() === 'win32' ? 'ffprobe.exe' : 'ffprobe'
+);
+
 export const checkVideoFileUpdate = (
   source: string,
   destination: string
 ): Promise<VideoError[]> => {
-  const ffprobePath = path.join(
-    __dirname,
-    'externals',
-    os.platform() === 'win32' ? 'ffprobe.exe' : 'ffprobe'
-  );
-
   const checkSource = child_process
     .execSync(
       `"${ffprobePath}" -v quiet -print_format json -show_format -show_streams "${source}"`

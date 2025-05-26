@@ -12,6 +12,7 @@
     ArrowRightFromLine,
     Code,
     Braces,
+    Clapperboard,
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
@@ -19,6 +20,7 @@
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
   import ToolsContainer from './Tools/ScriptsContainer.svelte';
+  import SlatesContainer from './Slates/SlatesContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import { appStore, defaultAppStore, appVersion } from '../stores/app-store';
@@ -70,6 +72,13 @@
       component: AeExpressionsContainer,
       icon: Braces,
       apps: ['AEFT'],
+    },
+    {
+      label: 'Slates',
+      value: 7,
+      component: SlatesContainer,
+      icon: Clapperboard,
+      apps: ['PPRO'],
     },
   ];
 

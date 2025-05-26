@@ -85,6 +85,27 @@ export const selectFolder = (
   return false;
 };
 
+export const selectFile = (
+  msg: string = 'Select a File',
+  filter: string = '*',
+  allowMultiple: boolean = false
+): any => {
+  const files = File.openDialog(msg, filter, allowMultiple);
+  let filesArray: string[] = [];
+
+  if (files instanceof Array) {
+    for (let i = 0; i < files.length; i++) {
+      filesArray.push(files[i].fsName);
+    }
+
+    return JSON.stringify({ files: filesArray });
+  } else if (files instanceof File && !allowMultiple) {
+    filesArray.push(files.fsName);
+    return JSON.stringify({ files: filesArray });
+  }
+  return false;
+};
+
 /**
  * @param {String} str - The string to pad
  * @param {Number} targetLength - The length of the resulting string once the current string has been padded

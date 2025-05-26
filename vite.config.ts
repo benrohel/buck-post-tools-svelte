@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-
 import { cep, runAction } from 'vite-cep-plugin';
 import cepConfig from './cep.config';
 import path from 'path';

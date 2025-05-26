@@ -10,7 +10,7 @@
   import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
   import { fs } from '../../lib/cep/node';
   import { onMount, getContext } from 'svelte';
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+  import FolderSelect from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import { getClips } from '../../api/clip';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { notifications } from '../../stores/notifications-store';
@@ -137,7 +137,7 @@
   };
 
   const searchFiles = async () => {
-    console.log("searching files")
+    console.log('searching files');
     if (!rootFolder || !find || !replace) {
       return;
     }
@@ -197,7 +197,7 @@
 </div>
 
 <div id="search-folder">
-  <FolderSelctWeb onChange={handleSetOutputFolder} value={rootFolder} />
+  <FolderSelect onChange={handleSetOutputFolder} value={rootFolder} />
   <Tooltip
     action={$appStore.showTooltips ? 'hover' : 'none'}
     content="Search clips in Folder"

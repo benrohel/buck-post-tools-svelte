@@ -3,7 +3,7 @@
   export let items;
   export let value: any;
   export let placeholder = 'Select Tool';
-  export let onChange;
+  export let onChange: (value: any) => void;
 
   $: focus = false;
   $: openable = () => {

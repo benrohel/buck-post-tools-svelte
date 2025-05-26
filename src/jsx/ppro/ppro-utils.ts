@@ -63,6 +63,38 @@ export const findItemByPath = (
   }
 };
 
+export const findBinByName = (
+  binName: string,
+  searchRoot?: ProjectItem
+): ProjectItem | null => {
+  const rootItem = searchRoot || app.project.rootItem;
+
+  // Check if current item is a bin and matches the name
+  if (rootItem.type === ProjectItemType.BIN && rootItem.name === binName) {
+    return rootItem;
+  }
+
+  // Recursively search through children
+  for (let i = 0; i < rootItem.children.numItems; i++) {
+    const child = rootItem.children[i];
+
+    // If child is a bin and matches name, return it
+    if (child.type === ProjectItemType.BIN && child.name === binName) {
+      return child;
+    }
+
+    // If child is a bin, search recursively within it
+    if (child.type === ProjectItemType.BIN) {
+      const found = findBinByName(binName, child);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
+};
+
 // Sequence Helpers
 
 export const getSequenceLengthInFrames = (seq: Sequence) => {
@@ -169,8 +201,6 @@ export const qeGetClipAt = (track: Track, index: number) => {
   }
 };
 
-
-
 // Motion Graphics Template ( MOGRT ) Helpers
 
 export const fillMogrtText = (
@@ -200,3 +230,5 @@ export const getProjectFile = () => {
   }
   return app.project.path;
 };
+
+export const setImportBinToSelectedBin = () => {};
