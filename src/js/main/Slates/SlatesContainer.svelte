@@ -304,7 +304,7 @@
   <!-- Slates List -->
   <div
     class="ingest-shot-row"
-    style="background-color: #161616; margin-bottom:8px. height:24px"
+    style="background-color: #161616; height:24px; padding-left: 4px; padding-right: 4px"
   >
     <div
       style="display:flex; flex-direction:row ; gap:4px; align-items:center; justify-self:start;"
@@ -313,26 +313,22 @@
     </div>
     <p>NAME</p>
     <div
-      style="display:flex; flex-direction:row ; gap:2px; align-items:center; justify-self:end;"
+      style="display:flex; flex-direction:row; justify-content:flex-end; margin-right: 8px;"
     >
-      <div
-        style="display:flex; flex-direction:row; justify-content:flex-end;margin-left:4px;gap:4px"
+      <Tooltip
+        action={$appStore.showTooltips ? 'hover' : 'none'}
+        content="Import All Clips"
+        position="left"
+        delay={1000}
       >
-        <Tooltip
-          action={$appStore.showTooltips ? 'hover' : 'none'}
-          content="Import All Clips"
-          position="left"
-          delay={1000}
+        <button
+          class="icon active"
+          disabled={!generatedSlates.length}
+          on:click={handleImportSlates}
         >
-          <button
-            class="icon active"
-            disabled={!generatedSlates.length}
-            on:click={handleImportSlates}
-          >
-            <Download />
-          </button>
-        </Tooltip>
-      </div>
+          <Download />
+        </button>
+      </Tooltip>
     </div>
   </div>
   <div class="slates-list-container">
@@ -340,25 +336,27 @@
       <div class="slates-list">
         {#each generatedSlates as slate, index}
           <div class="slate-item">
-            <div
-              class="slate-thumbnail"
-              on:mouseenter={() => (hoveredSlate = slate)}
-              on:mouseleave={() => (hoveredSlate = null)}
-              on:mousemove={handleMouseMove}
-            >
-              <img
-                src={slate.previewUrl || createFileUrl(slate.path)}
-                alt="Slate preview"
-                loading="lazy"
-                on:error={(e) => {
-                  console.error('Failed to load image:', slate.path);
-                  e.target.style.display = 'none';
-                }}
-              />
-            </div>
-            <div class="slate-info">
-              <div class="slate-name">{getFileName(slate.path)}</div>
-              <!-- <div class="slate-path">{slate.path}</div> -->
+            <div class="slate-preview">
+              <div
+                class="slate-thumbnail"
+                on:mouseenter={() => (hoveredSlate = slate)}
+                on:mouseleave={() => (hoveredSlate = null)}
+                on:mousemove={handleMouseMove}
+              >
+                <img
+                  src={slate.previewUrl || createFileUrl(slate.path)}
+                  alt="Slate preview"
+                  loading="lazy"
+                  on:error={(e) => {
+                    console.error('Failed to load image:', slate.path);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+              <div class="slate-info">
+                <div class="slate-name">{getFileName(slate.path)}</div>
+                <!-- <div class="slate-path">{slate.path}</div> -->
+              </div>
             </div>
             <div class="slate-actions">
               <button
@@ -409,7 +407,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    gap: 8px;
+    gap: 2px;
   }
 
   .controls-row {
@@ -447,6 +445,7 @@
 
   .ingest-shot-row {
     grid-template-columns: 2fr 8fr 1fr;
+    padding: 0px;
   }
 
   .file-input {
@@ -485,6 +484,13 @@
     }
   }
 
+  .slate-preview {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding-right: 4px;
+  }
+
   .action-buttons {
     display: flex;
     gap: 8px;
@@ -520,7 +526,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 0px;
-    max-height: calc(100vh - 170px);
+    max-height: calc(100vh - 150px);
 
     // &::-webkit-scrollbar {
     //   width: 8px;
@@ -550,7 +556,7 @@
 
   .slate-item {
     display: flex;
-    height: 40px;
+    height: 30px;
     gap: 4px;
     background-color: #1a1a1a;
     border: 1px solid #333;
@@ -558,8 +564,8 @@
     overflow: hidden;
     transition: all 0.2s ease;
     align-items: center;
-    justify-content: space-between;
     padding-right: 4px;
+    justify-content: space-between;
 
     &:hover {
       border-color: $active;
@@ -569,7 +575,7 @@
 
   .slate-thumbnail {
     max-width: 80px;
-    height: 40px;
+    height: 30px;
     flex-shrink: 0;
     overflow: hidden;
     background-color: #000;
@@ -591,10 +597,9 @@
 
   .slate-name {
     color: $font;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: x-small;
     margin: 0 0 4px 0;
-    white-space: nowrap;
+    white-space: wrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
