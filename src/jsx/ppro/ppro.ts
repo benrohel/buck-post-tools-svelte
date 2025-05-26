@@ -1,7 +1,11 @@
 import { padLeft, selectFolder, padStart, selectFile } from '../utils/utils';
 export { selectFolder, selectFile };
 
-import { getProjectFile, findBinByName } from './ppro-utils';
+import {
+  getProjectFile,
+  findBinByName,
+  findItemsMatchingMediaPath,
+} from './ppro-utils';
 export { getProjectFile };
 declare var JSON: any;
 declare const qe: undefined | any;
@@ -1053,6 +1057,14 @@ export const importSlatesToSelectedBin = (filePaths: string[]) => {
     bin = app.project.rootItem.createBin('Slates');
   }
 
-  app.project.importFiles(filePaths, true, bin, false);
-  return true;
+  try {
+    const existingItems = findItemsMatchingMediaPath(filePaths[0]);
+    if (existingItems.length > 0) {
+      return false;
+    }
+    app.project.importFiles(filePaths, true, bin, false);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };

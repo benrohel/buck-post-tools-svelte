@@ -1,8 +1,11 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { fly } from 'svelte/transition';
-  import { notifications } from '../../stores/notifications-store';
-  export let themes = {
+  import {
+    notifications,
+    type Notification,
+  } from '../../stores/notifications-store';
+  export let themes: Record<string, string> = {
     error: 'ed553b',
     success: '#3cae5c',
     warning: '#fc7439',
@@ -39,7 +42,7 @@
     justify-content: flex-start;
     align-items: center;
     pointer-events: none;
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   .toast {

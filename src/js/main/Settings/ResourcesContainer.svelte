@@ -8,7 +8,13 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
   import { appId } from '../../lib/utils/cep';
-  let scriptResources = [
+
+  interface Resource {
+    label: string;
+    value: string;
+    author?: string;
+  }
+  let scriptResources: Resource[] = [
     {
       label: 'After Effects Scripting Guide',
       value: 'https://ae-scripting.docsforadobe.dev/',
@@ -21,7 +27,7 @@
     },
   ];
 
-  let expressionResources = [
+  let expressionResources: Resource[] = [
     {
       label: 'After Effects Expressions Guide',
       value: 'https://ae-expressions.docsforadobe.dev',
@@ -50,6 +56,22 @@
     },
   ];
 
+  let pproTemplates: Resource[] = [
+    {
+      label: 'BUCK Slates Template',
+      value:
+        'https://docs.google.com/spreadsheets/d/1apX8NK8WqJgtCGLNmiFLdlvYzkX6R2h3buaP_Z_FhVg/edit?gid=1932920728#gid=1932920728',
+    },
+  ];
+
+  let stockResources: Resource[] = [
+    {
+      label: 'Artlist',
+      value: 'https://artlist.io',
+      author: 'Artlist',
+    },
+  ];
+
   const openLink = (value: string) => {
     console.log(value);
     openLinkInBrowser(value);
@@ -64,36 +86,70 @@
     <h2>Resources</h2>
   </div>
 
-  <div class="settings-container">
-    <div class="settings-header">
-      <h3>Scripting</h3>
-    </div>
-    {#each scriptResources as resource}
-      <div class="flex-row-between setting-row">
-        <label for="show-tooltips"
-          >{resource.label} <span>by {resource.author}</span></label
-        >
-        <button class="active" on:click={() => openLink(resource.value)}
-          >Open Link</button
-        >
+  {#if appId === 'AEFT'}
+    <div class="settings-container">
+      <div class="settings-header">
+        <h3>Scripting</h3>
       </div>
-    {/each}
-  </div>
-  <div class="settings-container">
-    <div class="settings-header">
-      <h3>Expressions</h3>
+      {#each scriptResources as resource}
+        <div class="flex-row-between setting-row">
+          <label for="show-tooltips"
+            >{resource.label} <span>by {resource.author}</span></label
+          >
+          <button class="active" on:click={() => openLink(resource.value)}
+            >Open Link</button
+          >
+        </div>
+      {/each}
     </div>
-    {#each expressionResources as resource}
-      <div class="flex-row-between setting-row">
-        <label for="show-tooltips"
-          >{resource.label} <span>by {resource.author}</span></label
-        >
-        <button class="active" on:click={() => openLink(resource.value)}
-          >Open Link</button
-        >
+    <div class="settings-container">
+      <div class="settings-header">
+        <h3>Expressions</h3>
       </div>
-    {/each}
-  </div>
+      {#each expressionResources as resource}
+        <div class="flex-row-between setting-row">
+          <label for="show-tooltips"
+            >{resource.label} <span>by {resource.author}</span></label
+          >
+          <button class="active" on:click={() => openLink(resource.value)}
+            >Open Link</button
+          >
+        </div>
+      {/each}
+    </div>
+  {:else if appId === 'PPRO'}
+    <div class="settings-container">
+      <div class="settings-header">
+        <h3>Templates</h3>
+      </div>
+      {#each pproTemplates as template}
+        <div class="flex-row-between setting-row">
+          <label for="show-tooltips"
+            >{template.label}
+            <span>{template.author ? 'by ' + template.author : ''}</span></label
+          >
+          <button class="active" on:click={() => openLink(template.value)}
+            >Open Link</button
+          >
+        </div>
+      {/each}
+    </div>
+    <div class="settings-container">
+      <div class="settings-header">
+        <h3>Stock</h3>
+      </div>
+      {#each stockResources as resource}
+        <div class="flex-row-between setting-row">
+          <label for="show-tooltips"
+            >{resource.label} <span>by {resource.author}</span></label
+          >
+          <button class="active" on:click={() => openLink(resource.value)}
+            >Open Link</button
+          >
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

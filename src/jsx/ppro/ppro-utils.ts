@@ -95,6 +95,30 @@ export const findBinByName = (
   return null;
 };
 
+export const findItemsMatchingMediaPath = (
+  mediaPath: string,
+  searchRoot?: ProjectItem
+): ProjectItem[] => {
+  const rootItem = searchRoot || app.project.rootItem;
+  const matchingItems: ProjectItem[] = [];
+
+  // Recursively search through children
+  for (let i = 0; i < rootItem.children.numItems; i++) {
+    const child = rootItem.children[i];
+
+    // If child matches media path, add it to the list
+    if (child.getMediaPath() === mediaPath) {
+      matchingItems.push(child);
+    }
+
+    // If child is a bin, search recursively within it
+    if (child.type === ProjectItemType.BIN) {
+      matchingItems.push(...findItemsMatchingMediaPath(mediaPath, child));
+    }
+  }
+  return matchingItems;
+};
+
 // Sequence Helpers
 
 export const getSequenceLengthInFrames = (seq: Sequence) => {

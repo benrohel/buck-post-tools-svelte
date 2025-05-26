@@ -5,14 +5,7 @@
     type SlateData,
     type GenerationResult,
   } from '../../api/slates/slate-generator';
-  import { openFile } from '../../lib/utils/utils';
-  import {
-    Download,
-    FileText,
-    Images,
-    RefreshCw,
-    Settings,
-  } from 'lucide-svelte';
+  import { Download, FileText, Images } from 'lucide-svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { appStore } from '../../stores/app-store';
@@ -20,10 +13,11 @@
   import SelectFile from '../../components/SelectFolder/SelectFile.svelte';
   import Papa from 'papaparse';
   import { fs, path } from '../../lib/cep/node';
-  import { ArrowUpDown, Eye } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-
+  import FolderSelect from '../../components/SelectFolder/SelectFolderWeb.svelte';
+  import { localAppStore } from '../../stores/local-storage';
+  import buckLogo from '../../../assets/BUCK_WORDMARK_WHITE.png';
   // Component state
   let selectedPreset: { label: string; value: string } = {
     label: 'BUCK Preset',
@@ -37,6 +31,7 @@
   let isGenerating = false;
   let hoveredSlate: any = null;
   let mousePosition = { x: 0, y: 0 };
+  let rootFolder = '';
 
   // Preset options
   const presetOptions = [
@@ -47,6 +42,13 @@
   // Initialize slate generator
   onMount(() => {
     slateGenerator = new BuckSlateGenerator();
+    if ($appStore.lastSlateCSV) {
+      csvFilePath = $appStore.lastSlateCSV;
+      loadCSVDataFromFile(csvFilePath);
+    }
+    if ($appStore.lastSlateFolder) {
+      rootFolder = $appStore.lastSlateFolder;
+    }
   });
 
   // Handle CSV file selection
@@ -57,6 +59,14 @@
       try {
         csvFilePath = file;
         await loadCSVDataFromFile(file);
+        appStore.update((store) => ({
+          ...store,
+          lastSlateCSV: file,
+        }));
+        localAppStore.update((store) => ({
+          ...store,
+          lastSlateCSV: file,
+        }));
       } catch (error) {
         console.error('Error processing CSV file:', error);
         notifications.error('Failed to process CSV file', 2000);
@@ -147,7 +157,7 @@
       const results = await slateGenerator.batchGenerateSlates(
         csvFilePath,
         selectedPreset.value,
-        '/Users/benjamin/Desktop/Slates-from-CEP',
+        rootFolder,
         'image'
       );
       console.log('Generated slates:', results);
@@ -165,6 +175,45 @@
     }
   };
 
+  const handleGenerateSlate = async (slate: SlateData) => {
+    console.log(slate);
+    if (!slate['{filename}']) {
+      notifications.warning('Please select a slate first', 2000);
+      return;
+    }
+
+    try {
+      isGenerating = true;
+      console.log('Generating slate with preset:', selectedPreset.value);
+      const data: SlateData = {
+        filename: slate['{filename}'],
+        resolution: slate.resolution,
+        masterSequence: slate.masterSequence,
+      };
+      const slateFilepath = `${rootFolder}/${slate['{filename}']
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '')}.png`;
+
+      const result = await slateGenerator.generateSlate(
+        data,
+        selectedPreset.value,
+        slateFilepath
+      );
+      if (fs.existsSync(slateFilepath)) {
+        notifications.success(
+          `Generated ${slate['{filename}']} successfully`,
+          2000
+        );
+      }
+    } catch (error) {
+      console.error('Error generating slate:', error);
+      notifications.error('Failed to generate slate', 2000);
+    } finally {
+      isGenerating = false;
+    }
+  };
+
   // Clear generated slates
   const handleClearSlates = () => {
     generatedSlates = [];
@@ -177,26 +226,83 @@
     return filePath.split('/').pop() || filePath;
   };
 
-  // Create URL from file path for image preview
+  // Create data URL from file path for image preview (CEP compatible)
   const createFileUrl = (filePath: string) => {
-    // For CEP environment, we need to use file:// protocol with proper encoding
-    if (filePath.startsWith('/')) {
-      // Unix/Mac path
-      return `file://${encodeURI(filePath)}`;
-    } else if (filePath.match(/^[A-Z]:\\/)) {
-      // Windows path
-      return `file:///${encodeURI(filePath.replace(/\\/g, '/'))}`;
+    if (!filePath) return null;
+
+    try {
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        console.warn('File does not exist:', filePath);
+        return null;
+      }
+
+      // Read file as binary data
+      const fileData = fs.readFileSync(filePath);
+
+      // Convert to base64
+      const base64Data = fileData.toString('base64');
+
+      // Determine MIME type based on file extension
+      const ext = path.extname(filePath).toLowerCase();
+      let mimeType = 'image/png'; // default
+
+      switch (ext) {
+        case '.jpg':
+        case '.jpeg':
+          mimeType = 'image/jpeg';
+          break;
+        case '.png':
+          mimeType = 'image/png';
+          break;
+        case '.gif':
+          mimeType = 'image/gif';
+          break;
+        case '.webp':
+          mimeType = 'image/webp';
+          break;
+        case '.svg':
+          mimeType = 'image/svg+xml';
+          break;
+      }
+
+      // Create data URL
+      return `data:${mimeType};base64,${base64Data}`;
+    } catch (error) {
+      console.error('Error creating data URL:', error);
+      return null;
     }
-    return `file://${encodeURI(filePath)}`;
+  };
+
+  // Handle image load errors
+  const handleImageError = (event: Event, slate: any) => {
+    console.error('Failed to load image:', slate.path);
+    const target = event.target as HTMLImageElement;
+    target.src = buckLogo;
+  };
+
+  const handleSetOutputFolder = async (folderPath: string) => {
+    if (folderPath) {
+      rootFolder = folderPath;
+      appStore.update((store) => ({
+        ...store,
+        lastSlateFolder: folderPath,
+      }));
+      localAppStore.update((store) => ({
+        ...store,
+        lastSlateFolder: folderPath,
+      }));
+    }
   };
 
   const handleImportClip = (slate: any) => {
     let importOptions = {
-      filepath: slate.path,
-      isSequence: false,
+      filePaths: [slate.path],
     };
 
-    evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then((res) => {
+    evalES(
+      `importSlatesToSelectedBin(${JSON.stringify(importOptions.filePaths)})`
+    ).then((res) => {
       res ? true : false;
     });
   };
@@ -209,7 +315,14 @@
     evalES(
       `importSlatesToSelectedBin(${JSON.stringify(importOptions.filePaths)})`
     ).then((res) => {
-      res ? true : false;
+      if (res) {
+        notifications.success(
+          `${importOptions.filePaths.length} Slates imported successfully`,
+          2000
+        );
+      } else {
+        notifications.error('Failed to import slates', 2000);
+      }
     });
   };
 
@@ -248,6 +361,12 @@
       </div>
 
       <!-- Action Buttons -->
+    </div>
+    <div
+      style="display:flex; flex-direction:row; align-items: center; justify-content: space-between; margin-bottom: 4px; gap:20px"
+    >
+      <label for="output-folder">Slate Folder:</label>
+      <FolderSelect onChange={handleSetOutputFolder} value={rootFolder} />
       <div class="action-buttons">
         <Tooltip
           action={$appStore.showTooltips ? 'hover' : 'none'}
@@ -273,13 +392,8 @@
     <!-- Status Info -->
     <div class="status-row">
       <div class="status-info">
-        {#if csvData.length > 0}
-          <span class="status-text">CSV: {csvData.length} rows loaded</span>
-        {/if}
         {#if generatedSlates.length > 0}
-          <span class="status-text"
-            >Generated: {generatedSlates.length} slates</span
-          >
+          <span class="status-text">{generatedSlates.length} slates</span>
         {/if}
       </div>
 
@@ -344,13 +458,10 @@
                 on:mousemove={handleMouseMove}
               >
                 <img
-                  src={slate.previewUrl || createFileUrl(slate.path)}
+                  src={createFileUrl(slate.path) ?? buckLogo}
                   alt="Slate preview"
+                  on:error={(event) => handleImageError(event, slate)}
                   loading="lazy"
-                  on:error={(e) => {
-                    console.error('Failed to load image:', slate.path);
-                    e.target.style.display = 'none';
-                  }}
                 />
               </div>
               <div class="slate-info">
@@ -372,8 +483,8 @@
       </div>
     {:else if csvData.length > 0 && !isGenerating}
       <div class="empty-state">
-        <Settings size="48" color="#666" />
-        <h3>Ready to Generate Slates</h3>
+        <Images size="48" color="#666" />
+        <h3>Ready to Generate {csvData.length} Slates</h3>
         <p>Click the generate button to create slates from your CSV data</p>
       </div>
     {:else}
@@ -526,7 +637,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 0 0px;
-    max-height: calc(100vh - 150px);
+    max-height: calc(100vh - 180px);
 
     // &::-webkit-scrollbar {
     //   width: 8px;

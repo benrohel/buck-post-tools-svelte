@@ -86,36 +86,6 @@ class BuckSlateGenerator {
         logoBottomMargin: 100,
         fontPath: 'Arial.ttf',
       },
-      corporate: {
-        width: 1920,
-        height: 1080,
-        backgroundColor: '#1a1a1a',
-        labelColor: '#0066CC', // Blue labels
-        valueColor: '#FFFFFF',
-        fontSize: 54,
-        lineHeight: 85,
-        leftMargin: 150,
-        topMargin: 150,
-        labelValueSpacing: 300,
-        safeAreaPercentage: 0.9,
-        logoBottomMargin: 100,
-        fontPath: 'Arial.ttf',
-      },
-      minimal: {
-        width: 1920,
-        height: 1080,
-        backgroundColor: '#FFFFFF',
-        labelColor: '#666666',
-        valueColor: '#000000',
-        fontSize: 42,
-        lineHeight: 70,
-        leftMargin: 200,
-        topMargin: 200,
-        labelValueSpacing: 200,
-        safeAreaPercentage: 0.85,
-        logoBottomMargin: 100,
-        fontPath: 'Arial.ttf',
-      },
     };
 
     // Common broadcast resolutions
@@ -200,7 +170,7 @@ class BuckSlateGenerator {
     outputPath: string
   ): Promise<void> {
     const config = this.presets[preset];
-    const resolution = this.getResolution(data.resolution);
+    const resolution = this.getResolution(data.resolution || '1920x1080');
     const safeWidth = resolution.width * config.safeAreaPercentage;
     const safeHeight = resolution.height * config.safeAreaPercentage;
 

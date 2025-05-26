@@ -1,10 +1,11 @@
-import { writable, derived } from 'svelte/store';
+import { writable, derived, type Writable, type Readable } from 'svelte/store';
 
 export declare interface Notification {
   id: string;
   type: string;
   message: string;
   timeout: number;
+  icon?: any;
 }
 
 const TIMEOUT = 2000;
@@ -20,20 +21,23 @@ const createNotificationStore = (timeout: number = TIMEOUT) => {
 
   let timers = [];
 
-  const notifications = derived(_notifications, ($_notifications, set) => {
-    set($_notifications);
-    if ($_notifications.length > 0) {
-      const timer = setTimeout(() => {
-        _notifications.update((state) => {
-          state.shift();
-          return state;
-        });
-      }, $_notifications[0].timeout);
-      return () => {
-        clearTimeout(timer);
-      };
+  const notifications: Readable<Notification[]> = derived(
+    _notifications,
+    ($_notifications, set) => {
+      set($_notifications);
+      if ($_notifications.length > 0) {
+        const timer = setTimeout(() => {
+          _notifications.update((state) => {
+            state.shift();
+            return state;
+          });
+        }, $_notifications[0].timeout);
+        return () => {
+          clearTimeout(timer);
+        };
+      }
     }
-  });
+  );
   const { subscribe } = notifications;
 
   return {

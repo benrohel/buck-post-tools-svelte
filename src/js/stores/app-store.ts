@@ -2,7 +2,6 @@ import { writable, Writable } from 'svelte/store';
 import { appId } from '../lib/utils/cep';
 export const appVersion = writable('');
 
-
 interface AiService {
   name: string;
   apiKey: string;
@@ -14,6 +13,8 @@ export interface AppStore {
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
   rememberLastExportPreset: boolean;
+  lastSlateFolder: string;
+  lastSlateCSV: string;
   showVersionWarnings: boolean;
   favoriteExpressions: string[];
   aiService: AiService;
@@ -26,6 +27,8 @@ export const defaultAppStore: AppStore = {
   rememberLastFolderSearch: true,
   rememberLastExportPath: true,
   rememberLastExportPreset: true,
+  lastSlateFolder: '',
+  lastSlateCSV: '',
   showVersionWarnings: true,
   favoriteExpressions: [],
   aiService: {
