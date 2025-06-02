@@ -4,12 +4,14 @@ import afterEffectsExpressionsSystemRole from './after-effects-expressions-syste
 // Define the proxy URL - use proxy server for local development
 const PROXY_URL = 'http://localhost:3001/api/anthropic/messages';
 const BASE_URL = 'https://api.anthropic.com/v1/messages';
+
 // Check if API key is available
 if (!CLAUDE_TOKEN) {
   console.error('ERROR: CLAUDE_TOKEN is not defined in secrets.ts');
 }
 
 const URL = import.meta.env.DEV ? PROXY_URL : BASE_URL;
+
 
 export async function callAnthropicAPI(
   prompt: string,

@@ -22,8 +22,8 @@ const preferencesRoot =
   os.platform() === 'win32'
     ? 'AppData\\Roaming'
     : 'Library/Application Support';
-const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
-const preferencesPath = path.join(preferencesDir, 'preferences.json');
+export const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
+export const preferencesPath = path.join(preferencesDir, 'preferences.json');
 
 /**
  * Reads the user's preferences from disk.
@@ -173,5 +173,6 @@ export const setShotsHistory = async (shotsProjectHistory: any) => {
    throw e;
  }
 };
+
  
 

@@ -4,7 +4,8 @@ export const appVersion = writable('');
 
 
 interface AiService {
-  name: string;
+  name: "Claude" | "ChatGPT";
+  model: string;
   apiKey: string;
 }
 
@@ -29,7 +30,8 @@ export const defaultAppStore: AppStore = {
   showVersionWarnings: true,
   favoriteExpressions: [],
   aiService: {
-    name: 'Claude AI',
+    name: 'Claude',
+    model: 'claude-3-7-sonnet-20250219',
     apiKey: '',
   },
   devMode: false,

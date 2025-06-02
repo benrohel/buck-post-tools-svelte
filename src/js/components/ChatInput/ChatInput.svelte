@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { createEventDispatcher } from 'svelte';
-  import { ArrowUp, FileClock } from 'lucide-svelte';
-  import { notifications } from '../../stores/notifications-store';
+  import { ArrowUp, FileClock, Plus } from 'lucide-svelte';
+
   import { localAppStore } from '../../stores/local-storage';
 
   let textarea: HTMLTextAreaElement | null = null;
@@ -43,6 +43,10 @@
     }
   }
 
+  function handleNewConversation() {
+    keepHistory = true;
+  }
+
   onMount(() => {
     adjustTextareaHeight();
   });
@@ -71,6 +75,9 @@
             keepHistory = !keepHistory;
           }}
         >
+          <Plus />
+        </button>
+        <button class="send-button active" on:click={handleNewConversation}>
           <FileClock />
         </button>
         <button

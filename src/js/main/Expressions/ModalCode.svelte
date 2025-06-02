@@ -7,6 +7,9 @@
     callAnthropicAPI,
     extractCodeFromMarkdown,
   } from '../../api/ai/chat-claude';
+
+  import { callAiAgent } from '../../api/ai';
+
   import ChatInput from '../../components/ChatInput/ChatInput.svelte';
   hljs.registerLanguage('javascript', javascript);
 
@@ -152,6 +155,12 @@
         $localAppStore.aiService.apiKey,
         isScript ? 'scripts' : 'expressions',
       );
+
+      // const result = await callAiAgent(
+      //   gptMessage,
+      //   $localAppStore.aiService.name,
+      //   $localAppStore.aiService.apiKey,
+      // );
       console.log(res);
       if (isScript) {
         codeString = extractCodeFromMarkdown(res);
