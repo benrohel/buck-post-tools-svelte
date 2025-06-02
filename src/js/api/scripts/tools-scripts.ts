@@ -1,7 +1,6 @@
 import { fs, path, os } from '../../lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
-
-import { SHARED_FOLDER } from '../files/files';
+import { SHARED_FOLDER , PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER} from '../files/files';
 import { platform } from 'os';
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx
 
@@ -12,8 +11,6 @@ export interface Script {
 }
 
 export const getBuckScripts = (appId: string): Script[] => {
-
-  
 
   let scriptsFolder = '';
   if (appId === 'AEFT') {
@@ -61,7 +58,8 @@ export const installTool = (toolFilePath: string, appId: string) => {
 
 export const getLocalScripts = (
   appId: string,
-  appVersion: string
+  appVersion: string,
+  userScriptsFolder?: string
 ): Script[] => {
   let scriptsFolder = '';
   const regVersion = new RegExp(/(\d+)\.(\d+)\.(\d+)/);
@@ -96,16 +94,53 @@ export const getLocalScripts = (
   const localScripts = fs
     .readdirSync(scriptsFolder)
     .filter((file) => !file.startsWith('.'))
-    .filter((file) => file.endsWith('.jsx'))
+    .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
     .map((file) => {
-      const name = file.replace('.jsx', '');
+      const name = file.replace(/\.(jsx|jsxbin)$/, '');
       return {
         name: name,
         filepath: path.join(scriptsFolder, file),
         filename: file
       };
     });
-  return localScripts;
+
+  let userScripts: Script[] = [];
+  if (userScriptsFolder) {
+    userScripts = fs
+    .readdirSync(userScriptsFolder)
+    .filter((file) => !file.startsWith('.'))
+    .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
+    .map((file) => {
+      const name = file.replace(/\.(jsx|jsxbin)$/, '');
+      return {
+        name: name,
+        filepath: path.join(userScriptsFolder, file),
+        filename: file
+      };
+    });
+  }
+
+  return [...localScripts, ...userScripts].sort((a: Script, b: Script) => a.name.localeCompare(b.name));
 };
 
+export const getProjectScripts = async(appId: string, projectPath: string): Promise<Script[]> => {
+  let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
+console.log(scriptsFolder);
+  if (!fs.existsSync(scriptsFolder)) {
+    console.log('Project scripts folder not found');
+    return [];
+  }
 
+  return fs
+    .readdirSync(scriptsFolder)
+    .filter((file) => !file.startsWith('.'))
+    .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
+    .map((file) => {
+      const name = file.replace(/\.(jsx|jsxbin)$/, '');
+      return {
+        name: name,
+        filepath: path.join(scriptsFolder, file),
+        filename: file
+      };
+    }); 
+};

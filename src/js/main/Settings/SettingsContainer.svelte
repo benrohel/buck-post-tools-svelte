@@ -8,6 +8,7 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
   import { appId } from '../../lib/utils/cep';
+  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   let aiServices = [
     { label: 'Claude AI', value: 'Claude AI' },
     { label: 'OpenAI', value: 'OpenAI' },
@@ -34,6 +35,14 @@
     } else {
       apiKey = '';
     }
+  };
+
+  const handleUserScriptsFolderChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    appStore.update((s: AppStore) => ({
+      ...s,
+      userScriptsFolder: target.value,
+    }));
   };
 
   const saveSettings = () => {
@@ -109,6 +118,7 @@
           )}
       />
     </div>
+    <!-- Version Management Settings -->
     <div class="settings-header">
       <h3>Version Management</h3>
     </div>
@@ -120,6 +130,14 @@
         onChange={() =>
           handleChange('showVersionWarnings', !$appStore.showVersionWarnings)}
       />
+    </div>
+    <!-- Scripts Settings -->
+    <div class="settings-header">
+      <h3>Scripts</h3>
+    </div>
+    <div class="flex-row-between setting-row">
+      <label for="show-warnings">User Scripts Folder</label>
+      <SelectFolderWeb bind:value={$appStore.userScriptsFolder} />
     </div>
     <!-- Export Settings -->
     <div class="settings-header">
