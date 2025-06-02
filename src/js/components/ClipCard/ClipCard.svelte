@@ -9,6 +9,7 @@
   import { appStore } from '../../stores/app-store';
   import { fs, path } from '../../lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
+  import { appId } from '../../lib/utils/cep';
   export let clip: any;
   export let id = 0;
   export let selected = false;
@@ -116,8 +117,11 @@
   $: initCard = async () => {
     console.log('init card', clip);
 
-    const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
-    console.log(metadata);
+    if (appId === 'PPRO') {
+      const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
+      console.log(metadata);
+    }
+
     if (!fs.existsSync(clip.filepath)) {
       console.log(`init card : Clip ${clip.shotName} is missing`);
       isMissing = true;
