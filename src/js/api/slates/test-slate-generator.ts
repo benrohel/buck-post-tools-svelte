@@ -5,9 +5,7 @@ async function testSlateGenerator() {
     console.log('🚀 Starting slate generator test...');
 
     // 1. Create an instance
-    const generator = new BuckSlateGenerator(
-      '/Users/benjamin/Documents/Pro/BUCK/BUCK_DEV/buck-post-tools-svelte/dist/cep/ffmpeg'
-    );
+    const generator = new BuckSlateGenerator();
 
     // 2. Set up slate data
     const slateData: SlateData = {

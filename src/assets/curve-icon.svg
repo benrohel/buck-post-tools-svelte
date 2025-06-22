@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Curve path -->
+  <path d="M20 180 C20 20, 180 20, 180 20" stroke="black" stroke-width="4" fill="none" />
+  
+  <!-- Left handle -->
+  <line x1="20" y1="180" x2="60" y2="180" stroke="black" stroke-width="2" />
+  <circle cx="60" cy="180" r="4" fill="black" />
+  <circle cx="20" cy="180" r="5" fill="black" />
+
+  <!-- Right handle -->
+  <line x1="140" y1="180" x2="180" y2="180" stroke="black" stroke-width="2" />
+  <circle cx="140" cy="180" r="4" fill="black" />
+  <circle cx="180" cy="20" r="5" fill="black" />
+</svg>

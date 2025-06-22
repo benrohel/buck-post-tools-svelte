@@ -13,6 +13,7 @@
     Code,
     Braces,
     Clapperboard,
+    ChartSpline,
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
@@ -21,11 +22,12 @@
   import ExportContainer from './Export/ExportContainer.svelte';
   import ToolsContainer from './Tools/ScriptsContainer.svelte';
   import SlatesContainer from './Slates/SlatesContainer.svelte';
+  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
+  import AnimationContainer from './Animation/AnimationContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import { appStore, defaultAppStore, appVersion } from '../stores/app-store';
   import { localAppStore } from '../stores/local-storage';
-  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
   import { appId } from '../lib/utils/cep';
 
   let backgroundColor: string = '#272727';
@@ -79,6 +81,13 @@
       component: SlatesContainer,
       icon: Clapperboard,
       apps: ['PPRO'],
+    },
+    {
+      label: 'Animation',
+      value: 8,
+      component: AnimationContainer,
+      icon: ChartSpline,
+      apps: ['AEFT'],
     },
   ];
 
