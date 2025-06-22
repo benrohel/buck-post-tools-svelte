@@ -58,9 +58,13 @@
 
   let pproTemplates: Resource[] = [
     {
-      label: 'BUCK Slates Template',
+      label: 'Slates Template',
       value:
-        'https://docs.google.com/spreadsheets/d/1apX8NK8WqJgtCGLNmiFLdlvYzkX6R2h3buaP_Z_FhVg/edit?gid=1932920728#gid=1932920728',
+        'https://docs.google.com/spreadsheets/d/1a6thwQs74oC3ikck7OS3KXQGtGqIHzWSJLD8dKjzi4E/edit?gid=417223188#gid=417223188',
+    },
+    {
+      label: 'Buck Slates App',
+      value: 'https://buck-co.github.io/buck-slates-app/',
     },
   ];
 

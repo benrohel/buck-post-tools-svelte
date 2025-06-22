@@ -69,7 +69,7 @@ class BuckSlateGenerator {
         logoBottomMargin: 100,
         logoHeight: 100, // Scale logo to 50px tall
         fontPath: getUserFontsFolder() + '/mabry-regular.otf',
-        logoPath: getExtensionFolder() + '/assets/BUCK_WORDMARK_WHITE.png',
+        logoPath: getExtensionFolder() + '/assets/BUCK_WORDMARK_GREY.png',
       },
       simple: {
         width: 1920,
