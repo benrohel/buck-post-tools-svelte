@@ -17,6 +17,7 @@ export interface AppStore {
   lastSlateCSV: string;
   showVersionWarnings: boolean;
   favoriteExpressions: string[];
+  favoriteAnimations: string[];
   aiService: AiService;
   devMode: boolean;
 }
@@ -31,6 +32,7 @@ export const defaultAppStore: AppStore = {
   lastSlateCSV: '',
   showVersionWarnings: true,
   favoriteExpressions: [],
+  favoriteAnimations: [],
   aiService: {
     name: 'Claude AI',
     apiKey: '',
