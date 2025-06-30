@@ -141,15 +141,46 @@ const renameClipFromSource = (shot: any) => {
   }
 };
 
-export const renameToFile = () => {
-  var clips = app.project.selection;
-  if (clips.length === 0) {
-    alert('No clips selected');
-    return false;
+var renameLayerToSource = (layer: any) => {
+  if (layer && layer instanceof AVLayer) {
+    var sourceFile = layer.source.file;
+    if (!sourceFile) {
+      return;
+    } else {
+      var sourceName = sourceFile.displayName;
+      layer.name = sourceName;
+    }
+  } else {
+    alert('Not a layer');
   }
-  for (var c = 0; c < clips.length; c++) {
-    renameClipFromSource(clips[c]);
+};
+
+export const revertToFilename = (scope: 'project' | 'composition') => {
+  app.beginUndoGroup('Revert To Filename');
+  if (scope === 'composition') {
+    var sequence = app.project.activeItem;
+    if (!(sequence instanceof CompItem)) {
+      return false;
+    }
+    var layers = sequence.selectedLayers;
+    if (layers.length === 0) {
+      alert('No layers selected');
+      return false;
+    }
+    for (var l = 0; l < layers.length; l++) {
+      renameLayerToSource(layers[l]);
+    }
+  } else {
+    var clips = app.project.selection;
+    if (clips.length === 0) {
+      alert('No clips selected');
+      return false;
+    }
+    for (var c = 0; c < clips.length; c++) {
+      renameClipFromSource(clips[c]);
+    }
   }
+  app.endUndoGroup();
   return true;
 };
 

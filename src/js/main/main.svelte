@@ -107,11 +107,11 @@
     if (window.cep) {
       // subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
-      await connectToDaemon();
+      // await connectToDaemon();
       appVersion.set(await evalES(`appVersion()`));
       appItems = items.filter((item) => item.apps.includes(appId));
       if (client) {
-        authenticated = (await getAuthAuthenticated()).data.user ? true : false;
+        // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
 

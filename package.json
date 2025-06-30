@@ -1,7 +1,6 @@
 {
   "name": "co.buck-post-tools.cep",
-  "version": "1.0.3",
-  "type": "module",
+  "version": "1.0.5",
   "scripts": {
     "dev": "vite",
     "dev:prod": "NODE_ENV=production vite",

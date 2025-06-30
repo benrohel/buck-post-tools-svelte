@@ -383,3 +383,17 @@ export const getExtensionFolder = () => {
   console.log(csInterface.getSystemPath(SystemPath.EXTENSION));
   return csInterface.getSystemPath(SystemPath.EXTENSION);
 };
+
+export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
+  const productionFolder = PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  const scriptsFolder = path.join(
+    productionFolder,
+    'Common',
+    'Meta',
+    'aeft',
+    'scripts'
+  );
+  if (!fs.existsSync(scriptsFolder)) return null;
+  return scriptsFolder;
+};

@@ -4,6 +4,7 @@
   import {
     getLocalScripts,
     getBuckScripts,
+    getProjectScripts,
     type Script,
   } from '../../api/scripts/tools-scripts';
   import ToolCard from '../../components/ClipCard/ToolCard.svelte';
@@ -23,13 +24,19 @@
     [key: string]: ToolData;
   }
   import toolList from './tools.json';
+  import { evalES } from '../../lib/utils/bolt';
 
   const appId = $appStore.appId;
 
   console.log(getLocalScripts(appId, $appVersion));
 
-  $: localScripts = getLocalScripts(appId, $appVersion);
+  $: localScripts = getLocalScripts(
+    appId,
+    $appVersion,
+    $appStore.userScriptsFolder,
+  );
   $: buckScripts = getBuckScripts(appId);
+  $: projectScripts = [];
 
   // $: buckToolArray = () => {
   //   return Object.keys(tools)
@@ -51,9 +58,15 @@
     apps: string[];
   }
 
-  onMount(() => {
-    localScripts = getLocalScripts(appId, $appVersion);
+  onMount(async () => {
+    localScripts = await getLocalScripts(
+      appId,
+      $appVersion,
+      $appStore.userScriptsFolder,
+    );
     buckScripts = getBuckScripts(appId);
+    const projectPath = (await evalES(`getProjectFile()`, false)) as string;
+    projectScripts = await getProjectScripts(appId, projectPath);
   });
 </script>
 
@@ -68,6 +81,18 @@
       {/each}
     </div>
   </div>
+  {#if projectScripts.length > 0}
+    <div class="tools-section">
+      <div class="settings-header">
+        <h3>Project Scripts</h3>
+      </div>
+      <div class="tools-list grid-layout">
+        {#each projectScripts as script}
+          <ToolCard scriptTool={script} />
+        {/each}
+      </div>
+    </div>
+  {/if}
   <div class="tools-section">
     <div class="settings-header">
       <h3>Local Scripts</h3>
@@ -88,6 +113,9 @@
     flex-direction: column;
     gap: 8px;
     width: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: calc(100vh - 60px);
   }
   .tools-section {
     display: flex;

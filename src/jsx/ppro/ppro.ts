@@ -453,14 +453,11 @@ const renameClipFromSource = (shot: any) => {
 //   return true;
 // };
 
-export const renameToFile = () => {
+export const revertToFilename = (scope: 'project' | 'composition') => {
   // Script to revert selected footage clip names to original file names
   // For Adobe Premiere Pro
 
   try {
-    // Get the current project
-    var project = app.project;
-
     // Get all selected items in the project panel
     var selectedItems = getProjectSelection();
 
@@ -490,7 +487,6 @@ export const renameToFile = () => {
         renamedCount++;
       }
     }
-
     // Show result in alert
     return (
       'Renamed ' + renamedCount + ' footage items to their original file names.'

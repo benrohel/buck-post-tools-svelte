@@ -20,6 +20,7 @@ export interface AppStore {
   favoriteAnimations: string[];
   aiService: AiService;
   devMode: boolean;
+  userScriptsFolder: string;
 }
 
 export const defaultAppStore: AppStore = {
@@ -38,6 +39,7 @@ export const defaultAppStore: AppStore = {
     apiKey: '',
   },
   devMode: false,
+  userScriptsFolder: '',
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);
