@@ -10,13 +10,22 @@
   } from './AnimationData';
   import { localAppStore } from '../../stores/local-storage';
   import EasingCard from './EasingCard.svelte';
-
+  import { appStore } from '../../stores/app-store';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { FileCode, Download } from 'lucide-svelte';
+  import { notifications } from '../../stores/notifications-store';
+  import { EasingToAEConverter } from './easing-to-bezier';
+  import { EasingToExpressionConverter } from './easing-to-expressions';
+  import { evalFile } from '../../lib/utils/bolt';
+  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import CSInterface from '../../lib/cep/csinterface';
   // Reactive state
   let filterText: string = '';
   let currentCategory: string = 'all';
   let showFavoritesOnly: boolean = false;
   let selectedEasing: EasingItem | null = null;
   let animationDuration: number = 1.5;
+  let hasExpression: boolean = true;
   let footerMessage: string =
     'Click an easing function to apply to selected AE keyframes';
 
@@ -34,7 +43,7 @@
       name,
       func,
       ...easingData[name],
-    })
+    }),
   );
 
   // Filter easing functions
@@ -76,7 +85,6 @@
     if (isPlaying) {
       startDemoAnimation();
     }
-    applyEasingToAE(easing.name, easing.func);
   }
 
   // Toggle play/pause
@@ -140,18 +148,25 @@
   }
 
   // Apply easing to After Effects
-  function applyEasingToAE(
-    easingName: string,
-    easingFunc: EasingFunction
-  ): void {
-    console.log(`Applying ${easingName} to After Effects keyframes`);
-
-    // CEP integration would go here
-    footerMessage = `Applied ${easingName} to selected keyframes`;
-    setTimeout(() => {
-      footerMessage =
-        'Click an easing function to apply to selected AE keyframes';
-    }, 3000);
+  function applyEasingToAE(): void {
+    let script = '';
+    if (hasExpression) {
+      script = EasingToExpressionConverter.generateExpressionScript(
+        selectedEasing!.name,
+      );
+    } else {
+      script = EasingToAEConverter.generateAEScript(
+        selectedEasing!.name,
+        selectedEasing!.func,
+      );
+    }
+    console.log(script);
+    const csInterface = new CSInterface();
+    csInterface.evalScript(script, (result: any) => {
+      console.log('Applied easing:', result);
+      footerMessage = `Applied ${selectedEasing!.name} successfully!`;
+    });
+    notifications.success('Apply Easing to AE', 2000);
   }
 
   // Format function code with syntax highlighting
@@ -162,39 +177,43 @@
 </script>
 
 <!-- Toolbar -->
-<div class="toolbar">
-  <div class="filter-container">
-    <span class="filter-label">Filter</span>
-    <input
-      type="text"
-      class="filter-input"
-      placeholder="Search easing functions..."
-      bind:value={filterText}
-    />
+<div class="row" style="width:100%; justify-content:space-between">
+  <div id="filter-row">
+    <label style="padding-left:0px" for="name">Filter</label>
+    <input type="text" bind:value={filterText} />
+    <div
+      style={`color:#1473e6`}
+      id="fav-icon"
+      on:click={() => (showFavoritesOnly = !showFavoritesOnly)}
+    >
+      {#if showFavoritesOnly}
+        <Star fill="#086ce7" />
+      {:else}
+        <Star />
+      {/if}
+    </div>
   </div>
-  <div
-    style={`color:#1473e6`}
-    id="fav-icon"
-    on:click={() => (showFavoritesOnly = !showFavoritesOnly)}
-  >
-    {#if showFavoritesOnly}
-      <Star fill="#086ce7" />
-    {:else}
-      <Star />
-    {/if}
+  <div style="display:flex; gap:8px; align-items:center; flex-direction:row">
+    <div>
+      <span>Bezier</span>
+    </div>
+    <Toggle bind:checked={hasExpression} />
+    <div>
+      <span>Expression</span>
+    </div>
   </div>
-  <!-- <button
-    class="star-btn"
-    class:active={showFavoritesOnly}
-    title="Show favorites only"
-    on:click={() => (showFavoritesOnly = !showFavoritesOnly)}
-  >
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
-      <path
-        d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"
-      />
-    </svg>
-  </button> -->
+  <div class="icons-grp">
+    <Tooltip
+      action={$appStore.showTooltips ? 'hover' : 'none'}
+      content="Apply Expression"
+      position="left"
+      delay={1000}
+    >
+      <button class="active" on:click={applyEasingToAE}>
+        <Download />
+      </button>
+    </Tooltip>
+  </div>
 </div>
 
 <!-- Category Tabs -->
@@ -287,7 +306,7 @@
             <div class="code-preview">
               <pre>{formatFunctionCode(
                   selectedEasing.name,
-                  selectedEasing.func
+                  selectedEasing.func,
                 )}</pre>
             </div>
           {/if}
@@ -330,10 +349,16 @@
   .toolbar {
     padding: 8px 16px;
     background: #252526;
-    border-bottom: 1px solid #3e3e42;
+
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  #filter-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
 
   .filter-container {
@@ -358,6 +383,13 @@
     color: #cccccc;
     font-size: 12px;
     outline: none;
+  }
+
+  .icons-grp {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
   }
 
   #fav-icon {
@@ -391,7 +423,7 @@
 
   .category-tabs {
     display: flex;
-    background: #2d2d30;
+
     border-bottom: 1px solid #3e3e42;
     overflow-x: auto;
     scrollbar-width: none;
@@ -418,15 +450,9 @@
     border-bottom-color: $active;
   }
 
-  .preview-section {
-    background: #252526;
-    border-bottom: 1px solid #3e3e42;
-  }
-
   .preview-section-header {
     padding: 8px 16px;
-    background: #2d2d30;
-    border-bottom: 1px solid #3e3e42;
+
     cursor: pointer;
     display: flex;
     justify-content: space-between;

@@ -116,8 +116,6 @@
   $: initCard = async () => {
     console.log('init card', clip);
 
-    const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
-    console.log(metadata);
     if (!fs.existsSync(clip.filepath)) {
       console.log(`init card : Clip ${clip.shotName} is missing`);
       isMissing = true;

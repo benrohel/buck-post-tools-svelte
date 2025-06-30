@@ -17,7 +17,7 @@
   // Create canvas for easing curve preview
   function createEasingCanvas(
     canvas: HTMLCanvasElement,
-    easingFunc: EasingFunction
+    easingFunc: EasingFunction,
   ) {
     // Wait for next tick to ensure canvas is mounted
     const canvasSize = 80;
@@ -92,7 +92,7 @@
   // Animate preview dot
   function animatePreviewDot(
     dotElement: HTMLElement,
-    easingFunc: EasingFunction
+    easingFunc: EasingFunction,
   ): void {
     if (!dotElement) return;
 
@@ -142,7 +142,7 @@
     event.stopPropagation();
     if ($appStore.favoriteAnimations.includes(easing.name)) {
       $appStore.favoriteAnimations = $appStore.favoriteAnimations.filter(
-        (exp) => exp !== easing.name
+        (exp) => exp !== easing.name,
       );
     } else {
       $appStore.favoriteAnimations.push(easing.name);
@@ -162,7 +162,11 @@
   <div class="easing-thumbnail">
     <canvas class="easing-preview-canvas" use:createEasingCanvas={easing.func}
     ></canvas>
-    <div class="preview-dot" data-dot={easing.name} bind:this={dotElement}></div>
+    <div
+      class="preview-dot"
+      data-dot={easing.name}
+      bind:this={dotElement}
+    ></div>
   </div>
 
   <div class="easing-info">
@@ -204,10 +208,6 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     overflow: hidden;
-  }
-
-  .easing-card:hover {
-    background-color: $darker;
   }
 
   .easing-card.selected {
@@ -267,20 +267,20 @@
 
   .easing-title h4 {
     margin: 0;
-    font-size: 13px;
+    font-size: 12x;
     color: #cccccc;
     font-weight: 400;
   }
 
   .easing-type {
-    font-size: 11px !important;
-    color: $dimmed-font-color !important;
+    font-size: 12px !important;
+    color: #474747 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   .easing-description {
-    font-size: 11px;
+    font-size: 12px;
     color: #9c9c9c;
     margin-top: 2px;
     line-height: 1.3;
