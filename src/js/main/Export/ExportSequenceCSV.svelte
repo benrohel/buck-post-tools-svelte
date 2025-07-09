@@ -5,11 +5,9 @@
     storedExportRootFolder,
   } from '../../stores/local-storage';
   import { appStore } from '../../stores/app-store';
-  import { GetActiveSequence } from '../../api/edit';
+
   import { GetSelectedSequences } from '../../api/sequence';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { FolderInput } from 'lucide-svelte';
+
   import { fs, path } from '../../lib/cep/node';
   import { notifications } from '../../stores/notifications-store';
   import { onMount } from 'svelte';
