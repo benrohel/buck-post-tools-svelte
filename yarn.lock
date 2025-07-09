@@ -1908,6 +1908,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/papaparse@npm:^5":
+  version: 5.3.16
+  resolution: "@types/papaparse@npm:5.3.16"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 0009d3dcdc20cd37f171db77307844a575b89435a3398d1437173a1e5feb13a88e61fed7756f264555743a9510693ae1c9e20c4558c066085fd0bd881abf5497
+  languageName: node
+  linkType: hard
+
 "@types/prismjs@npm:^1":
   version: 1.26.5
   resolution: "@types/prismjs@npm:1.26.5"
@@ -2883,8 +2892,8 @@ __metadata:
 
 "buck-client@file:../buck5/javascript/lib/buck-client::locator=co.buck-post-tools.cep%40workspace%3A.":
   version: 1.0.0
-  resolution: "buck-client@file:../buck5/javascript/lib/buck-client#../buck5/javascript/lib/buck-client::hash=863ac0&locator=co.buck-post-tools.cep%40workspace%3A."
-  checksum: e4a89bd91cc33a2e8a02b76ad4edcd6ec78e830c80c94f2b1a9b0fc61786dffae84843610fc10a3c979b5295b8443bbe2b6d1a563e70ab2811f34cdd38d91a35
+  resolution: "buck-client@file:../buck5/javascript/lib/buck-client#../buck5/javascript/lib/buck-client::hash=c95278&locator=co.buck-post-tools.cep%40workspace%3A."
+  checksum: b9a899e564c39e48c03e3661c6fae26eea21bcf0dc40cdf3fac537fe9ea0e936ecf79ccd700a9d1864d2114f6c83d33132cb0d01cdc9a98891ea48066b8c8a34
   languageName: node
   linkType: hard
 
@@ -3073,6 +3082,7 @@ __metadata:
     "@tsconfig/svelte": "npm:^3.0.0"
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^16.11.7"
+    "@types/papaparse": "npm:^5"
     "@types/prismjs": "npm:^1"
     "@types/smpte-timecode": "npm:^1"
     "@types/trusted-types": "npm:^2.0.2"
@@ -3095,6 +3105,7 @@ __metadata:
     lucide-svelte: "npm:^0.477.0"
     markdown-to-txt: "npm:^2.0.1"
     node-fetch: "npm:^2.7.0"
+    papaparse: "npm:^5.5.3"
     prismjs: "npm:^1.30.0"
     rimraf: "npm:^6.0.1"
     rollup: "npm:^2.68.0"
@@ -5231,6 +5242,13 @@ __metadata:
   version: 1.0.11
   resolution: "pako@npm:1.0.11"
   checksum: 86dd99d8b34c3930345b8bbeb5e1cd8a05f608eeb40967b293f72fe469d0e9c88b783a8777e4cc7dc7c91ce54c5e93d88ff4b4f060e6ff18408fd21030d9ffbe
+  languageName: node
+  linkType: hard
+
+"papaparse@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "papaparse@npm:5.5.3"
+  checksum: 623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
   languageName: node
   linkType: hard
 

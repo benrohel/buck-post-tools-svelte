@@ -1,6 +1,7 @@
 import upath from 'upath';
 import { evalES } from '../lib/utils/bolt';
 import { ClipType, setItemTimecodes } from './clip';
+import Papa from 'papaparse';
 
 export declare interface Sequence {
   name: string;
@@ -157,19 +158,76 @@ export const GetSequenceMarkers = async (nodeId: string = '') => {
   }
 };
 
-// export const exportSequenceCSV = async (shots: Array<ClipType>): Promise<string> => {
-//   return new Promise((resolve, reject) => {
-//     if (type == 'NY GOOGLE SHEET') {
-//       nySsequenceCsv(shots).then((res) => {
-//         resolve(res);
-//       });
-//     } else {
-//       laSequenceCsv(shots).then((res) => {
-//         resolve(res);
-//       });
-//     }
-//   });
-// };
+const laSequenceCsv = async (shots: Array<ClipType>): Promise<string> => {
+  const fields = [
+    'Shot Name',
+    'Thumbnail ',
+    'ThumbnaillUrl',
+    'Src Timecode',
+    'Src In',
+    'Src Out',
+    'Dst In',
+    'Dst Out',
+    'Dst Duration',
+    'Framerate',
+    'COMP #',
+    'EDIT #',
+    'Status',
+    'Notes',
+    'Clip Media',
+  ];
+  const opts = { fields };
+  let tbURLString = '=IMAGE(INDIRECT(ADDRESS(ROW(),COLUMN()+1)))';
+
+  const shotMap = shots.map((shot: ClipType, index) => {
+    let version = 'v00';
+    let versionMatch = shot.filepath.match(/v\d+/);
+
+    if (versionMatch && versionMatch.length > 0) {
+      version = versionMatch[0];
+    }
+    return {
+      'Shot Name': shot.shotName,
+      Thumbnail: tbURLString,
+      ThumbnaillUrl: shot.thumbnailUrl,
+      'Src Timecode': shot.mediaStart?.toString(),
+      'Src In': shot.tcInPoint?.frameCount - shot.mediaStart?.frameCount,
+      'Src Out': shot.tcOutPoint?.frameCount - shot.mediaStart?.frameCount,
+      'Dst In': shot.tcStart?.frameCount,
+      'Dst Out': shot.tcEnd?.frameCount,
+      'Dst Duration': shot.duration,
+      Framerate: shot.tcInPoint?.frameRate,
+      'COMP #': 'v00',
+      'EDIT #': version,
+      Status: 'PENDING',
+      Notes: '',
+      'Clip Media': shot.filepath,
+    };
+  });
+
+  const data = { shots: shotMap };
+
+  return new Promise((resolve, reject) => {
+    try {
+      // const csv = parse(data.shots, opts);
+      const csv = Papa.unparse(data.shots);
+      resolve(csv);
+    } catch (err) {
+      console.error(err);
+      reject('Could not build csv');
+    }
+  });
+};
+
+export const exportSequenceCSV = async (
+  shots: Array<ClipType>
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    laSequenceCsv(shots).then((res) => {
+      resolve(res);
+    });
+  });
+};
 
 export const AddGaps = (gap: number, trackName: string) => {
   const options = {

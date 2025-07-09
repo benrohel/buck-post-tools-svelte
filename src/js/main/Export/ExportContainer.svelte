@@ -3,6 +3,7 @@
   import ExportShots from './ExportShots.svelte';
   import ExportStills from './ExportStills.svelte';
   import ExportSequenceXML from './ExportSequenceXML.svelte';
+  import ExportSequenceCSV from './ExportSequenceCSV.svelte';
   import ExportCompositions from './ExportCompositions.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { appId } from '../../lib/utils/cep';
@@ -20,6 +21,12 @@
       value: 'xml',
       label: 'Sequence to Xml',
       component: ExportSequenceXML,
+      apps: ['PPRO'],
+    },
+    {
+      value: 'csv',
+      label: 'Sequence to CSV',
+      component: ExportSequenceCSV,
       apps: ['PPRO'],
     },
     {

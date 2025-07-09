@@ -3,9 +3,9 @@ import { fs, path } from '../lib/cep/node';
 import upath from 'upath';
 import Timecode, { TIMECODE } from 'smpte-timecode';
 import { createTimecode, getFramerate, getTimecodeInTicks } from './timecode';
-import { appId } from "../lib/utils/cep";
-import { GetActiveSequence, GetSequencedClips } from "../api/edit";
-import { GetSystemFileVersionsWithShotName } from "../api/files/files";
+import { appId } from '../lib/utils/cep';
+import { GetActiveSequence, GetSequencedClips } from '../api/edit';
+import { GetSystemFileVersionsWithShotName } from '../api/files/files';
 //@ts-ignore
 import { xmlToJson } from './xml2json';
 
@@ -129,6 +129,7 @@ export const GetThumbnail = async (
       }
       const outputPath = upath.join(
         outputFolder,
+        `${clip.sequenceName}`,
         `${clip.sequenceName}_${name}_${outputTime}.png`
       );
       if (fs.existsSync(outputPath)) {
@@ -149,7 +150,6 @@ export const GetThumbnail = async (
     }
   });
 };
-
 
 const getAeClips = async () => {
   const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
@@ -175,7 +175,7 @@ const getAeClips = async () => {
       selectedVersion: fileVersion[0],
     };
   });
-  return  systemClips;
+  return systemClips;
 };
 
 const getPProClips = async () => {
@@ -205,11 +205,10 @@ const getPProClips = async () => {
       };
     });
   return systemClips;
-  
 };
 
- export const getClips = async () => {
-  let loadedClips =  [];
+export const getClips = async () => {
+  let loadedClips = [];
   switch (appId) {
     case 'AEFT':
       loadedClips = await getAeClips();
@@ -222,4 +221,3 @@ const getPProClips = async () => {
   }
   return loadedClips;
 };
-
