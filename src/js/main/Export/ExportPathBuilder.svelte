@@ -406,7 +406,13 @@
 
   // Function to save edits
   function saveItem(itemId: string, event: Event) {
-    const newName = (event.target as HTMLInputElement).value;
+    const newName = (event.target as HTMLInputElement).value.trim();
+    
+    // Don't save if name is empty
+    if (!newName) {
+      return;
+    }
+    
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       name: newName,
@@ -1062,9 +1068,17 @@
                         on:blur={(e) => {
                           // Only save on blur if we're not clicking on a suggestion
                           const relatedTarget = e.relatedTarget;
+                          const inputValue = e.target.value.trim();
+                          
+                          // Prevent blur if input is empty - keep editing
+                          if (!inputValue) {
+                            e.target.focus();
+                            return;
+                          }
+                          
                           if (
                             !relatedTarget ||
-                            !relatedTarget.classList?.contains('suggestion-btn')
+                            !relatedTarget?.classList?.contains('suggestion-btn')
                           ) {
                             saveItem(node.id, e);
                           }
@@ -1077,7 +1091,11 @@
                               insertToken(e.target, suggestedTokens[0].token);
                               e.preventDefault();
                             } else {
-                              saveItem(node.id, e);
+                              const inputValue = e.target.value.trim();
+                              if (inputValue) {
+                                saveItem(node.id, e);
+                              }
+                              // Don't prevent default if empty - let user stay in input
                             }
                           } else if (e.key === 'Escape') {
                             showSuggestions = false;
@@ -1111,7 +1129,7 @@
                         }}
                         on:dblclick={() => editItem(node.id)}
                       >
-                        <span class="item-name">{node.name}</span>
+                        <span class="item-name">{node.name || '[empty]'}</span>
                         {#if node.type === 'file' && node.outputModule}
                           <span class="exporter">{node.outputModule}</span>
                         {/if}
