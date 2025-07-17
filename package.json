@@ -1,6 +1,6 @@
 {
   "name": "co.buck-post-tools.cep",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "scripts": {
     "dev": "vite",
     "dev:prod": "NODE_ENV=production vite",
@@ -42,7 +42,8 @@
     "svelte-loading-spinners": "^0.3.6",
     "svelte-select": "^5.8.3",
     "upath": "^2.0.1",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",
@@ -68,6 +69,8 @@
     "@types/prismjs": "^1",
     "@types/smpte-timecode": "^1",
     "@types/trusted-types": "^2.0.2",
+    "@types/unzipper": "^0.10.11",
+    "@types/xmldom": "^0.1.34",
     "babel-plugin-transform-scss": "^1.1.0",
     "babel-preset-env": "^1.7.0",
     "core-js": "3",

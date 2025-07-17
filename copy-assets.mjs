@@ -43,16 +43,16 @@ function copyAssets() {
   }
 
   // Copy ffmpeg and ffprobe executables
-  if (fs.existsSync(ffmpegPath)) {
-    fs.copyFileSync(
-      path.join(ffmpegPath + '.exe'),
-      path.join(destFolder, path.basename(ffmpegPath + '.exe'))
-    );
-    fs.copyFileSync(
-      path.join(ffmpegPath),
-      path.join(destFolder, path.basename(ffmpegPath))
-    );
-  }
+  // if (fs.existsSync(ffmpegPath)) {
+  //   fs.copyFileSync(
+  //     path.join(ffmpegPath + '.exe'),
+  //     path.join(destFolder, path.basename(ffmpegPath + '.exe'))
+  //   );
+  //   fs.copyFileSync(
+  //     path.join(ffmpegPath),
+  //     path.join(destFolder, path.basename(ffmpegPath))
+  //   );
+  // }
 
   if (fs.existsSync(ffprobePath)) {
     fs.copyFileSync(

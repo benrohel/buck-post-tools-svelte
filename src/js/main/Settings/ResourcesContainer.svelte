@@ -1,13 +1,7 @@
 <script lang="ts">
-  import { evalES, openLinkInBrowser } from '../../lib/utils/bolt';
-  import { getAeOutputModulesAEP } from '../../api/files/files';
-  import { localAppStore } from '../../stores/local-storage';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
-  import { type AppStore, appStore } from '../../stores/app-store';
-  import { notifications } from '../../stores/notifications-store';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { openLinkInBrowser } from '../../lib/utils/bolt';
   import { onMount } from 'svelte';
-  import { appId } from '../../lib/utils/cep';
+
   let scriptResources = [
     {
       label: 'After Effects Scripting Guide',

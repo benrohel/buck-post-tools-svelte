@@ -79,6 +79,8 @@ export default defineConfig({
         preserveModules: false,
         format: 'cjs',
       },
+      // Mark AWS SDK as external to prevent build errors with unzipper package
+      external: ['@aws-sdk/client-s3'],
     },
 
     target: 'chrome74',

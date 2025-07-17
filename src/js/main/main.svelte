@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { evalES, subscribeBackgroundColor } from '../lib/utils/bolt';
+  import { csi, evalES, subscribeBackgroundColor } from '../lib/utils/bolt';
   import '../index.scss';
   import Tabs from '../components/Tabs/Tabs.svelte';
   import { getAuthAuthenticated, client } from 'buck-client';
@@ -21,12 +21,27 @@
   import ToolsContainer from './Tools/ScriptsContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
-  import { appStore, defaultAppStore, appVersion } from '../stores/app-store';
+  import {
+    appStore,
+    defaultAppStore,
+    appVersion,
+    extensionVersion,
+  } from '../stores/app-store';
   import { localAppStore } from '../stores/local-storage';
   import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
   import { appId } from '../lib/utils/cep';
+  import {
+    checkForUpdate,
+    installFromLocalFilepath,
+  } from '../api/buck-library';
+  import ModalConfirm from '../components/Modal/ModalConfirm.svelte';
+  import { notifications } from '../stores/notifications-store';
 
   let backgroundColor: string = '#272727';
+  let modalConfirmOpen = false;
+  let latestVersion: { version: string; path: string } | null = null;
+
+  $: appName = appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
 
   let items = [
     {
@@ -85,6 +100,19 @@
     setContext('app-store', $localAppStore);
   }
 
+  const handleUpdateExtension = async () => {
+    const installed = await installFromLocalFilepath(latestVersion.path);
+    if (!installed) {
+      notifications.error('Extension update failed', 3000);
+      return;
+    }
+    notifications.success(
+      `Extension updated successfully. Please restart ${appName}`,
+      3000,
+    );
+    modalConfirmOpen = false;
+  };
+
   onMount(async () => {
     if (window.cep) {
       // subscribeBackgroundColor((c: string) => (backgroundColor = c));
@@ -98,8 +126,19 @@
     }
 
     console.log('$localAppStore', $localAppStore);
-    console.log('$appVersion', $appVersion);
     console.log('env', import.meta.env);
+
+    if ($extensionVersion) {
+      checkForUpdate($extensionVersion).then((v) => {
+        latestVersion = {
+          version: `${v.version.major}.${v.version.minor}.${v.version.micro}`,
+          path: v.path,
+        };
+        modalConfirmOpen = true;
+        console.log($extensionVersion);
+        console.log(v);
+      });
+    }
   });
 </script>
 
@@ -107,6 +146,13 @@
   <Tabs items={appItems} />
   <Toast />
   <Footer {authenticated} />
+  {#if modalConfirmOpen}
+    <ModalConfirm
+      question="A new version of the Buck Tools is available. Do you want to update to version {latestVersion?.version}?"
+      onClose={() => (modalConfirmOpen = false)}
+      onConfirm={handleUpdateExtension}
+    />
+  {/if}
 </div>
 
 <style>

@@ -6,13 +6,14 @@
     GetSequence,
     GetSequencedClips,
   } from '../../api/sequence';
-  import { stillOutputFolder } from '../../stores/local-storage';
+
   import { notifications } from '../../stores/notifications-store';
-  import { evalES } from '../../lib/utils/bolt';
   import { openFile } from '../../lib/utils/utils';
-  import { FolderInput } from 'lucide-svelte';
   import MarkerRow from '../../components/Markers/MarkersSelect.svelte';
   import type MarkerColor from '../../components/Markers/MarkersSelect.svelte';
+  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+  import { appStore } from '../../stores/app-store';
+  import { stillOutputFolder } from '../../stores/local-storage';
   const stillExportModes = [
     {
       label: 'shots',
@@ -27,11 +28,12 @@
   let refTrack = 'shots';
   let done = false;
 
-  const handelSetOutputFolder = async () => {
-    let folderPath = await evalES(`openFolderDialog("Select Output Folder")`);
-    outputFolder = String(folderPath);
-    stillOutputFolder.set(outputFolder);
-  };
+  function setOutputFolder(path: string) {
+    if ($appStore.rememberLastExportPath) {
+      stillOutputFolder.set(path);
+    }
+    outputFolder = path;
+  }
 
   const handleOpenFolder = () => {
     openFile(outputFolder);
@@ -65,7 +67,7 @@
       await GetMarkersThumbnails(
         seq.nodeId,
         outputFolder,
-        markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
+        markerColors.filter((m) => m.selected).map((m) => m.colorIndex),
       ).then(() => {
         console.log('done');
       });
@@ -107,10 +109,11 @@
   class="folder-select"
   style="display:flex; flex-direction:row; gap:4px; margin-left:2px; margin-right:2px"
 >
-  <button on:click={handelSetOutputFolder}>
-    <FolderInput size="16" strokeWidth={1} />
-  </button>
-  <input type="text" bind:value={$stillOutputFolder} class="folder-input" />
+  <SelectFolderWeb
+    onChange={setOutputFolder}
+    bind:value={outputFolder}
+    label="Set Destination Folder"
+  />
 </div>
 <div class="flex-row-end action-row">
   <button
