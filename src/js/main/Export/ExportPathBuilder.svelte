@@ -119,7 +119,6 @@
 
   // Initialize with a basic hierarchical structure
   onMount(async () => {
-    tokenDropdownRef = document.querySelector('.dropdown-container');
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set($lastFolderExport);
     }
@@ -398,6 +397,7 @@
   // Function to edit an item by ID
   function editItem(itemId: string) {
     console.log('editItem', itemId);
+
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       isEditing: true,
@@ -491,7 +491,8 @@
   let currentNodeId = '';
 
   // Function to check for token suggestion
-  function updateSuggestions(input: HTMLInputElement) {
+  function updateSuggestions(input: any) {
+    if (!input || typeof input.value !== 'string') return;
     const value = input.value;
     currentInputValue = value;
     currentNodeId = input.dataset.id || '';
@@ -514,18 +515,27 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken.substring(1))
+          token.name.toLowerCase().includes(partialToken)
       );
 
       showSuggestions = suggestedTokens.length > 0;
+
+      // Position the dropdown relative to the input
+      if (showSuggestions && tokenDropdownRef) {
+        const rect = input.getBoundingClientRect();
+        tokenDropdownRef.style.top = `${rect.bottom + window.scrollY}px`;
+        tokenDropdownRef.style.left = `${rect.left + window.scrollX}px`;
+        tokenDropdownRef.style.width = `${rect.width}px`;
+      }
     } else {
       showSuggestions = false;
+      suggestedTokens = [];
     }
   }
 
   // Function to insert a token at cursor position
-  function insertToken(input: HTMLInputElement, token: string) {
-    if (!input) return;
+  function insertToken(input: any, token: string) {
+    if (!input || typeof input.value !== 'string') return;
 
     const start = input.selectionStart || 0;
     const end = input.selectionEnd || 0;
@@ -965,22 +975,18 @@
                 </Tooltip>
               {/if}
               {#if selectedNode.type === 'file'}
-                <Tooltip
-                  action={$appStore.showTooltips ? 'hover' : 'none'}
-                  content="Edit output module"
-                  position="bottom"
-                  delay={1000}
-                >
-                  <MenuSelect
-                    items={outputModulesSelectItems}
-                    bind:value={selectedOutputModuleMenuItem}
-                    onChange={() =>
-                      handleOnChangeOutputModule(
-                        selectedNode.id,
-                        selectedOutputModuleMenuItem
-                      )}
-                  />
-                </Tooltip>
+                <MenuSelect
+                  options={{
+                    floatConfig: { strategy: 'fixed', placement: 'bottom' },
+                  }}
+                  items={outputModulesSelectItems}
+                  bind:value={selectedOutputModuleMenuItem}
+                  onChange={() =>
+                    handleOnChangeOutputModule(
+                      selectedNode.id,
+                      selectedOutputModuleMenuItem
+                    )}
+                />
               {/if}
 
               <Tooltip
@@ -1058,7 +1064,7 @@
                           const relatedTarget = e.relatedTarget;
                           if (
                             !relatedTarget ||
-                            !relatedTarget.classList.contains('suggestion-btn')
+                            !relatedTarget.classList?.contains('suggestion-btn')
                           ) {
                             saveItem(node.id, e);
                           }
@@ -1084,6 +1090,14 @@
                           activeElement = e.target;
                           updateSuggestions(e.target);
                           isEditing = true;
+
+                          // Position dropdown for regular tokens when focusing
+                          if (tokenDropdownRef) {
+                            const rect = e.target.getBoundingClientRect();
+                            tokenDropdownRef.style.top = `${rect.bottom + window.scrollY}px`;
+                            tokenDropdownRef.style.left = `${rect.left + window.scrollX}px`;
+                            tokenDropdownRef.style.width = `${rect.width}px`;
+                          }
                         }}
                       />
                     {:else}
@@ -1113,10 +1127,7 @@
     {/if}
   </div>
   <!-- Move dropdowns outside the normal flow to ensure they are shown properly -->
-  <div
-    class="dropdown-container"
-    style="position: absolute; top: 100%; left: 0; width: 100%;"
-  >
+  <div bind:this={tokenDropdownRef} class="dropdown-container">
     <!-- Token suggestion dropdown for autocomplete -->
     {#if showSuggestions}
       <div>
@@ -1407,10 +1418,7 @@
 
   /* Container for dropdowns */
   .dropdown-container {
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    width: 100% !important;
+    position: fixed !important;
     z-index: 2000 !important; /* Even higher z-index */
     pointer-events: auto !important; /* Ensure clicks are captured */
   }
@@ -1480,6 +1488,7 @@
   .container {
     display: flex;
     gap: 10px;
+    position: relative;
   }
 
   /* Item actions panel */
@@ -1574,6 +1583,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
   }
 
   .exporter-header {
