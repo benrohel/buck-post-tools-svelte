@@ -2892,8 +2892,8 @@ __metadata:
 
 "buck-client@file:../buck5/javascript/lib/buck-client::locator=co.buck-post-tools.cep%40workspace%3A.":
   version: 1.0.0
-  resolution: "buck-client@file:../buck5/javascript/lib/buck-client#../buck5/javascript/lib/buck-client::hash=c95278&locator=co.buck-post-tools.cep%40workspace%3A."
-  checksum: b9a899e564c39e48c03e3661c6fae26eea21bcf0dc40cdf3fac537fe9ea0e936ecf79ccd700a9d1864d2114f6c83d33132cb0d01cdc9a98891ea48066b8c8a34
+  resolution: "buck-client@file:../buck5/javascript/lib/buck-client#../buck5/javascript/lib/buck-client::hash=9473f4&locator=co.buck-post-tools.cep%40workspace%3A."
+  checksum: 3bb9e25c84cc2494a0f7f78686284c9db0901f939c481ee3451f181be5b4694455b5da75c6ef711d47f2137349bb99b3564787eadd263f3001d36a2cc4e8560b
   languageName: node
   linkType: hard
 

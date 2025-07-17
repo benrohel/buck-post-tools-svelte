@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { os, path } from '../../lib/cep/node';
   import { onMount } from 'svelte';
   import {
     Folder,
@@ -14,10 +15,7 @@
   import { generateId } from '../../lib/utils/utils';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import {
-    lastFolderExport,
-    selectedExportPreset,
-  } from '../../stores/local-storage';
+  import { lastFolderExport } from '../../stores/local-storage';
   import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import {
@@ -34,25 +32,23 @@
     type PathItem,
     type CompRenderData,
     addToRenderQueue,
+    buildRenderPath,
   } from '../../api/exporter';
-  import { createFloatingActions } from 'svelte-floating-ui';
-  // @ts-ignore
-  import { offset, flip, shift } from 'svelte-floating-ui/dom';
+
   import { appId } from '../../lib/utils/cep';
   import { notifications } from '../../stores/notifications-store';
   import ModalConfirm from '../../components/Modal/ModalConfirm.svelte';
+  import Toggle from '../../components/Toggle/Toggle.svelte';
 
   //
   let isEditing = false;
   let activeElement: HTMLInputElement | null = null;
   let tokenDropdownRef: HTMLDivElement | null = null;
   let modalConfirmOpen = false;
+  let useProjectFolder = false;
 
-  const [floatingRef, floatingContent] = createFloatingActions({
-    strategy: 'absolute',
-    placement: 'top',
-    middleware: [offset(6), flip(), shift()],
-  });
+  let dummyComp: CompRenderData = {} as CompRenderData;
+
   $: console.log(tokenDropdownRef);
 
   // Available tokens for path construction
@@ -78,8 +74,10 @@
   $: showBuildPreset = false;
 
   let pathStructure: PathItem[] = [];
-  let version = 0;
+  let version = 1;
   let taskName = '';
+
+  $: isReady = rootFolder || projectFolder;
 
   let hasTask = false;
   $: console.log(pathStructure);
@@ -94,15 +92,17 @@
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule =
     outputModules.find(
-      (module) => module === selectedOutputModuleMenuItem?.value,
+      (module) => module === selectedOutputModuleMenuItem?.value
     ) || outputModules[0];
 
   let rootFolder = '';
+  let projectFolder = '';
+  $: console.log('project folder', projectFolder);
 
   // Preset Name
   let presetName = '';
   $: presetNameExists = exportPresets.some(
-    (preset) => preset.name === presetName,
+    (preset) => preset.name === presetName
   );
 
   $: validPresetName = presetName.length < 5 || presetNameExists;
@@ -124,27 +124,21 @@
       lastFolderExport.set($lastFolderExport);
     }
     rootFolder = $lastFolderExport;
+    projectFolder = await evalES('getProjectDir()');
+    projectFolder = projectFolder.startsWith('~')
+      ? path.join(os.homedir(), projectFolder.slice(1))
+      : projectFolder;
 
-    const storedExportPresets = await getExporterPresets(appId);
-    if (storedExportPresets.length > 0) {
-      exportPresets = storedExportPresets;
-      selectedExportPreset = exportPresets[0];
-      exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
-        value: preset.name,
-        label: preset.name,
-      }));
-      selectedExportPresetMenuItem = exportPresetsSelectItems[0];
-    }
-
-    if (exportPresets.length > 0) {
-      pathStructure = exportPresets[0].path;
-    }
+    const comps = JSON.parse(
+      await evalES('getSelectedCompsForRender()')
+    ) as any;
+    dummyComp = comps.comps[0];
 
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()'),
+      await evalES('getOutputModulesTemplates()')
     );
     outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN'),
+      (p: string) => !p.startsWith('_HIDDEN')
     );
 
     selectedOutputModule = outputModules[0];
@@ -158,13 +152,29 @@
     if ($appStore.rememberLastExportPath) {
       rootFolder = $lastFolderExport;
     }
+    exportPresets = await getExporterPresets(appId);
+    let selectedExportPresetName = '';
+
     if ($appStore.rememberLastExportPreset) {
-      selectedExportPreset = exportPresets.find(
-        (preset: Exporter) => preset.name === $storedExportSettings,
+      selectedExportPresetName = $storedExportSettings;
+    } else {
+      selectedExportPresetName = exportPresets[0].name;
+    }
+
+    selectedExportPreset = exportPresets.find(
+      (preset: Exporter) => preset.name === selectedExportPresetName
+    );
+
+    if (selectedExportPreset) {
+      pathStructure = selectedExportPreset.path;
+      useProjectFolder = selectedExportPreset.relativePath;
+      exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+        value: preset.name,
+        label: preset.name,
+      }));
+      selectedExportPresetMenuItem = exportPresetsSelectItems.find(
+        (preset) => preset.value === selectedExportPreset.name
       );
-      if (selectedExportPreset) {
-        pathStructure = selectedExportPreset.path;
-      }
     }
   });
 
@@ -185,25 +195,29 @@
     if (missingOm.length > 0) {
       notifications.warning(
         `Missing Output modules : ${missingOm.join(', ')} `,
-        2000,
+        2000
       );
     }
     selectedExportPresetMenuItem = value;
-
     selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value,
+      (preset) => preset.name === value.value
     );
     pathStructure = selectedExportPreset.path;
+    useProjectFolder = selectedExportPreset.relativePath;
+    console.log('selectedExportPreset', selectedExportPreset);
     hasTask = selectedExportPreset.previewPath.includes('{task}');
+    if ($appStore.rememberLastExportPreset) {
+      storedExportSettings.set(selectedExportPreset.name);
+    }
   }
 
   function handleOnChangeOutputModule(
     id: string,
-    value: { value: string; label: string },
+    value: { value: string; label: string }
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value,
+      (module) => module === value.value
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
@@ -217,7 +231,7 @@
     if (exportPresets.some((preset) => preset.name === name)) {
       notifications.error(
         'Exporter preset with this name already exists',
-        2000,
+        2000
       );
       return;
     }
@@ -225,6 +239,7 @@
     const newExporter = {
       name: name,
       previewPath: '{shot}',
+      relativePath: useProjectFolder,
       path: [
         {
           id: generateId(),
@@ -238,7 +253,7 @@
         },
       ] as PathItem[],
       rootFolder: '',
-      latestVersion: 0,
+      latestVersion: 1,
     };
     exportPresets.push(newExporter);
     selectedExportPreset = newExporter;
@@ -257,9 +272,10 @@
     const updatedExportPreset = {
       ...selectedExportPreset,
       path: pathStructure,
+      relativePath: useProjectFolder,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
     );
     console.log('updatedExportPresets', updatedExportPresets);
     setExporterPresets(appId, updatedExportPresets).then((result) => {
@@ -270,7 +286,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name,
+          (preset) => preset.value === selectedExportPreset.name
         );
         pathStructure = selectedExportPreset.path;
 
@@ -279,6 +295,13 @@
         notifications.error('Failed to save exporter preset', 2000);
       }
     });
+    selectedExportPreset = updatedExportPreset;
+    selectedExportPresetMenuItem = exportPresetsSelectItems.find(
+      (preset) => preset.value === selectedExportPreset.name
+    );
+    pathStructure = selectedExportPreset.path;
+    useProjectFolder = selectedExportPreset.relativePath;
+    hasTask = selectedExportPreset.previewPath.includes('{task}');
   }
 
   //Function to check if  outputModule template exists.
@@ -300,7 +323,7 @@
     if (node && node.outputModule) {
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
-        (om) => om.value === node.outputModule,
+        (om) => om.value === node.outputModule
       );
     }
   }
@@ -353,7 +376,7 @@
   function addChildToNode(
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem,
+    newChild: PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -445,7 +468,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
+    updateFn: (node: PathItem) => PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -491,7 +514,7 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken.substring(1)),
+          token.name.toLowerCase().includes(partialToken.substring(1))
       );
 
       showSuggestions = suggestedTokens.length > 0;
@@ -553,7 +576,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[],
+    nodes: PathItem[]
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -627,7 +650,7 @@
         }
       } else {
         // Empty folder
-        paths += path.join('/') + '/';
+        paths += path.join('/');
       }
     }
 
@@ -682,6 +705,8 @@
     return pathPreviewsCache;
   }
 
+  $: console.log(getMemoizedPaths(pathStructure));
+
   function closeModal() {
     console.log('close modal outsie');
     modalOpen = false;
@@ -692,10 +717,12 @@
     if (!selectedExportPreset) {
       return;
     }
+
+    const renderRootFolder = useProjectFolder ? projectFolder : rootFolder;
     const fileNodes = findNodesByType(selectedExportPreset.path, 'file');
     const outputModules = fileNodes.map((node) => ({
       outputModuleName: node.outputModule,
-      outputModuleFilePath: node.path,
+      outputModuleFilePath: path.resolve(renderRootFolder, node.path),
     }));
 
     console.log('fileNodes', fileNodes);
@@ -705,7 +732,7 @@
     //for all comps add to render queue  with all files node option
     for (const comp of comps) {
       const options = {
-        rootFolder: rootFolder,
+        rootFolder: renderRootFolder,
         outputModules: outputModules,
         appId: appId,
         version: version,
@@ -725,7 +752,7 @@
 
   async function deleteExporter() {
     const updatedExportPresets = exportPresets.filter(
-      (preset) => preset.name !== selectedExportPreset.name,
+      (preset) => preset.name !== selectedExportPreset.name
     );
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -762,8 +789,22 @@
     modalConfirmOpen = false;
   }
 
-  // Reactive variables for UI updates
-  $: pathPreviews = selectedNode ? selectedNode.path : '';
+  $: pathPreviews = selectedNode ? getMemoizedPaths(pathStructure) : '';
+  $: {
+    if (dummyComp && selectedExportPreset) {
+      const renderFolder = useProjectFolder ? projectFolder : rootFolder;
+      pathPreviews = buildRenderPath(
+        dummyComp,
+        appId,
+        renderFolder,
+        getMemoizedPaths(pathStructure),
+        taskName,
+        version
+      );
+    }
+    console.log('pathPreviews', pathPreviews);
+  }
+
   $: selectedNode = selectedItemId
     ? findNodeById(pathStructure, selectedItemId)
     : null;
@@ -773,14 +814,22 @@
 
 <div class="export-path-builder">
   <div class="header">
-    <div class="actions">
-      <label for="root-folder">Root Folder:</label>
-      <SelectFolderWeb
-        onChange={setRootFolder}
-        bind:value={rootFolder}
-        label="Set Root Folder"
-      />
+    <div
+      style="display: flex; align-items: center; gap: 8px; justify-content: space-between;"
+    >
+      <label for="use-project-folder">Use Project Folder</label>
+      <Toggle bind:checked={useProjectFolder} />
     </div>
+    {#if !useProjectFolder}
+      <div class="actions">
+        <label for="root-folder">Root Folder:</label>
+        <SelectFolderWeb
+          onChange={setRootFolder}
+          bind:value={rootFolder}
+          label="Set Root Folder"
+        />
+      </div>
+    {/if}
     <div style="display: flex; align-items: center; gap: 8px;">
       <label for="export-preset">Presets:</label>
       <MenuSelect
@@ -859,7 +908,7 @@
         title={'Add to Render Queue'}
         class="active"
         on:click={handleAddCompsToRenderQueue}
-        disabled={!rootFolder}>Add To Render Queue</button
+        disabled={!isReady}>Add To Render Queue</button
       >
     </div>
   </div>
@@ -928,7 +977,7 @@
                     onChange={() =>
                       handleOnChangeOutputModule(
                         selectedNode.id,
-                        selectedOutputModuleMenuItem,
+                        selectedOutputModuleMenuItem
                       )}
                   />
                 </Tooltip>
@@ -952,8 +1001,9 @@
           {/if}
         {:else}
           <p class="no-selection">
-            {selectedExportPreset.description ??
-              'Select a folder or file to see actions'}
+            {selectedExportPreset && selectedExportPreset.description
+              ? selectedExportPreset.description
+              : 'Select a folder or file to see actions'}
           </p>
         {/if}
         <div class="container">
@@ -970,7 +1020,6 @@
                   selectedItemId = node.id;
                   findOutputModule(node.id);
                 }}
-                use:floatingRef
               >
                 <div class="item-header">
                   {#if node.type === 'folder'}
@@ -999,7 +1048,6 @@
                   <div class="item-content">
                     {#if node.isEditing}
                       <input
-                        use:floatingRef
                         id="item-name"
                         type="text"
                         placeholder="Enter name type tokens"
@@ -1068,11 +1116,10 @@
   <div
     class="dropdown-container"
     style="position: absolute; top: 100%; left: 0; width: 100%;"
-    use:floatingContent
   >
     <!-- Token suggestion dropdown for autocomplete -->
     {#if showSuggestions}
-      <div use:floatingContent>
+      <div>
         <div class="suggestions-content">
           {#each suggestedTokens as token}
             <button
@@ -1092,7 +1139,7 @@
       </div>
     {:else if isEditing}
       <!-- Regular token dropdown when input is focused but no suggestions -->
-      <div id="token-dropdown" use:floatingContent>
+      <div id="token-dropdown">
         <div class="dropdown-content">
           {#each availableTokens as token}
             <button

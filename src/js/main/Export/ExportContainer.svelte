@@ -50,7 +50,7 @@
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
   let selectedExportMode: SelectToolItem =
-    appId === 'PPRO' ? exportModes[0] : exportModes[2];
+    appId === 'PPRO' ? exportModes[0] : exportModes[3];
 </script>
 
 <MenuSelect

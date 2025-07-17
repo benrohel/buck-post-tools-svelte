@@ -7,6 +7,7 @@ export {
   getOutputModulesTemplates,
   getSelectedCompsForRender,
   getProjectFile,
+  getProjectDir,
   selectFolder,
   appVersion,
   importProjectAndSaveOutputModules,

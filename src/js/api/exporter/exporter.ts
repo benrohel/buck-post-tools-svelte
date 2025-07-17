@@ -29,6 +29,7 @@ export interface Exporter {
   name: string;
   previewPath: string;
   path: PathItem[];
+  relativePath: boolean;
   description?: string;
   rootFolder?: string;
   latestVersion?: number;
@@ -60,7 +61,7 @@ export const buildRenderPath = (
         .replace(/{shot}/g, compData.compName)
         .replace(/{task}/g, selectedTask ?? '')
         .replace(/{version}/g, `v${version.toString().padStart(3, '0')}`)
-        .replace(/{app}/,"ae")
+        .replace(/{app}/, 'ae')
         .replace(/#{1,}/g, '')
         .replace(/\.{ext}/g, '');
       break;
@@ -71,7 +72,7 @@ export const buildRenderPath = (
         .replace(/{shot}/g, compData.compName)
         .replace(/{shot}/g, compData.compName)
         .replace(/{task}/g, selectedTask ?? '')
-        .replace(/{app}/,"ppro")
+        .replace(/{app}/, 'ppro')
         .replace(/{projectVersion}/g, projectVersionString)
         .replace(/{version}/g, `v${version.toString().padStart(3, '0')}`)
         .replace(/frameNumber}/g, '#'.padStart(numberOfFrames, '#'))
@@ -94,6 +95,9 @@ export const addToRenderQueue = async (
   options: IAddToRenderQueueOptions
 ) => {
   // Build the render paths for each output module
+  console.log('Comp Data', comp);
+  console.log('Options', options);
+
   const outputOptions = options.outputModules.map((outputModule) => {
     const renderPath = buildRenderPath(
       comp,
@@ -111,8 +115,8 @@ export const addToRenderQueue = async (
 
   // Create the output folders
   outputOptions.forEach((outputOption) => {
-    fs.existsSync(path.dirname(outputOption.outputModuleFilePath)) ||
-      fs.mkdirSync(outputOption.outputModuleFilePath, { recursive: true });
+    const dirFolder = path.dirname(outputOption.outputModuleFilePath);
+    fs.existsSync(dirFolder) || fs.mkdirSync(dirFolder, { recursive: true });
   });
 
   const renderOptions = {
