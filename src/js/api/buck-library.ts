@@ -6,9 +6,11 @@ const macPrefixes = ['buck', 'System/Volumes/Data/buck', 'Volumes'];
 
 export const SHARED_FOLDER = () :string=> {
   const prefix = os.platform() === 'win32' ? '\\\\' : '/';
-
+  console.log("SHARED_FOLDER prefix", prefix);
   if(os.platform() === 'win32') {
-    const winSharedFolder = path.join(prefix, 'buck', 'globalprefs', 'SHARED');
+    const winSharedFolder = path.join(`${prefix}buck`, 'globalprefs', 'SHARED');
+    console.log("winSharedFolder", winSharedFolder);
+    // Check if the shared folder exists in the expected location
     if(fs.existsSync(winSharedFolder)) return winSharedFolder;
     return "";
   }
