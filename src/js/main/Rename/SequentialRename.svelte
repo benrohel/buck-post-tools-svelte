@@ -3,10 +3,13 @@
   import { evalES } from '../../lib/utils/bolt';
   import Button from '../../components/Button/Button.svelte';
   import { appId } from '../../lib/utils/cep';
+  import { AddGaps } from '../../api/sequence';
   let prefix = 'SH';
   let start = '10';
   let increment = '10';
   let padding = '0000';
+  let gapDuration = '1';
+  let trackName = '';
 
   $: getOutputName = () => {
     const pad = padding.length;
@@ -26,6 +29,11 @@
     };
     const optionString = JSON.stringify(option);
     await evalES(`renameShots(${optionString})`);
+  };
+
+  const handleAddGaps = async () => {
+    const gap = parseInt(gapDuration);
+    await AddGaps(gap, trackName);
   };
 
   onMount(async () => {});
@@ -60,6 +68,32 @@
   <div class="flex-row-end action-row">
     <button class="active" on:click={handleRenameAction}>Rename</button>
   </div>
+  {#if appId === 'PPRO'}
+    <hr />
+    <div style="display:flex; flex-direction:column; ">
+      <div class="row" style="width:100%">
+        <label for="gapDuration" style="width:100%"
+          >Gap Duration (seconds)</label
+        >
+        <input
+          type="number"
+          placeholder="gapDuration"
+          bind:value={gapDuration}
+        />
+      </div>
+      <div class="row" style="width:100%">
+        <label for="trackName" style="width:100%">Track Name</label>
+        <input
+          type="text"
+          placeholder="All tracks if empty"
+          bind:value={trackName}
+        />
+      </div>
+    </div>
+    <div class="flex-row-end action-row">
+      <button class="active" on:click={handleAddGaps}>Add Gaps</button>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -82,5 +116,10 @@
     color: $active;
     padding-left: 4px;
     padding-right: 4px;
+  }
+  hr {
+    flex: 1;
+    margin: 4px 0;
+    border-bottom: 1px solid $darker;
   }
 </style>

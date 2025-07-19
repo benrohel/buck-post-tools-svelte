@@ -108,7 +108,7 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000,
+      3000
     );
     modalConfirmOpen = false;
   };

@@ -1041,3 +1041,43 @@ export const getPrMetadata = (nodeId: string) => {
   //   return result;
   return projectItem.getProjectMetadata();
 };
+
+declare interface GapOptions {
+  gap: number;
+  trackName: string;
+}
+export const addGap = ({ gap, trackName }: GapOptions) => {
+  app.enableQE();
+  const newSeq = app.project.activeSequence;
+  if (!trackName) {
+    for (var t = 0; newSeq.videoTracks.numTracks; t++) {
+      var currentTrack = newSeq.videoTracks[t];
+      var numberOfClips = currentTrack.clips.numItems;
+      var clips = currentTrack.clips;
+
+      for (var c = numberOfClips - 1; c > 0; c--) {
+        var newInTime = new Time();
+        newInTime.seconds = gap * c;
+
+        clips[c].move(newInTime);
+      }
+    }
+    return;
+  } else {
+    for (var t = 0; newSeq.videoTracks.numTracks; t++) {
+      var currentTrack = newSeq.videoTracks[t];
+      if (currentTrack.name === trackName) {
+        var numberOfClips = currentTrack.clips.numItems;
+        var clips = currentTrack.clips;
+
+        for (var c = numberOfClips - 1; c > 0; c--) {
+          var newInTime = new Time();
+          newInTime.seconds = gap * c;
+
+          clips[c].move(newInTime);
+        }
+        return;
+      }
+    }
+  }
+};
