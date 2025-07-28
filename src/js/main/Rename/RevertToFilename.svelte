@@ -5,8 +5,10 @@
   import { appId } from '../../lib/utils/cep';
   import { getContext } from 'svelte';
 
+  const renameContext = getContext('rename');
+
   const handleRevertToFilename = async () => {
-    const scope = getContext('rename').scope;
+    const scope = renameContext.scope;
     await evalES(`revertToFilename("${scope}")`);
   };
 </script>

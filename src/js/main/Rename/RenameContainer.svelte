@@ -60,19 +60,23 @@
     bind:value={selectedMode}
     onChange={handleOnMenuChange}
   />
+
   <div class="scope-selector">
-    <p>Scope:</p>
-    <ButtonGroup
-      items={[
-        { value: 'project', label: 'Project' },
-        {
-          value: 'timeline',
-          label: appId === 'AEFT' ? 'Composition' : 'Sequence',
-        },
-      ]}
-      onSelectionChange={handleScopeChange}
-    />
+    {#if selectedMode.value !== 'relink'}
+      <p>Scope:</p>
+      <ButtonGroup
+        items={[
+          { value: 'project', label: 'Project' },
+          {
+            value: 'timeline',
+            label: appId === 'AEFT' ? 'Composition' : 'Sequence',
+          },
+        ]}
+        onSelectionChange={handleScopeChange}
+      />
+    {/if}
   </div>
+
   <svelte:component this={selectedMode.component} />
 </div>
 

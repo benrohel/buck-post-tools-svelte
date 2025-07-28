@@ -6,11 +6,10 @@
   let find = '';
   let replace = '';
 
-  const { scope } = getContext('rename');
-
+  const renameContext = getContext('rename');
   const handleFindAndReplace = async () => {
     const options = {
-      scope: getContext('rename').scope,
+      scope: renameContext.scope,
       from: find,
       to: replace,
     };

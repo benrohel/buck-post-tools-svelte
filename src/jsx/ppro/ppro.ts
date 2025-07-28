@@ -422,12 +422,25 @@ export const addPrefixOrSuffix = (options: any) => {
 };
 
 export const renameShots = (options: any) => {
-  var shots = getAlltracksSelectedClips();
-  for (var s = 0; s < shots.length; s++) {
-    var shotNumber = (options.startValue + s * options.increment).toString();
-    var padString = padLeft(shotNumber, options.padding);
-    var shotName = options.prefix + padString;
-    shots[s].name = shotName;
+  var clips: any[] = [];
+  if (options.scope === 'project') {
+    clips = getProjectSelection();
+    for (var s = 0; s < clips.length; s++) {
+      var shotNumber = (options.startValue + s * options.increment).toString();
+      var padString = padLeft(shotNumber, options.padding);
+      var shotName = options.prefix + padString;
+      clips[s].name = shotName;
+    }
+    return true;
+  } else if (options.scope === 'timeline') {
+    clips = getAlltracksSelectedClips();
+    for (var s = 0; s < clips.length; s++) {
+      var shotNumber = (options.startValue + s * options.increment).toString();
+      var padString = padLeft(shotNumber, options.padding);
+      var shotName = options.prefix + padString;
+      clips[s].name = shotName;
+    }
+    return true;
   }
   return true;
 };
@@ -449,46 +462,86 @@ const renameClipFromSource = (shot: any) => {
 //   return true;
 // };
 
-export const revertToFilename = (scope: 'project' | 'composition') => {
+export const revertToFilename = (scope: 'project' | 'timeline') => {
   // Script to revert selected footage clip names to original file names
   // For Adobe Premiere Pro
+  let selectedItems: any[] = [];
 
-  try {
-    // Get all selected items in the project panel
-    var selectedItems = getProjectSelection();
+  if (scope === 'project') {
+    selectedItems = getProjectSelection();
+    try {
+      // Counter to track how many items were renamed
+      let renamedCount = 0;
 
-    // Counter to track how many items were renamed
-    var renamedCount = 0;
+      // Process each selected item
+      for (let i = 0; i < selectedItems.length; i++) {
+        let item = selectedItems[i];
 
-    // Process each selected item
-    for (var i = 0; i < selectedItems.length; i++) {
-      var item = selectedItems[i];
+        // Check if the item is footage (not a sequence, bin, or other project item)
+        if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
+          // Get the file path
+          var filePath = item.getMediaPath();
+          var file = new File(filePath);
+          // Extract just the filename from the path
+          var fileName = file.name;
 
-      // Check if the item is footage (not a sequence, bin, or other project item)
-      if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
-        // Get the file path
-        var filePath = item.getMediaPath();
-        var file = new File(filePath);
-        // Extract just the filename from the path
-        var fileName = file.name;
+          // Remove the file extension if desired (comment out these lines to keep extension)
+          // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+          // fileName = fileNameWithoutExt;
 
-        // Remove the file extension if desired (comment out these lines to keep extension)
-        // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-        // fileName = fileNameWithoutExt;
+          // Set the clip name to the file name
+          item.name = fileName;
 
-        // Set the clip name to the file name
-        item.name = fileName;
-
-        // Increment the counter
-        renamedCount++;
+          // Increment the counter
+          renamedCount++;
+        }
       }
+      return true;
+    } catch (error) {
+      return false;
     }
-    // Show result in alert
-    return (
-      'Renamed ' + renamedCount + ' footage items to their original file names.'
-    );
-  } catch (error: any) {
-    return 'Error renaming files';
+  }
+
+  if (scope === 'timeline') {
+    selectedItems = getAlltracksSelectedClips() as TrackItem[];
+    try {
+      // Counter to track how many items were renamed
+      let renamedCount = 0;
+
+      // Process each selected item
+      for (let i = 0; i < selectedItems.length; i++) {
+        let item = selectedItems[i] as TrackItem;
+
+        // Check if the item is footage (not a sequence, bin, or other project item)
+        if (
+          item.projectItem.type === ProjectItemType.CLIP &&
+          item.projectItem.isSequence() === false
+        ) {
+          // Get the file path
+          var filePath = item.projectItem.getMediaPath() as any;
+          var file = new File(filePath);
+          // Extract just the filename from the path
+          var fileName = file.name;
+
+          // Remove the file extension if desired (comment out these lines to keep extension)
+          // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+          // fileName = fileNameWithoutExt;
+
+          // Set the clip name to the file name
+          item.name = fileName;
+          // Increment the counter
+          renamedCount++;
+        }
+      }
+      // Show result in alert
+      return (
+        'Renamed ' +
+        renamedCount +
+        ' footage items to their original file names.'
+      );
+    } catch (error: any) {
+      return 'Error renaming files';
+    }
   }
 };
 
@@ -996,22 +1049,37 @@ export const exportSequenceXml = (filepath: string, sequenceId: string) => {
   return filepath;
 };
 
-export const versionUpNames = () => {
-  var selection = getSelectedSequences();
-  if (selection.length === 0) {
-    alert('No Sequences selected');
-    return false;
-  }
-  for (var c = 0; c < selection.length; c++) {
-    const currentVersion = selection[c].name.match(/_v(\d+)$/);
-    if (!currentVersion) {
-      alert(`No version token found in ${selection[c].name}`);
-      return false;
+export const versionUpNames = (scope: string) => {
+  var clips: any[] = [];
+  if (scope === 'project') {
+    clips = getProjectSelection();
+    for (var s = 0; s < clips.length; s++) {
+      const currentVersion = clips[s].name.match(/_v(\d+)$/);
+      if (!currentVersion) {
+        // selection[c].name = selection[c].name + '_v001';
+        alert(`No version token found in ${clips[s].name}`);
+        return false;
+      }
+      const version = parseInt(currentVersion[1]) + 1;
+      const versionString = padStart(version.toString(), 3, '0');
+      const newName = clips[s].name.replace(/_v(\d+)$/, `_v${versionString}`);
+      clips[s].name = newName;
     }
-    const version = parseInt(currentVersion[1]) + 1;
-    const versionString = padStart(version.toString(), 3, '0');
-    const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
-    selection[c].name = newName;
+    return true;
+  } else if (scope === 'timeline') {
+    clips = getAlltracksSelectedClips();
+    for (var s = 0; s < clips.length; s++) {
+      const currentVersion = clips[s].name.match(/_v(\d+)$/);
+      if (!currentVersion) {
+        alert(`No version token found in ${clips[s].name}`);
+        return false;
+      }
+      const version = parseInt(currentVersion[1]) + 1;
+      const versionString = padStart(version.toString(), 3, '0');
+      const newName = clips[s].name.replace(/_v(\d+)$/, `_v${versionString}`);
+      clips[s].name = newName;
+    }
+    return true;
   }
   return true;
 };

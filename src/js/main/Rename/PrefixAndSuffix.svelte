@@ -6,9 +6,11 @@
   let prefix = '';
   let suffix = '';
 
+  const renameContext = getContext('rename');
+
   const handlePrefixSuffix = async () => {
     const options = {
-      scope: getContext('rename').scope,
+      scope: renameContext.scope,
       prefix: prefix,
       suffix: suffix,
     };

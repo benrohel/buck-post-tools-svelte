@@ -21,13 +21,15 @@
 
   $: previewString = getOutputName();
 
+  const renameContext = getContext('rename');
+
   const handleRenameAction = async () => {
     const option = {
       prefix: prefix,
       startValue: parseInt(start),
       increment: parseInt(increment),
       padding: padding.length,
-      scope: getContext('rename').scope,
+      scope: renameContext.scope,
     };
     const optionString = JSON.stringify(option);
     await evalES(`renameShots(${optionString})`);
@@ -37,8 +39,6 @@
     const gap = parseInt(gapDuration);
     await AddGaps(gap, trackName);
   };
-
-  onMount(async () => {});
 </script>
 
 <div style="display:flex; flex-direction:column">
