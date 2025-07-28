@@ -337,7 +337,7 @@ export declare interface ProjectSettings {
   workingGamma: 2.2 | 2.4;
   linearizeWorkingSpace: boolean;
   linearBlending: boolean;
-  [key:string]: any;
+  [key: string]: any;
 }
 
 export const getProjectSettingsTemplate = (projectPath: string) => {
@@ -376,3 +376,16 @@ export const setProjectSettingsTemplate = (
   return true;
 };
 
+export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
+  const productionFolder = PRODUCTION_ROOT(projectPath);
+  if (!productionFolder) return null;
+  const scriptsFolder = path.join(
+    productionFolder,
+    'Common',
+    'Meta',
+    'aeft',
+    'scripts'
+  );
+  if (!fs.existsSync(scriptsFolder)) return null;
+  return scriptsFolder;
+};

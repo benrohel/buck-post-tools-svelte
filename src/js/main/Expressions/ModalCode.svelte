@@ -61,7 +61,7 @@
     let result = '';
     for (let i = 0; i < length; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length),
+        Math.floor(Math.random() * characters.length)
       );
     }
     return result;
@@ -123,7 +123,7 @@
     const tempFile = path.join(
       __dirname,
       'dist',
-      generateRandomString() + '.jsx',
+      generateRandomString() + '.jsx'
     );
     if (!fs.existsSync(path.dirname(tempFile))) {
       fs.mkdirSync(path.dirname(tempFile));
@@ -153,7 +153,7 @@
       const res = await callAnthropicAPI(
         gptMessage,
         $localAppStore.aiService.apiKey,
-        isScript ? 'scripts' : 'expressions',
+        isScript ? 'scripts' : 'expressions'
       );
 
       // const result = await callAiAgent(
@@ -304,14 +304,20 @@
       <!-- {/if} -->
     </div>
 
-    <CodeJar
-      class="hljs"
-      syntax="javascript"
-      {highlight}
-      bind:value={code}
-      withLineNumbers={true}
-      style="overflow: auto;"
-    />
+    <div
+      style="height: calc(100vh - 200px);
+    overflow-y: scroll;
+    margin-top: 8px;"
+    >
+      <CodeJar
+        class="hljs"
+        syntax="javascript"
+        {highlight}
+        bind:value={code}
+        withLineNumbers={true}
+        style="overflow: auto;"
+      />
+    </div>
     <div id="save-row">
       <Tooltip
         action={$appStore.showTooltips ? 'hover' : 'none'}
