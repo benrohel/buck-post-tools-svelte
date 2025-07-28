@@ -4,7 +4,7 @@
   export let value: any;
   export let placeholder = 'Select Tool';
   export let onChange;
-
+  export let options = {};
   $: focus = false;
   $: openable = () => {
     return items.length === 1 ? false : true;
@@ -13,6 +13,7 @@
 
 <div class="svelte-select-container">
   <Select
+    {...options}
     itemId="value"
     justValue
     searchable={false}
@@ -21,6 +22,8 @@
     {placeholder}
     showChevron={openable()}
     disabled={!openable()}
+    class="foo"
+    --list-position="fixed"
     on:change={() => {
       onChange(value);
       focus = false;
@@ -35,6 +38,8 @@
   .svelte-select-container {
     width: 100%;
     margin-bottom: 0px;
-    z-index: 1000;
+
+    :global(.foo) {
+    }
   }
 </style>

@@ -39,7 +39,6 @@
   .button-group {
     display: flex;
     box-sizing: border-box;
-    margin-bottom: 4px;
   }
 
   .button-group-item {

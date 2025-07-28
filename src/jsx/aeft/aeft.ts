@@ -7,6 +7,7 @@ export {
   getOutputModulesTemplates,
   getSelectedCompsForRender,
   getProjectFile,
+  getProjectDir,
   selectFolder,
   appVersion,
   importProjectAndSaveOutputModules,
@@ -110,18 +111,33 @@ export const addPrefixOrSuffix = (options: any) => {
     selectedClips[c].name = newName;
   }
 };
-
-export const renameShots = (options: any) => {
-  var sequence = app.project.activeItem;
-  if (!(sequence instanceof CompItem)) {
-    return false;
+interface RenameShotsOptions {
+  prefix: string;
+  startValue: number;
+  increment: number;
+  padding: number;
+  scope: 'project' | 'timeline';
+}
+export const renameShots = (options: RenameShotsOptions) => {
+  var selectedClips: any[] = [];
+  switch (options.scope) {
+    case 'project':
+      selectedClips = app.project.selection;
+      break;
+    case 'timeline':
+      var activeSequene = app.project.activeItem;
+      if (activeSequene instanceof CompItem) {
+        selectedClips = activeSequene.selectedLayers;
+      }
+      break;
+    default:
+      return;
   }
-  var shots = sequence.selectedLayers;
-  for (var s = 0; s < shots.length; s++) {
+  for (var s = 0; s < selectedClips.length; s++) {
     var shotNumber = (options.startValue + s * options.increment).toString();
     var padString = padStart(shotNumber, options.padding, '0');
     var shotName = options.prefix + padString;
-    shots[s].name = shotName;
+    selectedClips[s].name = shotName;
   }
   return true;
 };
@@ -140,15 +156,46 @@ const renameClipFromSource = (shot: any) => {
   }
 };
 
-export const renameToFile = () => {
-  var clips = app.project.selection;
-  if (clips.length === 0) {
-    alert('No clips selected');
-    return false;
+var renameLayerToSource = (layer: any) => {
+  if (layer && layer instanceof AVLayer) {
+    var sourceFile = layer.source.file;
+    if (!sourceFile) {
+      return;
+    } else {
+      var sourceName = sourceFile.displayName;
+      layer.name = sourceName;
+    }
+  } else {
+    alert('Not a layer');
   }
-  for (var c = 0; c < clips.length; c++) {
-    renameClipFromSource(clips[c]);
+};
+
+export const revertToFilename = (scope: 'project' | 'timeline') => {
+  app.beginUndoGroup('Revert To Filename');
+  if (scope === 'timeline') {
+    var sequence = app.project.activeItem;
+    if (!(sequence instanceof CompItem)) {
+      return false;
+    }
+    var layers = sequence.selectedLayers;
+    if (layers.length === 0) {
+      alert('No layers selected');
+      return false;
+    }
+    for (var l = 0; l < layers.length; l++) {
+      renameLayerToSource(layers[l]);
+    }
+  } else {
+    var clips = app.project.selection;
+    if (clips.length === 0) {
+      alert('No clips selected');
+      return false;
+    }
+    for (var c = 0; c < clips.length; c++) {
+      renameClipFromSource(clips[c]);
+    }
   }
+  app.endUndoGroup();
   return true;
 };
 
@@ -269,7 +316,6 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
     // Apply the template
     try {
-     
       om.applyTemplate(presetName);
       om.file = new File(presetPath);
     } catch (e: any) {
@@ -339,28 +385,55 @@ export const buildCornerPinFromNuke = (trackingData: TrackersData) => {
   }
 };
 
-export const versionUpNames = () => {
-  var selection = app.project.selection;
-  if (selection.length === 0) {
-    alert('No clips selected');
-    return false;
-  }
-
-  for (var c = 0; c < selection.length; c++) {
-    if (!(selection[c] instanceof CompItem)) {
-      continue;
-    }
-    const currentVersion = selection[c].name.match(/_v(\d+)$/);
-    if (!currentVersion) {
-      alert(`No version token found in ${selection[c].name}`);
+export const versionUpNames = (scope: 'project' | 'timeline') => {
+  if (scope === 'project') {
+    var selection = app.project.selection;
+    if (selection.length === 0) {
+      alert('No clips selected');
       return false;
     }
-    const version = parseInt(currentVersion[1], 10);
-    const versionString = padStart((version + 1).toString(), 3, '0');
-    const newName = selection[c].name.replace(/_v(\d+)$/, `_v${versionString}`);
-    selection[c].name = newName;
+
+    for (var c = 0; c < selection.length; c++) {
+      if (!(selection[c] instanceof CompItem)) {
+        continue;
+      }
+      const currentVersion = selection[c].name.match(/_v(\d+)$/);
+      if (!currentVersion) {
+        alert(`No version token found in ${selection[c].name}`);
+        return false;
+      }
+      const version = parseInt(currentVersion[1], 10);
+      const versionString = padStart((version + 1).toString(), 3, '0');
+      const newName = selection[c].name.replace(
+        /_v(\d+)$/,
+        `_v${versionString}`
+      );
+      selection[c].name = newName;
+    }
+    return true;
+  } else {
+    var sequence = app.project.activeItem;
+    if (!(sequence instanceof CompItem)) {
+      return false;
+    }
+    var layers = sequence.selectedLayers;
+    if (layers.length === 0) {
+      alert('No layers selected');
+      return false;
+    }
+    for (var l = 0; l < layers.length; l++) {
+      const currentVersion = layers[l].name.match(/_v(\d+)$/);
+      if (!currentVersion) {
+        alert(`No version token found in ${layers[l].name}`);
+        return false;
+      }
+      const version = parseInt(currentVersion[1], 10);
+      const versionString = padStart((version + 1).toString(), 3, '0');
+      const newName = layers[l].name.replace(/_v(\d+)$/, `_v${versionString}`);
+      layers[l].name = newName;
+    }
+    return true;
   }
-  return true;
 };
 
 export const goToFrame = (nodeId: number) => {

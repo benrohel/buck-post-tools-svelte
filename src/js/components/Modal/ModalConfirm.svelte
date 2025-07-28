@@ -46,7 +46,9 @@
     <button id="close" on:click={handleOnClose}>
       <XCircle size={20} />
     </button>
-    <h3>{question}</h3>
+    <div style="text-align:center; width:80%">
+      <h3>{question}</h3>
+    </div>
     <div class="modal-actions">
       <button
         class="active"

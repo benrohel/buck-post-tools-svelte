@@ -15,6 +15,7 @@
   import { Tooltip } from '@svelte-plugins/tooltips';
 
   import Select from 'svelte-select';
+  import Toggle from '../../components/Toggle/Toggle.svelte';
 
   const tokenList = [
     {
@@ -118,6 +119,7 @@
   let showBuildPreset = false;
   let presetName = '';
   let prefix = '';
+  let useProjectFolder = false;
 
   $: selectedTask = tasks[0];
   $: modalOpen = false;
@@ -200,10 +202,6 @@
     }
 
     modalOpen = false;
-  };
-
-  const handleSetOutputFolder = async (value: string) => {
-    sequenceOutputFolder.set(value);
   };
 
   interface CompRenderData {

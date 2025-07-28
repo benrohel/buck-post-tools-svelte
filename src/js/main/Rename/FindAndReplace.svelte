@@ -1,17 +1,20 @@
 <script lang="ts">
-  import { getContext } from "svelte";
-  import { ArrowLeftRight } from "lucide-svelte";
-  import { evalES } from "../../lib/utils/bolt";
+  import { getContext } from 'svelte';
+  import { ArrowLeftRight } from 'lucide-svelte';
+  import { evalES } from '../../lib/utils/bolt';
 
-  let find = "";
-  let replace = "";
+  let find = '';
+  let replace = '';
 
+  const renameContext = getContext('rename');
   const handleFindAndReplace = async () => {
     const options = {
-      scope: "project",
+      scope: renameContext.scope,
       from: find,
       to: replace,
     };
+
+    console.log(options);
 
     await evalES(`findAndReplace(${JSON.stringify(options)})`, false).then(
       (res) => {

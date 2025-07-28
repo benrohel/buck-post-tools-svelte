@@ -1,7 +1,9 @@
 import { writable, Writable } from 'svelte/store';
 import { appId } from '../lib/utils/cep';
-export const appVersion = writable('');
+import {version} from "../../../package.json"
 
+export const appVersion = writable('');
+export const extensionVersion = writable(version);
 
 interface AiService {
   name: "Claude" | "ChatGPT";
@@ -19,6 +21,7 @@ export interface AppStore {
   favoriteExpressions: string[];
   aiService: AiService;
   devMode: boolean;
+  userScriptsFolder: string;
 }
 
 export const defaultAppStore: AppStore = {
@@ -35,6 +38,7 @@ export const defaultAppStore: AppStore = {
     apiKey: '',
   },
   devMode: false,
+  userScriptsFolder: '',
 };
 
 export const appStore = writable<AppStore>(defaultAppStore);

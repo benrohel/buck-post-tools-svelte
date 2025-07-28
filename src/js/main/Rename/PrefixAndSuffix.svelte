@@ -1,13 +1,16 @@
 <script lang="ts">
-  import { ArrowLeftRight } from "lucide-svelte";
-  import { evalES } from "../../lib/utils/bolt";
+  import { ArrowLeftRight } from 'lucide-svelte';
+  import { evalES } from '../../lib/utils/bolt';
+  import { getContext } from 'svelte';
 
-  let prefix = "";
-  let suffix = "";
+  let prefix = '';
+  let suffix = '';
+
+  const renameContext = getContext('rename');
 
   const handlePrefixSuffix = async () => {
     const options = {
-      scope: "project",
+      scope: renameContext.scope,
       prefix: prefix,
       suffix: suffix,
     };

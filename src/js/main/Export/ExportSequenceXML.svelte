@@ -38,7 +38,7 @@
       rootFolder,
       suffix.length > 0
         ? `${sequence.name}_${suffix}.xml`
-        : sequence.name + '.xml',
+        : sequence.name + '.xml'
     );
     console.log(filepath);
     if (!fs.existsSync(filepath)) {
@@ -47,7 +47,7 @@
     return new Promise((resolve, reject) => {
       const result = evalES(
         `exportSequenceXml("${filepath}","${sequence.nodeId}")`,
-        false,
+        false
       );
       if (result) {
         resolve(result);
@@ -86,11 +86,11 @@
   class="folder-select"
   style="display:flex; flex-direction:row; gap:4px; margin-left:2px; margin-right:2px"
 >
-  <label for="root-folder">Root Folder:</label>
+  <label for="root-folder">Destination Folder:</label>
   <SelectFolderWeb
     onChange={setRootFolder}
     bind:value={rootFolder}
-    label="Set Root Folder"
+    label="Set Destination Folder"
   />
 </div>
 <div class="flex-row-start">
