@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, setContext, onMount } from 'svelte';
   import FindAndReplace from './FindAndReplace.svelte';
   import PrefixSuffix from './PrefixAndSuffix.svelte';
   import SequentialRename from './SequentialRename.svelte';
@@ -8,6 +8,10 @@
   import VersionUp from './VersionUp.svelte';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import QuickRenameTools from './QuickRenameTools.svelte';
+  import { appId } from '../../lib/utils/cep';
+  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
+
+  const renameContext = getContext('rename');
 
   const renameModes = [
     { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
@@ -33,19 +37,57 @@
     },
     {
       value: 'relink',
-      label: 'Rename and Relink',
+      label: 'Rename and Relink --project items only',
       component: ReplaceAndRelink,
     },
   ];
 
   let selectedMode: any = renameModes[0];
   const handleOnMenuChange = (value: any) => (selectedMode = value);
+
+  const handleScopeChange = (item: any) => {
+    renameContext.scope = item.value;
+  };
+
+  onMount(() => {
+    renameContext.scope = 'project';
+  });
 </script>
 
-<MenuSelect
-  items={renameModes}
-  bind:value={selectedMode}
-  onChange={handleOnMenuChange}
-/>
+<div>
+  <MenuSelect
+    items={renameModes}
+    bind:value={selectedMode}
+    onChange={handleOnMenuChange}
+  />
+  <div class="scope-selector">
+    <p>Scope:</p>
+    <ButtonGroup
+      items={[
+        { value: 'project', label: 'Project' },
+        {
+          value: 'timeline',
+          label: appId === 'AEFT' ? 'Composition' : 'Sequence',
+        },
+      ]}
+      onSelectionChange={handleScopeChange}
+    />
+  </div>
+  <svelte:component this={selectedMode.component} />
+</div>
 
-<svelte:component this={selectedMode.component} />
+<style lang="scss">
+  .scope-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .scope-selector-item {
+    display: flex;
+    direction: row;
+    gap: 10px;
+    align-items: center;
+  }
+</style>

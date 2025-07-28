@@ -15,7 +15,7 @@
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
-  import RenameContainer from './Rename/RenameContainer.svelte';
+  import RenameContext from './Rename/RenameContext.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
   import ToolsContainer from './Tools/ScriptsContainer.svelte';
@@ -54,7 +54,7 @@
     {
       label: 'Renaming Tools',
       value: 2,
-      component: RenameContainer,
+      component: RenameContext,
       icon: WrapText,
       apps: ['AEFT', 'PPRO'],
     },

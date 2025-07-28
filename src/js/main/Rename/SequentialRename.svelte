@@ -4,6 +4,7 @@
   import Button from '../../components/Button/Button.svelte';
   import { appId } from '../../lib/utils/cep';
   import { AddGaps } from '../../api/sequence';
+  import { getContext } from 'svelte';
   let prefix = 'SH';
   let start = '10';
   let increment = '10';
@@ -25,7 +26,8 @@
       prefix: prefix,
       startValue: parseInt(start),
       increment: parseInt(increment),
-      padding: padding,
+      padding: padding.length,
+      scope: getContext('rename').scope,
     };
     const optionString = JSON.stringify(option);
     await evalES(`renameShots(${optionString})`);
@@ -39,9 +41,6 @@
   onMount(async () => {});
 </script>
 
-{#if appId === 'AEFT'}
-  <div>scope = Composition</div>
-{/if}
 <div style="display:flex; flex-direction:column">
   <div class="row">
     <label for="prefix">Prefix</label>
