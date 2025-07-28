@@ -22,7 +22,7 @@ const preferencesRoot =
   os.platform() === 'win32'
     ? 'AppData\\Roaming'
     : 'Library/Application Support';
-const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
+export const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
 const preferencesPath = path.join(preferencesDir, 'preferences.json');
 
 /**

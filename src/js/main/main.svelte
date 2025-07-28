@@ -130,6 +130,10 @@
 
     if ($extensionVersion) {
       checkForUpdate($extensionVersion).then((v) => {
+        if (!v) {
+          console.log('No update available');
+          return;
+        }
         latestVersion = {
           version: `${v.version.major}.${v.version.minor}.${v.version.micro}`,
           path: v.path,

@@ -1,5 +1,8 @@
-import { fs, path, os, child_process } from '../lib/cep/node';
+import { rename } from 'fs';
+import { fs, path, os, child_process ,zlib} from '../lib/cep/node';
 import { DOMParser } from 'xmldom';
+import {preferencesDir} from './preferences';
+import { execSync } from 'child_process';
 const { exec } = child_process;
 const macPrefixes = ['buck', 'System/Volumes/Data/buck', 'Volumes'];
 
@@ -133,25 +136,57 @@ export const checkForUpdate = async (extensionVersion: string) => {
 export const installFromLocalFilepath = async (filepath: string) => {
   const zipPath = filepath; // local file path
   const panelPath = __dirname;
+ return new Promise((resolve, reject) => {
 
   let command = 'unzip';
   if(os.platform() === 'darwin') {
-    command = `unzip -o "${zipPath}" -d "${panelPath}"`
-  }else if(os.platform() === 'win32') {
-    command = `powershell -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${panelPath}' -Force"`;
-  }
-  console.log("Running update unzip...");
-
-  return new Promise((resolve, reject) => {
+    command = `unzip -o "${zipPath}" -d "${panelPath}"`;
     exec(command, (error, stdout, stderr) => {
       if (error) {
         console.error(`Unzip failed: ${error.message}`);
-        return reject(error);
+        reject(false);
+      }else {
+        console.log("Unzip completed.");
+        console.log(stdout);
+        console.log(`New version installed successfully to ${panelPath}`);
+        resolve(true);
+      }
+    });
+  }else if(os.platform() === 'win32') {
+    console.log("zip path", zipPath);
+    const panelName = path.basename(zipPath);
+    const tempZip = path.join(preferencesDir,panelName.replace('.zxp', '.zip'));
+    if(!fs.existsSync(zipPath)) {
+      console.error(`File does not exist: ${zipPath}`);
+      return reject(false);
+    }
+    fs.copyFileSync(zipPath, tempZip);
+    if(!fs.existsSync(tempZip)) {
+      console.error(`Failed to copy file from ${zipPath} to ${tempZip}`);
+      return reject(false);
+    }
+    console.log("tempZip", tempZip);
+    command = `powershell -Command "Expand-Archive -Path '${tempZip}' -DestinationPath '${panelPath}' -Force"`;
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Unzip failed: ${error.message}`);
+        reject(false);
       }
       console.log("Unzip completed.");
-      console.log(stdout);
-      console.log(`New version installed successfully to ${panelPath}`);
-      resolve(true);
-    });
+      try {
+        fs.unlink(tempZip, (err) => {
+  if (err) console.error('Failed to delete temp zip:', err.message);
+  else console.log('Temp zip deleted.');
+});
+  } catch (err) {
+    console.error('Failed to delete temp zip:', err.message);
+  }
+  console.log(`New version installed successfully to ${panelPath}`);
+  resolve(true);
+});
+  }
+  console.log("Running update unzip...");
+
+    
   });
 }
