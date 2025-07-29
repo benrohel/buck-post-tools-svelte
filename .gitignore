@@ -4,6 +4,7 @@ dist
 .DS_Store
 tokens.json
 .yarn
-yarn.lock
+yarn
 secrets.ts
 externals
+yarn.lock
