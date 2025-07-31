@@ -10,8 +10,8 @@
   import { appId } from '../../lib/utils/cep';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   let aiServices = [
-    { label: 'Claude AI', value: 'Claude AI' },
-    { label: 'OpenAI', value: 'OpenAI' },
+    { label: 'Claude AI', value: 'Claude' },
+    { label: 'OpenAI', value: 'ChatGPT' },
   ];
 
   let apiKey = '';
@@ -22,9 +22,18 @@
   };
 
   const handleServiceChange = () => {
+    // Get the default model based on the selected service
+    const model = selectedService.value === 'Claude' 
+      ? 'claude-3-7-sonnet-20250219' 
+      : 'gpt-4';
+      
     appStore.update((s: AppStore) => ({
       ...s,
-      aiService: { apiKey, name: selectedService.value },
+      aiService: { 
+        apiKey, 
+        name: selectedService.value as "Claude" | "ChatGPT", 
+        model 
+      },
     }));
 
     if (
@@ -46,7 +55,16 @@
   };
 
   const saveSettings = () => {
-    const aiService = { apiKey, name: selectedService.value };
+    // Get the default model based on the selected service
+    const model = selectedService.value === 'Claude' 
+      ? 'claude-3-7-sonnet-20250219' 
+      : 'gpt-4';
+      
+    const aiService = { 
+      apiKey, 
+      name: selectedService.value as "Claude" | "ChatGPT", 
+      model 
+    };
     appStore.update((s: AppStore) => ({ ...s, aiService }));
     localAppStore.set($appStore);
     if ($localAppStore === $appStore) {

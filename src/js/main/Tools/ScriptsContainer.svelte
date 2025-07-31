@@ -36,7 +36,7 @@
     $appStore.userScriptsFolder,
   );
   $: buckScripts = getBuckScripts(appId);
-  $: projectScripts = [];
+  $: projectScripts = [] as Script[];
 
   // $: buckToolArray = () => {
   //   return Object.keys(tools)
