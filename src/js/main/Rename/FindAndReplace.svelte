@@ -2,14 +2,15 @@
   import { getContext } from 'svelte';
   import { ArrowLeftRight } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
+  import { RenameContext } from './RenameContext';
 
   let find = '';
   let replace = '';
 
-  const renameContext = getContext('rename');
+  const renameContext = getContext('rename') as RenameContext;
   const handleFindAndReplace = async () => {
     const options = {
-      scope: renameContext.scope,
+      scope: renameContext.getScope,
       from: find,
       to: replace,
     };
@@ -19,7 +20,7 @@
     await evalES(`findAndReplace(${JSON.stringify(options)})`, false).then(
       (res) => {
         console.log(res);
-      }
+      },
     );
   };
 

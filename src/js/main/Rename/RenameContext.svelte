@@ -1,8 +1,7 @@
 <script lang="ts">
   import { getContext, setContext } from 'svelte';
   import RenameContainer from './RenameContainer.svelte';
-  type RenameScope = 'project' | 'timeline';
-
+  import { RenameScope } from './RenameContext';
   let scope: RenameScope = 'project';
 
   const renameContext = {

@@ -5,6 +5,7 @@
   import { appId } from '../../lib/utils/cep';
   import { AddGaps } from '../../api/sequence';
   import { getContext } from 'svelte';
+  import { RenameContext } from './RenameContext';
   let prefix = 'SH';
   let start = '10';
   let increment = '10';
@@ -21,15 +22,15 @@
 
   $: previewString = getOutputName();
 
-  const renameContext = getContext('rename');
+  const renameContext = getContext('rename') as RenameContext;
 
   const handleRenameAction = async () => {
     const option = {
       prefix: prefix,
       startValue: parseInt(start),
       increment: parseInt(increment),
-      padding: padding.length,
-      scope: renameContext.scope,
+      padding: padding,
+      scope: renameContext.getScope,
     };
     const optionString = JSON.stringify(option);
     await evalES(`renameShots(${optionString})`);

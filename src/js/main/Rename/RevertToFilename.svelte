@@ -4,11 +4,12 @@
   import { notifications } from '../../stores/notifications-store';
   import { appId } from '../../lib/utils/cep';
   import { getContext } from 'svelte';
+  import { RenameContext } from './RenameContext';
 
-  const renameContext = getContext('rename');
+  const renameContext = getContext('rename') as RenameContext;
 
   const handleRevertToFilename = async () => {
-    const scope = renameContext.scope;
+    const scope = renameContext.getScope;
     await evalES(`revertToFilename("${scope}")`);
   };
 </script>

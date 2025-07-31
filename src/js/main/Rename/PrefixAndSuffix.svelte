@@ -1,16 +1,17 @@
 <script lang="ts">
   import { ArrowLeftRight } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
+  import { RenameContext } from './RenameContext';
   import { getContext } from 'svelte';
 
   let prefix = '';
   let suffix = '';
 
-  const renameContext = getContext('rename');
+  const renameContext = getContext('rename') as RenameContext;
 
   const handlePrefixSuffix = async () => {
     const options = {
-      scope: renameContext.scope,
+      scope: renameContext.getScope,
       prefix: prefix,
       suffix: suffix,
     };
@@ -18,7 +19,7 @@
     await evalES(`addPrefixOrSuffix(${JSON.stringify(options)})`, false).then(
       (res) => {
         console.log(res);
-      }
+      },
     );
   };
 

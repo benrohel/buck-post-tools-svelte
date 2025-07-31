@@ -11,7 +11,9 @@
   import { appId } from '../../lib/utils/cep';
   import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
 
-  const renameContext = getContext('rename');
+  import { type RenameContext, renameContextKey } from './RenameContext';
+
+  const renameContext = getContext('rename') as RenameContext;
 
   const renameModes = [
     { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
@@ -46,12 +48,10 @@
   const handleOnMenuChange = (value: any) => (selectedMode = value);
 
   const handleScopeChange = (item: any) => {
-    renameContext.scope = item.value;
+    renameContext.getScope = item.value;
   };
 
-  onMount(() => {
-    renameContext.scope = 'project';
-  });
+  onMount(() => {});
 </script>
 
 <div>
