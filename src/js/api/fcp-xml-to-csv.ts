@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseStringPromise } from 'xml2js';
-
+import Papa from 'papaparse';
 interface ClipData {
   event: number;
   name: string;
@@ -42,6 +42,75 @@ class XmemlParser {
   async convertXmemlToCSV(inputPath: string, outputPath?: string): Promise<void> {
     return this.convertToFCPXMLToCSV(inputPath, outputPath);
   }
+
+  async convertXmlToJSON(inputPath: string): Promise<ClipData[]> {
+    try {
+      console.log(`Reading XMEML file: ${inputPath}`);
+
+      // Read XMEML file
+      const xmlContent = fs.readFileSync(inputPath, 'utf-8');
+      console.log(`File size: ${xmlContent.length} characters`);
+
+      // Parse XML with different settings
+      console.log('Parsing XML...');
+      const parsedXML = await parseStringPromise(xmlContent, {
+        explicitArray: false,
+        mergeAttrs: true,
+        explicitRoot: true,
+        normalize: true,
+        normalizeTags: true,
+        trim: true
+      });
+
+      console.log('XML parsed successfully');
+
+      // Store parsed data for reference lookups
+      this.parsedSequences = parsedXML;
+
+      // Reset clips array and counters for fresh conversion
+      this.clips = [];
+      this.eventCounter = 1;
+      this.processedVideoClips.clear();
+
+      // Process sequences to extract clip data
+      this.processSequences(parsedXML);
+
+      console.log(`Total clips found: ${this.clips.length}`);
+
+      return this.clips;
+
+    } catch (error) {
+      console.error('Error converting XMEML to JSON:', error);
+      throw error;
+    }
+  }
+
+  writeJSONFile(clips: ClipData[], outputPath: string): void {
+    const jsonData = JSON.stringify(clips, null, 2);
+    fs.writeFileSync(outputPath, jsonData, 'utf-8');
+    console.log(`JSON written to: ${outputPath}`);
+  }
+
+  groupClipsByName(clips: ClipData[]): Record<string, ClipData[]> {
+    const grouped: Record<string, ClipData[]> = {};
+    
+    clips.forEach(clip => {
+      if (!grouped[clip.name]) {
+        grouped[clip.name] = [];
+      }
+      grouped[clip.name].push(clip);
+    });
+
+    // Sort each group by startTime for consistency
+    Object.keys(grouped).forEach(name => {
+      grouped[name].sort((a, b) => a.startTime - b.startTime);
+    });
+
+    console.log(`Grouped ${clips.length} clips into ${Object.keys(grouped).length} unique names`);
+    return grouped;
+  }
+
+
 
   async convertToFCPXMLToCSV(inputPath: string, outputPath?: string): Promise<void> {
     try {
@@ -136,7 +205,7 @@ class XmemlParser {
   private processMedia(media: any): void {
     console.log("Processing media, keys:", Object.keys(media));
 
-    // Process video tracks - look for tracks without audio-specific attributes
+    // First pass: Process only actual video tracks to store file information
     if (media.video && media.video.track) {
       const videoTracks = Array.isArray(media.video.track) ? media.video.track : [media.video.track];
       console.log(`Found ${videoTracks.length} video track(s)`);
@@ -144,11 +213,23 @@ class XmemlParser {
       videoTracks.forEach((track: any, trackIndex: number) => {
         // Check if this is actually an audio track by examining attributes
         const isAudioTrack = this.isAudioTrack(track);
+        if (!isAudioTrack) {
+          // Process only true video tracks first
+          this.processTrack(track, 'Video', trackIndex + 1);
+        }
+      });
+    }
+
+    // Second pass: Process audio tracks (including those in video track structure)
+    if (media.video && media.video.track) {
+      const videoTracks = Array.isArray(media.video.track) ? media.video.track : [media.video.track];
+
+      videoTracks.forEach((track: any, trackIndex: number) => {
+        // Check if this is actually an audio track by examining attributes
+        const isAudioTrack = this.isAudioTrack(track);
         if (isAudioTrack) {
           console.log(`Track ${trackIndex + 1} identified as audio track`);
           this.processTrack(track, 'Audio', trackIndex + 1);
-        } else {
-          this.processTrack(track, 'Video', trackIndex + 1);
         }
       });
     } else {
@@ -240,17 +321,17 @@ class XmemlParser {
       const clip: ClipData = {
         event: this.eventCounter++,
         name: this.safeToString(clipitem.name) || 'Unnamed Clip',
-        startTime: startTime,
-        endTime: endTime,
-        duration: endTime - startTime, // Timeline duration, not source clip duration
+        startTime: parseFloat(startTime.toFixed(4)),
+        endTime: parseFloat(endTime.toFixed(4)),
+        duration: parseFloat((endTime - startTime).toFixed(4)), // Timeline duration, not source clip duration
         shotDurationFrames: shotDurationFrames,
         trackType,
         trackIndex,
         sourceFile: '',
         macFilepath: '',
         winFilepath: '',
-        inPoint: this.framesToSeconds(inFrame),
-        outPoint: this.framesToSeconds(outFrame),
+        inPoint: parseFloat(this.framesToSeconds(inFrame).toFixed(4)),
+        outPoint: parseFloat(this.framesToSeconds(outFrame).toFixed(4)),
         enabled: this.safeToString(clipitem.enabled) === 'TRUE',
         masterClipId: this.safeToString(clipitem.masterclipid) || '',
         clipId: this.safeToString(clipitem.id) || '',
@@ -283,11 +364,6 @@ class XmemlParser {
         if (file.media) {
           this.extractMediaInfo(file.media, clip, trackType);
         }
-      } else {
-        // Handle audio clips that reference files by ID or have empty file references
-        // For audio tracks, the file information might be referenced elsewhere
-        // Try to find the file information from links or master clip references
-        this.extractFileInfoFromReferences(clipitem, clip, trackType);
       }
 
       // Extract label information
@@ -300,6 +376,21 @@ class XmemlParser {
       // Store video clips for reference by audio clips
       if (trackType === 'Video' && clip.masterClipId && clipitem.file) {
         console.log(`Storing video clip for master clip ID: ${clip.masterClipId}`);
+
+        // Extract audio info from the video clip's media data
+        let audioSampleRate = undefined;
+        let audioChannels = undefined;
+
+        if (clipitem.file.media && clipitem.file.media.audio) {
+          const audioMedia = clipitem.file.media.audio;
+          if (audioMedia.samplecharacteristics && audioMedia.samplecharacteristics.samplerate) {
+            audioSampleRate = parseInt(this.safeToString(audioMedia.samplecharacteristics.samplerate));
+          }
+          if (audioMedia.channelcount) {
+            audioChannels = parseInt(this.safeToString(audioMedia.channelcount));
+          }
+        }
+
         this.processedVideoClips.set(clip.masterClipId, {
           file: clipitem.file,
           sourceFile: clip.sourceFile,
@@ -308,13 +399,21 @@ class XmemlParser {
           shotDurationFrames: clip.shotDurationFrames,
           timecodeStart: clip.timecodeStart,
           timecodeEnd: clip.timecodeEnd,
-          sampleRate: clip.sampleRate,
-          audioChannels: clip.audioChannels
+          sampleRate: audioSampleRate,
+          audioChannels: audioChannels
         });
         console.log(`Stored video clip data:`, {
           sourceFile: clip.sourceFile,
-          masterClipId: clip.masterClipId
+          masterClipId: clip.masterClipId,
+          sampleRate: audioSampleRate,
+          audioChannels: audioChannels
         });
+      }
+
+      // Handle audio clips that don't have direct file references
+      // This must be done AFTER video clips are stored
+      if (trackType === 'Audio' && !clip.sourceFile) {
+        this.extractFileInfoFromReferences(clipitem, clip, trackType);
       }
 
       this.clips.push(clip);
@@ -399,7 +498,11 @@ class XmemlParser {
       console.log(`Available stored master clip IDs:`, Array.from(this.processedVideoClips.keys()));
       const storedVideoClip = this.processedVideoClips.get(clip.masterClipId);
       if (storedVideoClip) {
-        console.log(`Found stored video clip for ${clip.masterClipId}`);
+        console.log(`Found stored video clip for ${clip.masterClipId}:`, {
+          sourceFile: storedVideoClip.sourceFile,
+          sampleRate: storedVideoClip.sampleRate,
+          audioChannels: storedVideoClip.audioChannels
+        });
         clip.sourceFile = storedVideoClip.sourceFile;
         clip.macFilepath = storedVideoClip.macFilepath;
         clip.winFilepath = storedVideoClip.winFilepath;
@@ -411,6 +514,7 @@ class XmemlParser {
         if (trackType === 'Audio') {
           clip.sampleRate = storedVideoClip.sampleRate;
           clip.audioChannels = storedVideoClip.audioChannels;
+          console.log(`Applied audio info to audio clip: sampleRate=${clip.sampleRate}, channels=${clip.audioChannels}`);
         }
       } else {
         console.log(`No stored video clip found for ${clip.masterClipId}`);
@@ -645,8 +749,8 @@ class XmemlParser {
         this.escapeCsvField(clip.sourceFile),
         this.escapeCsvField(clip.macFilepath),
         this.escapeCsvField(clip.winFilepath),
-        clip.inPoint.toFixed(3),
-        clip.outPoint.toFixed(3),
+        clip.inPoint.toFixed(4),
+        clip.outPoint.toFixed(4),
         clip.enabled.toString(),
         this.escapeCsvField(clip.masterClipId),
         this.escapeCsvField(clip.clipId),
@@ -684,14 +788,25 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
-    console.log('Usage: node xmeml-converter.js <input.xml> [output.csv]');
+    console.log('Usage: node xmeml-converter.js <input.xml> [output] [--json] [--group]');
     console.log('');
-    console.log('Convert Final Cut Pro Legacy XML (XMEML) files to CSV format');
+    console.log('Convert Final Cut Pro Legacy XML (XMEML) files to CSV or JSON format');
     console.log('');
     console.log('Arguments:');
     console.log('  input.xml      Path to input XMEML file');
-    console.log('  output.csv     Optional path to output CSV file');
-    console.log('                 (defaults to same name as input with .csv extension)');
+    console.log('  output         Optional path to output file');
+    console.log('                 (defaults to same name as input with .csv/.json extension)');
+    console.log('');
+    console.log('Options:');
+    console.log('  --json         Output as JSON instead of CSV');
+    console.log('  --group        Group JSON items by clip name (only works with --json)');
+    console.log('');
+    console.log('Examples:');
+    console.log('  node xmeml-converter.js input.xml                     # Output to input.csv');
+    console.log('  node xmeml-converter.js input.xml output.csv          # Output to output.csv');
+    console.log('  node xmeml-converter.js input.xml --json              # Output to input.json');
+    console.log('  node xmeml-converter.js input.xml --json --group      # Output grouped JSON');
+    console.log('  node xmeml-converter.js input.xml output.json --json --group  # Output grouped JSON to file');
     console.log('');
     console.log('Note: This converter supports Legacy Final Cut Pro XML (XMEML) format,');
     console.log('      not the newer Final Cut Pro X XML (FCPXML) format.');
@@ -699,7 +814,15 @@ async function main(): Promise<void> {
   }
 
   const inputPath = args[0];
-  const outputPath = args[1];
+  const isJsonOutput = args.includes('--json');
+  const shouldGroup = args.includes('--group');
+  let outputPath = args.find(arg => arg !== inputPath && !arg.startsWith('--'));
+
+  // Validate arguments
+  if (shouldGroup && !isJsonOutput) {
+    console.error('Error: --group option can only be used with --json');
+    process.exit(1);
+  }
 
   // Check if input file exists
   if (!fs.existsSync(inputPath)) {
@@ -707,9 +830,37 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Generate output path if not provided
+  if (!outputPath) {
+    const baseName = path.basename(inputPath, path.extname(inputPath));
+    const extension = isJsonOutput ? '.json' : '.csv';
+    outputPath = path.join(path.dirname(inputPath), `${baseName}${extension}`);
+  }
+
   try {
     const parser = new XmemlParser();
-    await parser.convertToFCPXMLToCSV(inputPath, outputPath);
+    
+    if (isJsonOutput) {
+      const clips = await parser.convertXmlToJSON(inputPath);
+      
+      if (shouldGroup) {
+        const groupedClips = parser.groupClipsByName(clips);
+        const jsonData = JSON.stringify(groupedClips, null, 2);
+        fs.writeFileSync(outputPath, jsonData, 'utf-8');
+        console.log(`Successfully converted XMEML to grouped JSON!`);
+        console.log(`Input: ${inputPath}`);
+        console.log(`Output: ${outputPath}`);
+        console.log(`Processed ${clips.length} clips into ${Object.keys(groupedClips).length} groups`);
+      } else {
+        parser.writeJSONFile(clips, outputPath);
+        console.log(`Successfully converted XMEML to JSON!`);
+        console.log(`Input: ${inputPath}`);
+        console.log(`Output: ${outputPath}`);
+        console.log(`Processed ${clips.length} clips`);
+      }
+    } else {
+      await parser.convertToFCPXMLToCSV(inputPath, outputPath);
+    }
   } catch (error) {
     console.error('Conversion failed:', error);
     process.exit(1);
