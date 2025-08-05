@@ -18,7 +18,7 @@ export interface PathItem {
   type: 'folder' | 'file';
   path: string;
   name: string;
-  isEditing: boolean;
+  isEditing?: boolean;
   outputModule?: string;
   children?: PathItem[];
   expanded?: boolean;

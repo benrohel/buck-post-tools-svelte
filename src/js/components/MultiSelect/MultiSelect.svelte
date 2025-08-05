@@ -22,10 +22,17 @@
   export let title = 'Select an option';
 
   $: filteredOptions = getFilteredOptions();
+  $: console.log(
+    'MultiSelect options:',
+    options,
+    'filteredOptions:',
+    filteredOptions,
+  );
 
-  let expanded = true;
+  let expanded = false;
   let multiselect: HTMLDivElement;
-  $: selectBox = document.getElementById('select-box') as HTMLDivElement;
+  let selectBox: HTMLDivElement;
+  let checkboxesDiv: HTMLDivElement;
   $: showingChekBox = showCheckbox;
 
   function toggleSelect(option: MultiSelectOption) {
@@ -40,6 +47,7 @@
   }
 
   function getFilteredOptions() {
+    if (!options || options.length === 0) return [];
     return options.filter((option) => {
       const label = option.label.toLowerCase();
       const filterValue = filter.toLowerCase();
@@ -48,13 +56,20 @@
   }
 
   function showCheckboxes() {
-    var checkboxes = document.getElementById('checkboxes');
+    console.log(
+      'showCheckboxes called, expanded:',
+      expanded,
+      'checkboxes element:',
+      checkboxesDiv,
+    );
     if (!expanded) {
-      checkboxes.style.display = 'block';
+      if (checkboxesDiv) checkboxesDiv.style.display = 'block';
       expanded = true;
+      console.log('Opening dropdown');
     } else {
-      checkboxes.style.display = 'none';
+      if (checkboxesDiv) checkboxesDiv.style.display = 'none';
       expanded = false;
+      console.log('Closing dropdown');
     }
   }
 
@@ -72,8 +87,6 @@
   };
 
   onMount(() => {
-    multiselect = document.getElementById('multiselect') as HTMLDivElement;
-    selectBox = document.getElementById('select-box') as HTMLDivElement;
     filteredOptions = getFilteredOptions();
   });
 </script>
@@ -81,11 +94,7 @@
 <div style="display:flex; flex-direction:column">
   <div class="multiselect" bind:this={multiselect}>
     <div class="selectBox row-flex-start" on:click={showCheckboxes}>
-      <div
-        class="flex-row-start select-box"
-        id="select-box"
-        bind:this={selectBox}
-      >
+      <div class="flex-row-start select-box" bind:this={selectBox}>
         <div>{title}</div>
         <div
           style="display:flex; flex-direction:row; align-items:center"
@@ -99,8 +108,8 @@
       {/if}
     </div>
     <div
-      id="checkboxes"
-      style={`width: ${selectBoxWidth()}px`}
+      bind:this={checkboxesDiv}
+      class="checkboxes"
       use:clickOutside
       on:click_outside={handleClickOutside}
     >
@@ -128,7 +137,6 @@
   @use '../../variables.scss' as *;
   .multiselect {
     position: relative;
-    z-index: 1000;
   }
   .selectBox {
     position: relative;
@@ -141,30 +149,35 @@
     cursor: pointer;
   }
 
-  #checkboxes {
+  .checkboxes {
     display: none;
     position: absolute;
     top: 30px;
     left: 4px;
-    width: 100%;
+    width: auto;
+    padding-right: 8px;
+    min-width: 100%;
+    white-space: nowrap;
+    z-index: 10000;
   }
 
-  #checkboxes ul {
+  .checkboxes ul {
     list-style: none;
     background-color: $extra-dark;
     padding-inline-start: 8px;
     border-radius: 2px;
     margin-block-start: 0%;
+    padding: 4px;
     border: 1px solid $dimmed-font-color;
   }
-  #checkboxes li {
+  .checkboxes li {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 4px;
     justify-content: flex-start;
   }
-  #checkboxes li:hover {
+  .checkboxes li:hover {
     cursor: pointer;
     background-color: $dimmed-font-color;
   }

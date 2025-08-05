@@ -48,7 +48,7 @@ const config: CEP_Config = {
     sourceMap: false,
     jsxBin: 'off',
   },
-  installModules: [],
+  installModules: ['fast-glob'],
   copyAssets: ['externals', 'assets'],
   copyZipAssets: [],
 };

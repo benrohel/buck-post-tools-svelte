@@ -1,7 +1,5 @@
-import { match } from 'assert';
+
 import { fs, os, path } from '../../lib/cep/node';
-import { ca, fi } from 'date-fns/locale';
-import { posix } from 'path';
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -323,6 +321,13 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
   return rootFolder;
 };
 
+export const PROJECT_ROOT = (projectPath: string) => {
+  const current = projectPath.split(/\/work\/current/);
+  const projectFolders = current[1].split('/');
+  return path.join(current[0], 'work', 'current', projectFolders[1]);
+};
+
+
 export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return null;
@@ -336,7 +341,7 @@ export declare interface ProjectSettings {
   workingGamma: 2.2 | 2.4;
   linearizeWorkingSpace: boolean;
   linearBlending: boolean;
-  [key:string]: any;
+  [key: string]: any;
 }
 
 export const getProjectSettingsTemplate = (projectPath: string) => {
@@ -379,6 +384,6 @@ export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return null;
   const scriptsFolder = path.join(productionFolder, 'Common', 'Meta', 'aeft', 'scripts');
-  if(!fs.existsSync(scriptsFolder)) return null;
+  if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
 };
