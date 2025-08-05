@@ -4,8 +4,9 @@
     ChevronDown,
     ChevronRight,
     Folder,
-    File,
+    FilePlay,
     Download,
+    Film,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import {
@@ -333,9 +334,9 @@
               {/if}
               <div class="item-icon">
                 {#if node.type === 'folder'}
-                  <Folder color="white" size="16" />
+                  <Folder color="white" size="20" />
                 {:else}
-                  <File color="white" size="16" />
+                  <FilePlay color="white" size="20" strokeWidth="1" />
                 {/if}
               </div>
 
@@ -350,10 +351,10 @@
                   }}
                   on:dblclick={() => importItem(node.id)}
                 >
-                  <span class="item-name">{node.name || '[empty]'}</span>
+                  <span class={`item-name`}>{node.name || '[empty]'}</span>
                   {#if node.type === 'file'}
                     <button on:click={() => importItem(node.id)}
-                      ><Download size="16" /></button
+                      ><Download size="16" color="white" /></button
                     >
                   {/if}
                 </div>
@@ -368,6 +369,8 @@
 
 <style lang="scss">
   @use '../../variables.scss' as *;
+
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
   .flex-row-start {
     display: flex;
@@ -478,7 +481,16 @@
   }
 
   .item-name {
-    font-family: monospace;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+
+    text-align: left;
+  }
+
+  .item-name-file {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
     text-align: left;
   }
 

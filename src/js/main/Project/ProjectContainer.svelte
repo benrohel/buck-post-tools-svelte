@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, onMount } from 'svelte';
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
   import ColorManagement from './ColorManagement.svelte';
   import ShotExplorer from './ShotExplorer.svelte';
   import { appId } from '../../lib/utils/cep';
-
+  import { appStore } from '../../stores/app-store';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
 
   const toolList = [
@@ -35,7 +35,7 @@
       apps: ['AEFT'],
     },
     {
-      label: 'Shot Library',
+      label: 'Buck5 Shot Library',
       value: 'shotLibrary',
       component: ShotExplorer,
       apps: ['PPRO'],
@@ -45,6 +45,14 @@
   let selectedMode = toolList[0];
   let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
   const handleOnMenuChange = (value: any) => (selectedMode = value);
+
+  onMount(() => {
+    if ($appStore.defaultToBuck5ShotLibrary && appId === 'PPRO') {
+      selectedMode = toolList[4];
+    } else {
+      selectedMode = toolList[0];
+    }
+  });
 </script>
 
 <MenuSelect

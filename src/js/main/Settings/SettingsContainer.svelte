@@ -100,6 +100,23 @@
         onChange={() => handleChange('showTooltips', !$appStore.showTooltips)}
       />
     </div>
+    <!-- Project Settings -->
+    <div class="settings-header">
+      <h3>Project</h3>
+    </div>
+    <div class="flex-row-between setting-row">
+      <label for="show-tooltips">Default to Buck5 Shot Library </label>
+      <Toggle
+        checked={$appStore.defaultToBuck5ShotLibrary}
+        id="show-tooltips"
+        onChange={() =>
+          handleChange(
+            'defaultToBuck5ShotLibrary',
+            !$appStore.defaultToBuck5ShotLibrary,
+          )}
+      />
+    </div>
+
     <!-- Rename Settings -->
     <div class="settings-header">
       <h3>Rename</h3>

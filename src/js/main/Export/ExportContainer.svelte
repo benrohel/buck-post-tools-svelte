@@ -8,6 +8,7 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { appId } from '../../lib/utils/cep';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
+  import PublishToAquarium from './PublishToAquarium.svelte';
 
   interface SelectToolItem {
     value: string;
@@ -27,6 +28,12 @@
       value: 'csv',
       label: 'Sequence to CSV',
       component: ExportSequenceCSV,
+      apps: ['PPRO'],
+    },
+    {
+      value: 'aquarium',
+      label: 'Publish to Aquarium',
+      component: PublishToAquarium,
       apps: ['PPRO'],
     },
     {

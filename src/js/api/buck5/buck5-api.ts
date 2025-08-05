@@ -4,7 +4,7 @@ import axios from 'axios';
 const today = () => {
   return format(new Date(), 'yyyy-MM-dd');
 };
-export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
+export const BUCK_DAEMON_URL = 'http://127.0.0.1:22131';
 
 export const BuckRequest = async (
   requestOptions: BUCK5.BuckRequestConfig

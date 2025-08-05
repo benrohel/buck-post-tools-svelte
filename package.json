@@ -30,7 +30,7 @@
     "ffmpeg-ffprobe-static": "^6.1.2-rc.1",
     "freezeframe": "^5.0.2",
     "hono": "^4.2.0",
-    "lucide-svelte": "^0.477.0",
+    "lucide-svelte": "^0.536.0",
     "markdown-to-txt": "^2.0.1",
     "node-fetch": "^2.7.0",
     "papaparse": "^5.5.3",
