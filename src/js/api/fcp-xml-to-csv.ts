@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-import * as fs from 'fs';
-import * as path from 'path';
-import { parseStringPromise } from 'xml2js';
-import Papa from 'papaparse';
+import { fs, path, os } from '../lib/cep/node';
+const { parseStringPromise } = require('xml2js');
 interface ClipData {
   event: number;
   name: string;
@@ -93,7 +91,7 @@ class XmemlParser {
 
   groupClipsByName(clips: ClipData[]): Record<string, ClipData[]> {
     const grouped: Record<string, ClipData[]> = {};
-    
+
     clips.forEach(clip => {
       if (!grouped[clip.name]) {
         grouped[clip.name] = [];
@@ -839,10 +837,10 @@ async function main(): Promise<void> {
 
   try {
     const parser = new XmemlParser();
-    
+
     if (isJsonOutput) {
       const clips = await parser.convertXmlToJSON(inputPath);
-      
+
       if (shouldGroup) {
         const groupedClips = parser.groupClipsByName(clips);
         const jsonData = JSON.stringify(groupedClips, null, 2);

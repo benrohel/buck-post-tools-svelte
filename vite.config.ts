@@ -80,7 +80,7 @@ export default defineConfig({
         format: 'cjs',
       },
       // Mark AWS SDK as external to prevent build errors with unzipper package
-      external: ['fast-glob'],
+      external: ['fast-glob', 'xml2js', 'papaparse'],
     },
 
     target: 'chrome74',

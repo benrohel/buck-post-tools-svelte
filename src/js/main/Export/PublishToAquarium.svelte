@@ -1,42 +1,72 @@
 <script lang="ts">
   import {
-    localAppStore,
-    lastFolderExport,
-    storedExportRootFolder,
-  } from '../../stores/local-storage';
-  import { appStore } from '../../stores/app-store';
-  import { Projects } from '../../api/buck5/buck5-api';
-  import { GetSelectedSequences } from '../../api/sequence';
-  import { fs, path } from '../../lib/cep/node';
-  import { notifications } from '../../stores/notifications-store';
+    Projects,
+    GetFootageLibrary,
+    PostFootageAsset,
+    ListAssetsFromLibrary,
+  } from '../../api/buck5/buck5-api';
   import { onMount } from 'svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { GetThumbnail, type ClipType } from '../../api/clip';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import {
-    exportSequenceCSV,
-    GetSequencedClips,
-    type Sequence,
-  } from '../../api/sequence';
-  import { recursiveMkDir } from '../../lib/utils/index';
+  import { XmemlParser } from '../../api/fcp-xml-to-csv';
+  import { fs, path } from '../../lib/cep/node';
+  import { evalES } from '../../lib/utils/bolt';
+  import { GetActiveSequence } from '../../api/edit';
+  import { preferencesDir } from '../../api/preferences';
 
-  $: uploadThumbnails = false;
-  let suffix = '';
+  let projects = [];
+  $: selectedProject = { value: '', label: '' };
 
-  $: selectedProject = '';
+  const setSelectedProject = (event: any) => {
+    console.log(event);
+    selectedProject = event;
+  };
 
-  $: console.log(uploadThumbnails);
+  const exportSequenceXml = async (sequence: any): Promise<string> => {
+    const filepath = path.join(preferencesDir, `${sequence.name}.xml`);
 
-  const setSelectedProject = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    selectedProject = target.value;
+    if (!fs.existsSync(filepath)) {
+      fs.mkdirSync(path.dirname(filepath), { recursive: true });
+    }
+    return new Promise((resolve, reject) => {
+      const result = evalES(
+        `exportSequenceXml("${filepath}","${sequence.id}")`,
+        false,
+      );
+      if (result) {
+        resolve(result);
+      } else {
+        reject(new Error('Failed to export sequence'));
+      }
+    });
   };
 
   const handleSubmitExport = async () => {
-    console.log('submit export', uploadThumbnails);
+    if (!selectedProject) {
+      console.log('Please select a project');
+      return;
+    }
+    const sequence = await GetActiveSequence();
+    const library = await GetFootageLibrary(selectedProject.value);
+    const parser = new XmemlParser();
+
+    const xml = await exportSequenceXml(sequence);
+    const json = await parser.convertXmlToJSON(xml);
+
+    const existingAssets = await ListAssetsFromLibrary(library._key);
+
+    // const newAssets = json.filter((item: any) =>
+    //   assets.find((asset: any) => asset.data.name === item.name),
+    // );
+
+    const publishJobs = json.map((item: any) =>
+      PostFootageAsset(library._key, item),
+    );
+    Promise.all(publishJobs).then((res) => {
+      console.log('Footage Assets Published to Aquarium', res);
+    });
   };
 
-  onMount(() => {});
+  onMount(async () => {});
 </script>
 
 <div
@@ -45,10 +75,10 @@
 >
   {#await Projects()}
     <p>Loading...</p>
-  {:then value}
+  {:then projects}
     <MenuSelect
-      items={value.map((p) => p.data.name)}
-      value={selectedProject}
+      items={projects.map((p) => ({ value: p._key, label: p.data.name }))}
+      bind:value={selectedProject}
       placeholder="Select Project"
       onChange={setSelectedProject}
     />
@@ -58,5 +88,7 @@
 </div>
 
 <div class="flex-row-end action-row">
-  <button class="active" on:click={handleSubmitExport}>Export CutLists</button>
+  <button class="active" on:click={handleSubmitExport}
+    >Add To Footage Library</button
+  >
 </div>

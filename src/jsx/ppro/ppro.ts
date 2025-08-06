@@ -349,6 +349,7 @@ export const importMediaFiles = (filepaths: string[]) => {
     app.project.rootItem,
     false
   );
+
 };
 
 

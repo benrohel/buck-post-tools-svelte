@@ -498,3 +498,80 @@ export const PatchItem = async (itemKey: string, data: any): Promise<any> => {
   const res = await BuckRequest(options);
   return Promise.resolve(res);
 };
+
+export const ListLibraries = async (projectKey: string): Promise<any> => {
+
+  const options: BUCK5.BuckRequestConfig = {
+    method: 'GET',
+    request: `/projects/${projectKey}/libraries`,
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
+
+export const CreateFootageLibrary = async (projectKey: string): Promise<any> => {
+  const options: BUCK5.BuckRequestConfig = {
+    method: 'POST',
+    request: `/projects/${projectKey}/libraries`,
+    contentType: 'application/json',
+    data: {
+      name: 'Footage',
+      description: 'library for All footage used in the project',
+    },
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
+
+
+export const GetFootageLibrary = async (projectKey: string): Promise<any> => {
+
+  const libraries = await ListLibraries(projectKey);
+  let footageLibrary = libraries.find((l: any) => l.data.name === 'Footage');
+  if (!footageLibrary) {
+    footageLibrary = (await CreateFootageLibrary(projectKey));
+  }
+  return Promise.resolve(footageLibrary);
+};
+
+export const ListAssetsFromLibrary = async (libraryKey: string): Promise<any> => {
+  const options: BUCK5.BuckRequestConfig = {
+    method: 'GET',
+    request: `/libraries/${libraryKey}/assets`,
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
+
+export interface FootageAsset {
+  name: string;
+  description: string;
+  thumbnail: string;
+  status: string;
+  color: string;
+  completion: string;
+  category: string;
+  tags: string;
+  sourceFile: string;
+  timecodeStart: string;
+  timecodeEnd: string;
+  startTime: number;
+  endTime: number;
+  inPoint: number;
+  outPoint: number;
+  duration: number;
+  framerate: number;
+  width: number;
+  height: number;
+}
+
+export const PostFootageAsset = async (libraryKey: string, data: FootageAsset): Promise<any> => {
+  const options: BUCK5.BuckRequestConfig = {
+    method: 'POST',
+    request: `/libraries/${libraryKey}/assets`,
+    contentType: 'application/json',
+    data: data,
+  };
+  const res = await BuckRequest(options);
+  return Promise.resolve(res);
+};
