@@ -6,7 +6,7 @@
     Folder,
     FilePlay,
     Download,
-    Film,
+    Eye,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import {
@@ -19,7 +19,8 @@
   import { evalES } from '../../lib/utils/bolt';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
-  import Button from '../../components/Button/Button.svelte';
+  import { openFile } from '../../lib/utils/utils';
+
   import Toggle from '../../components/Toggle/Toggle.svelte';
   let pathStructure: PathItem[] = [];
   let selectedItemId: string | null = null;
@@ -110,6 +111,10 @@
     selectedShotName = shotNames[0];
     selectedTaskName = taskNames[0];
     isLoading = false;
+  };
+
+  const handleOpenFile = (itemId: string) => {
+    openFile(itemId);
   };
 
   // Function to flatten the tree for iterative rendering
@@ -353,9 +358,14 @@
                 >
                   <span class={`item-name`}>{node.name || '[empty]'}</span>
                   {#if node.type === 'file'}
-                    <button on:click={() => importItem(node.id)}
-                      ><Download size="16" color="white" /></button
-                    >
+                    <div class="flex-row-end">
+                      <button on:click={() => handleOpenFile(node.id)}
+                        ><Eye size="16" color="white" /></button
+                      >
+                      <button on:click={() => importItem(node.id)}
+                        ><Download size="16" color="white" /></button
+                      >
+                    </div>
                   {/if}
                 </div>
               </div>
