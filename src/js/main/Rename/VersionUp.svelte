@@ -1,10 +1,12 @@
 <script lang="ts">
   import { evalES } from '../../lib/utils/bolt';
   import { getContext } from 'svelte';
-  const renameContext = getContext('rename');
+  import { RenameContext } from './RenameContext';
+
+  const renameContext = getContext('rename') as RenameContext;
 
   const handleVersionUpComps = async () => {
-    const scope = renameContext.scope;
+    const scope = renameContext.getScope ?? 'project';
     await evalES(`versionUpNames("${scope}")`);
   };
 </script>

@@ -120,6 +120,9 @@ export const GetSystemFileVersions = (
 export const GetFileVersion = (filepath: string) => {
   const versionRegex = /_(v\d+)/i;
   const dir = path.dirname(filepath);
+
+
+
   const match = path.basename(filepath.toLowerCase()).match(versionRegex);
   return match ? match[1] : null;
 };
@@ -131,11 +134,11 @@ export const GetRenamedFiles = async (
   to: string
 ) => {
   let renamedFile = path.basename(filepath).replace(from, to);
-
-  console.log('renamedFile', renamedFile);
   renamedFile = renamedFile.replaceAll(/v\d+/g, '');
   const files = fs.readdirSync(rootFolder);
   let renamedFiles: string[] = [];
+
+
 
   for (const file of readAllFiles(rootFolder)) {
     let trimmedFileName = path.basename(file).replaceAll(/v\d+/g, '');
@@ -154,8 +157,6 @@ export const FindFileWithoutVersion = (filepath: string): string | null => {
   const files = fs.readdirSync(dir);
 
   for (const file of files) {
-    console.log('FILE', path.basename(file));
-
     if (file.startsWith(baseName)) {
       return path.join(dir, file);
     }

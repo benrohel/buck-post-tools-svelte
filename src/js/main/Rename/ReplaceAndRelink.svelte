@@ -137,7 +137,7 @@
   };
 
   const searchFiles = async () => {
-    console.log("searching files")
+    console.log('searching files');
     if (!rootFolder || !find || !replace) {
       return;
     }
@@ -149,12 +149,13 @@
         file.filepath,
         rootFolder,
         find,
-        replace
+        replace,
       );
 
       file.replacements = res.reverse();
       file.selectedVersion = file.replacements[0];
     }
+
     sequenceClips = [...currentFiles];
     console.log('res', sequenceClips);
     isLoading = false;

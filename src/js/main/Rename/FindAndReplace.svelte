@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, onMount } from 'svelte';
   import { ArrowLeftRight } from 'lucide-svelte';
   import { evalES } from '../../lib/utils/bolt';
   import { RenameContext } from './RenameContext';
@@ -10,7 +10,7 @@
   const renameContext = getContext('rename') as RenameContext;
   const handleFindAndReplace = async () => {
     const options = {
-      scope: renameContext.getScope,
+      scope: renameContext.getScope ?? 'project',
       from: find,
       to: replace,
     };
@@ -29,6 +29,8 @@
     replace = find;
     find = prevReplace;
   };
+
+  onMount(() => {});
 </script>
 
 <div class="row">

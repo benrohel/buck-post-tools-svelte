@@ -11,7 +11,7 @@
 
   const handlePrefixSuffix = async () => {
     const options = {
-      scope: renameContext.getScope,
+      scope: renameContext.getScope ?? 'project',
       prefix: prefix,
       suffix: suffix,
     };

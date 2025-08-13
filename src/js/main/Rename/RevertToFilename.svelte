@@ -9,7 +9,7 @@
   const renameContext = getContext('rename') as RenameContext;
 
   const handleRevertToFilename = async () => {
-    const scope = renameContext.getScope;
+    const scope = renameContext.getScope ?? 'project';
     await evalES(`revertToFilename("${scope}")`);
   };
 </script>

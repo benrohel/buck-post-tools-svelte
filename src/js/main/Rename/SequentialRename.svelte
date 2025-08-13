@@ -30,7 +30,7 @@
       startValue: parseInt(start),
       increment: parseInt(increment),
       padding: padding,
-      scope: renameContext.getScope,
+      scope: renameContext.getScope ?? 'timeline',
     };
     const optionString = JSON.stringify(option);
     await evalES(`renameShots(${optionString})`);
