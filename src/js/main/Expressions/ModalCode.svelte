@@ -61,7 +61,7 @@
     let result = '';
     for (let i = 0; i < length; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
+        Math.floor(Math.random() * characters.length),
       );
     }
     return result;
@@ -95,7 +95,6 @@
   };
 
   const handleApplyCode = () => {
-    console.log(isScript);
     if (isScript) {
       handleEvalScript();
     } else {
@@ -123,7 +122,7 @@
     const tempFile = path.join(
       __dirname,
       'dist',
-      generateRandomString() + '.jsx'
+      generateRandomString() + '.jsx',
     );
     if (!fs.existsSync(path.dirname(tempFile))) {
       fs.mkdirSync(path.dirname(tempFile));
@@ -153,7 +152,7 @@
       const res = await callAnthropicAPI(
         gptMessage,
         $localAppStore.aiService.apiKey,
-        isScript ? 'scripts' : 'expressions'
+        isScript ? 'scripts' : 'expressions',
       );
 
       // const result = await callAiAgent(
@@ -168,8 +167,12 @@
         code = extractCodeFromMarkdown(res);
       }
       isLoading = false;
-      if (launchScript) {
-        handleEvalScript();
+      if (launchScript == true) {
+        handleApplyCode();
+        notifications.success(
+          `Script ${gptMessage} executed successfully`,
+          2000,
+        );
       }
     }
   };
