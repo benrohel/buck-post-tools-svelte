@@ -30,7 +30,7 @@
     return new Promise((resolve, reject) => {
       const result = evalES(
         `exportSequenceXml("${filepath}","${sequence.id}")`,
-        false,
+        false
       );
       if (result) {
         resolve(result);
@@ -51,6 +51,7 @@
 
     const xml = await exportSequenceXml(sequence);
     const json = await parser.convertXmlToJSON(xml);
+    console.log(json);
 
     const existingAssets = await ListAssetsFromLibrary(library._key);
 
@@ -58,12 +59,12 @@
     //   assets.find((asset: any) => asset.data.name === item.name),
     // );
 
-    const publishJobs = json.map((item: any) =>
-      PostFootageAsset(library._key, item),
-    );
-    Promise.all(publishJobs).then((res) => {
-      console.log('Footage Assets Published to Aquarium', res);
-    });
+    // const publishJobs = json.map((item: any) =>
+    //   PostFootageAsset(library._key, item),
+    // );
+    // Promise.all(publishJobs).then((res) => {
+    //   console.log('Footage Assets Published to Aquarium', res);
+    // });
   };
 
   onMount(async () => {});

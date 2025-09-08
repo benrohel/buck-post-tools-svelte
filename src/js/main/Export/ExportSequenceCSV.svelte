@@ -42,6 +42,7 @@
 
   const exportCsv = async (seq: Sequence): Promise<string> => {
     const clips = await GetSequencedClips(seq);
+    console.log(clips);
 
     let csv: string = '';
 
@@ -78,7 +79,7 @@
   };
 
   const handleSubmitExport = async () => {
-    console.log('submit export', uploadThumbnails);
+    console.log('export CSV', uploadThumbnails);
     const sequences = await GetSelectedSequences();
     const csvPromises = sequences.map((seq) => {
       return exportCsv(seq);

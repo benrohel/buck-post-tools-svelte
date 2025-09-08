@@ -20,6 +20,7 @@
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
   import { openFile } from '../../lib/utils/utils';
+  import { buck5Server } from '../../stores/server-store';
 
   import Toggle from '../../components/Toggle/Toggle.svelte';
   let pathStructure: PathItem[] = [];
@@ -62,7 +63,7 @@
   $: filteredItems = filterByDepth(
     pathStructure,
     depthFilters,
-    onlyShowLatestVersions,
+    onlyShowLatestVersions
   );
 
   // $: console.log('filteredItems', JSON.stringify(filteredItems));
@@ -119,7 +120,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[],
+    nodes: PathItem[]
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -197,7 +198,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
+    updateFn: (node: PathItem) => PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -255,12 +256,12 @@
 
   const importAllVisible = async () => {
     const visibleFileItems = findNodesByType(filteredItems, 'file').map(
-      (item) => item.path,
+      (item) => item.path
     );
     await evalES(`importMediaFiles(${JSON.stringify(visibleFileItems)})`).then(
       (res) => {
         res ? true : false;
-      },
+      }
     );
   };
 
@@ -270,111 +271,111 @@
 </script>
 
 <div>
-  <div class="flex-row-between">
-    <div class="flex-row-start">
-      <Toggle bind:checked={onlyShowLatestVersions} />
-      <span>Only show latest versions</span>
-    </div>
-    <div class="flex-row-end">
-      <button on:click={loadShotLibrary}>
-        <RefreshCcw size={16} />
-      </button>
-      <button on:click={importAllVisible}>
-        <Download size={16} />
-      </button>
-    </div>
-  </div>
-  <div class="flex-row-start">
-    <MenuSelect
-      items={sequenceNames}
-      placeholder="Sequence"
-      bind:value={selectedSequenceName}
-      onChange={handleOnMenuChange}
-    />
-    <MenuSelect
-      items={shotNames}
-      placeholder="Shot"
-      bind:value={selectedShotName}
-      onChange={handleOnMenuChange}
-    />
-    <MenuSelect
-      items={taskNames}
-      placeholder="Task"
-      bind:value={selectedTaskName}
-      onChange={handleOnMenuChange}
-    />
-  </div>
-
-  <div class="tree-container">
-    {#if isLoading}
-      <div>Loading files ...</div>
-    {/if}
-    {#if !isLoading}
-      <div class="tree-structure">
-        {#each flattenTree(filteredItems) as { node, depth }}
-          <div
-            class="tree-item {node.type} {selectedItemId === node.id
-              ? 'selected'
-              : ''}"
-            style="margin-left: {depth * 20}px;"
-            on:click={(e) => {
-              e.stopPropagation();
-              selectedItemId = node.id;
-            }}
-          >
-            <div class="item-header">
-              {#if node.type === 'folder'}
-                <button
-                  class="icon-only"
-                  on:click|stopPropagation={() => toggleExpand(node.id)}
-                >
-                  {#if node.expanded}
-                    <ChevronDown />
-                  {:else}
-                    <ChevronRight />
-                  {/if}
-                </button>
-              {:else}
-                <span class="indent"></span>
-              {/if}
-              <div class="item-icon">
+  {#if !$buck5Server}
+    <div>You need to be connected to Buck server to use this feature.</div>
+  {:else}
+    <div>
+      <div class="flex-row-between">
+        <div class="flex-row-start">
+          <Toggle bind:checked={onlyShowLatestVersions} />
+          <span>Only show latest versions</span>
+        </div>
+        <div class="flex-row-end">
+          <button on:click={loadShotLibrary}>
+            <RefreshCcw size={16} />
+          </button>
+          <button on:click={importAllVisible}>
+            <Download size={16} />
+          </button>
+        </div>
+      </div>
+      <div class="flex-row-start">
+        <MenuSelect
+          items={sequenceNames}
+          placeholder="Sequence"
+          bind:value={selectedSequenceName}
+          onChange={handleOnMenuChange}
+        />
+        <MenuSelect
+          items={shotNames}
+          placeholder="Shot"
+          bind:value={selectedShotName}
+          onChange={handleOnMenuChange}
+        />
+        <MenuSelect
+          items={taskNames}
+          placeholder="Task"
+          bind:value={selectedTaskName}
+          onChange={handleOnMenuChange}
+        />
+      </div>
+      <div class="tree-container">
+        <div class="tree-structure">
+          {#each flattenTree(filteredItems) as { node, depth }}
+            <div
+              class="tree-item {node.type} {selectedItemId === node.id
+                ? 'selected'
+                : ''}"
+              style="margin-left: {depth * 20}px;"
+              on:click={(e) => {
+                e.stopPropagation();
+                selectedItemId = node.id;
+              }}
+            >
+              <div class="item-header">
                 {#if node.type === 'folder'}
-                  <Folder color="white" size="20" />
+                  <button
+                    class="icon-only"
+                    on:click|stopPropagation={() => toggleExpand(node.id)}
+                  >
+                    {#if node.expanded}
+                      <ChevronDown />
+                    {:else}
+                      <ChevronRight />
+                    {/if}
+                  </button>
                 {:else}
-                  <FilePlay color="white" size="20" strokeWidth="1" />
+                  <span class="indent"></span>
                 {/if}
-              </div>
-
-              <div class="item-content">
-                <div
-                  class="item-info"
-                  on:keydown={(e) => {
-                    e.preventDefault();
-                    if (e.key === 'Enter') {
-                      importItem(node.id);
-                    }
-                  }}
-                  on:dblclick={() => importItem(node.id)}
-                >
-                  <span class={`item-name`}>{node.name || '[empty]'}</span>
-                  {#if node.type === 'file'}
-                    <div class="flex-row-end">
-                      <button on:click={() => handleOpenFile(node.id)}
-                        ><Eye size="16" color="white" /></button
-                      >
-                      <button on:click={() => importItem(node.id)}
-                        ><Download size="16" color="white" /></button
-                      >
-                    </div>
+                <div class="item-icon">
+                  {#if node.type === 'folder'}
+                    <Folder color="white" size="20" />
+                  {:else}
+                    <FilePlay color="white" size="20" strokeWidth="1" />
                   {/if}
+                </div>
+
+                <div class="item-content">
+                  <div
+                    class="item-info"
+                    on:keydown={(e) => {
+                      e.preventDefault();
+                      if (e.key === 'Enter') {
+                        importItem(node.id);
+                      }
+                    }}
+                    on:dblclick={() => importItem(node.id)}
+                  >
+                    <span class={`item-name`}>{node.name || '[empty]'}</span>
+                    {#if node.type === 'file'}
+                      <div class="flex-row-end">
+                        <button on:click={() => handleOpenFile(node.id)}
+                          ><Eye size="16" color="white" /></button
+                        >
+                        <button on:click={() => importItem(node.id)}
+                          ><Download size="16" color="white" /></button
+                        >
+                      </div>
+                    {/if}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        {/each}
+          {/each}
+        </div>
       </div>
-    {/if}
-  </div>
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

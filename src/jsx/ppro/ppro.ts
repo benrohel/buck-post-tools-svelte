@@ -262,6 +262,25 @@ export const getClipMarkers = (clip: ProjectItem) => {
   return GetClipMarkers(clip.nodeId);
 };
 
+function getBasicMotionProperties(clip: any) {
+  var components = clip.clip.components;
+  const motionProps: any = {};
+
+  for (var i = 0; i < components.numItems; i++) {
+    var comp = components[i];
+    if (comp.matchName === 'ADBE Motion') {
+      // This is the Basic Motion effect
+      for (var p = 0; p < comp.properties.numItems; p++) {
+        var prop = comp.properties[p];
+        motionProps[prop.displayName] = prop.getValue();
+        $.writeln(prop.displayName + ' : ' + prop.getValue());
+      }
+    }
+  }
+
+  return motionProps;
+}
+
 export function getAllTracksClipsForNode(sequenceId: string) {
   const sequence = getSequenceFromNodeId(sequenceId);
   if (!sequence) {
@@ -270,35 +289,38 @@ export function getAllTracksClipsForNode(sequenceId: string) {
   const tracksClips = getAllSequenceClips(sequence);
   let timelineClips = [];
   for (var i = 0; i < tracksClips.length; i++) {
-    const clipMarkers = getClipMarkers(tracksClips[i].clip.projectItem);
-    const speed = tracksClips[i].clip.getSpeed();
+    const currentTrackItem = tracksClips[i];
+    const currentClip = currentTrackItem.clip;
+    const clipMarkers = getClipMarkers(currentClip.projectItem);
+    const speed = currentClip.getSpeed();
 
-    let shotName = tracksClips[i].clip.name;
+    let shotName = currentClip.name;
     let match = shotName.match(/_v\d/);
     if (match) {
       shotName = shotName.split(match[0])[0];
     }
 
     var newClip = {
-      track: tracksClips[i].track.replace(' ', ''),
-      trackIndex: tracksClips[i].trackIndex,
-      sequenceNodeId: tracksClips[i].sequenceNodeId,
-      sequenceName: tracksClips[i].sequenceName,
-      sequenceStart: tracksClips[i].sequenceStart,
-      sequenceFramerate: tracksClips[i].sequenceFramerate,
-      clipFramerate: tracksClips[i].sequenceFramerate,
-      duration: tracksClips[i].clip.duration.seconds,
-      inPoint: tracksClips[i].clip.inPoint.seconds,
-      outPoint: tracksClips[i].clip.outPoint.seconds,
-      nodeId: tracksClips[i].clip.projectItem.nodeId,
-      start: tracksClips[i].clip.start.seconds,
-      end: tracksClips[i].clip.end.seconds,
-      clipName: tracksClips[i].clip.projectItem.name,
+      track: currentTrackItem.track.replace(' ', ''),
+      trackIndex: currentTrackItem.trackIndex,
+      sequenceNodeId: currentTrackItem.sequenceNodeId,
+      sequenceName: currentTrackItem.sequenceName,
+      sequenceStart: currentTrackItem.sequenceStart,
+      sequenceFramerate: currentTrackItem.sequenceFramerate,
+      clipFramerate: currentTrackItem.sequenceFramerate,
+      duration: currentClip.duration.seconds,
+      inPoint: currentClip.inPoint.seconds,
+      outPoint: currentClip.outPoint.seconds,
+      nodeId: currentClip.projectItem.nodeId,
+      start: currentClip.start.seconds,
+      end: currentClip.end.seconds,
+      clipName: currentClip.projectItem.name,
       shotName: shotName,
-      filepath: tracksClips[i].clip.projectItem.getMediaPath(),
+      filepath: currentClip.projectItem.getMediaPath(),
       markers: clipMarkers,
       speed: speed,
-      selected: tracksClips[i].selected,
+      selected: currentTrackItem.selected,
+      motionProps: getBasicMotionProperties(currentTrackItem),
     };
     timelineClips.push(newClip);
   }
@@ -343,15 +365,8 @@ export const importMediaFile = (options: IImportOptions) => {
 };
 
 export const importMediaFiles = (filepaths: string[]) => {
-  app.project.importFiles(
-    filepaths,
-    true,
-    app.project.rootItem,
-    false
-  );
-
+  app.project.importFiles(filepaths, true, app.project.rootItem, false);
 };
-
 
 export const mapSequence = () => {
   const seq = app.project.activeSequence;
@@ -425,8 +440,9 @@ export const addPrefixOrSuffix = (options: any) => {
   }
 
   for (var c = 0; c < selectedClips.length; c++) {
-    const newName = `${options.prefix ? options.prefix + '_' : ''}${selectedClips[c].name
-      }${options.suffix ? '_' + options.suffix : ''}`;
+    const newName = `${options.prefix ? options.prefix + '_' : ''}${
+      selectedClips[c].name
+    }${options.suffix ? '_' + options.suffix : ''}`;
     selectedClips[c].name = newName;
   }
 };
