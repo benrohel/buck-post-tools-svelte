@@ -39,11 +39,15 @@ export function extractVersion(filename: string) {
  */
 export const getShotFiles = async (rootPath: string) => {
   const productionRoot = path.join(rootPath, 'Production');
-  const entries = await fg(['*.mov', '*.mp4', '**/Shots/**/render/**/*.mp4', '**/Shots/**/render/*.mov', '**/Shots/**/render/*.mp4'], {
+  const entriesWildCards = ['*.mov', '*.mp4', '**/Shots/**/render/**/*.mp4', '**/Shots/**/render/**/*.mov', '**/Shots/**/render/**/*.mp4'];
+
+  const entries = await fg(entriesWildCards, {
     cwd: productionRoot,
     ignore: ['**/temp/**', '.*'],
     onlyFiles: true,
-    stats: true
+    stats: true,
+    caseSensitiveMatch: false,
+
   });
 
   return entries
@@ -81,9 +85,9 @@ function parseHierarchy(filePath: string): ParsedFileInfo | null {
     return null; // Not enough levels after "Shots" to extract hierarchy
   }
 
-  const sequence = parts[shotsIndex + 1];     // e.g., "ShMain_Master"
-  const shot = parts[shotsIndex + 2];     // e.g., "Sh151"
-  const task = parts[shotsIndex + 3];     // e.g., "CAEN"
+  const sequence = parts[shotsIndex + 1];
+  const shot = parts[shotsIndex + 2];
+  const task = parts[shotsIndex + 3];
   const name = path.basename(filePath);
 
   // Try to extract version from filename: _v###
@@ -158,11 +162,14 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
 
 export const getShotFilesTree = async (rootPath: string) => {
   const files = await getShotFiles(rootPath);
+  console.log('files', files);
   const tree = buildPathTreeFromParsedFiles(files);
+  console.log('tree', tree);
   return tree;
 };
 
 export const collectFolderNamesByLevel = (tree: PathItem[]): string[][] => {
+
   const levels: Map<number, Set<string>> = new Map();
 
   function traverse(node: PathItem, depth: number) {
