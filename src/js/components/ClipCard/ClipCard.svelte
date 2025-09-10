@@ -94,7 +94,7 @@
   };
 
   $: getSyncedColor = (): string => {
-    const fileVersion = GetFileVersion(clip.filepath)?.split('v')[1];
+    const fileVersion = GetFileVersion(clip.filepath)?.split('_v')[1];
     if (!fileVersion) {
       return 'color: #f6d55c';
     }
@@ -118,8 +118,8 @@
     console.log('init card', clip);
 
     if (appId === 'PPRO') {
-      const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
-      console.log(metadata);
+      // const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
+      // console.log(metadata);
     }
 
     if (!fs.existsSync(clip.filepath)) {

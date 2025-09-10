@@ -200,3 +200,50 @@ export const getProjectFile = () => {
   }
   return app.project.path;
 };
+
+/**
+ * Collect all unique media file paths in the current project.
+ * Works in ExtendScript (no Array#indexOf).
+ * @returns {Array<string>}
+ */
+export function collectAllFilePaths() {
+  var results: string[] = [];
+  var seen = {}; // map for O(1) dedupe
+  var isWindows = ($.os && $.os.toLowerCase().indexOf("windows") !== -1);
+
+  function norm(p: string) {
+    // Normalize for dedupe: case-insensitive on Windows
+    return isWindows && p ? p.toLowerCase() : p;
+  }
+
+  function walk(parentItem: ProjectItem) {
+    if (!parentItem || !parentItem.children) return;
+
+    var childCount = parentItem.children.numItems;
+    for (var i = 0; i < childCount; i++) {
+      var child = parentItem.children[i];
+
+      // Recurse into bins
+      if (child && child.type === ProjectItemType.BIN) {
+        walk(child);
+        continue;
+      }
+
+      // Try to read media path for leaf items (clips, stills, audio, etc.)
+      try {
+        if (child && child.getMediaPath) {
+          var p = child.getMediaPath();
+          if (p && !seen[norm(p)]) {
+            seen[norm(p)] = true;
+            results.push(p); // keep original casing
+          }
+        }
+      } catch (e) {
+        // Items like synthetic clips/titles might throw or have no path—ignore
+      }
+    }
+  }
+
+  walk(app.project.rootItem);
+  return JSON.stringify(results);
+}

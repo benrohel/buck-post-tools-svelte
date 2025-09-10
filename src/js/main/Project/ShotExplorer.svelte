@@ -22,8 +22,10 @@
   import { openFile } from '../../lib/utils/utils';
   import { buck5Server } from '../../stores/server-store';
   import { SyncLoader } from 'svelte-loading-spinners';
-
+  import { appStore, type AppStore } from '../../stores/app-store';
+  import { localAppStore } from '../../stores/local-storage';
   import Toggle from '../../components/Toggle/Toggle.svelte';
+  import path from 'path';
   let pathStructure: PathItem[] = [];
   let selectedItemId: string | null = null;
   let filteredItems: PathItem[] = [];
@@ -31,6 +33,7 @@
   let shotNames: any[] = [];
   let sequenceNames: any[] = [];
   let taskNames: any[] = [];
+  let existingMediaFiles: string[] = [];
 
   let onlyShowLatestVersions = false;
 
@@ -74,18 +77,28 @@
     console.log(selectedSequenceName);
     console.log(selectedTaskName);
     console.log(filters);
+    appStore.update((s: AppStore) => ({
+      ...s,
+      latestBuck5LibrarySettings: {
+        sequenceName: selectedSequenceName.value,
+        shotName: selectedShotName.value,
+        taskName: selectedTaskName.value,
+      },
+    }));
+    localAppStore.set($appStore);
   };
 
   const loadShotLibrary = async () => {
     isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
+    existingMediaFiles = JSON.parse(
+      await evalES(`collectAllFilePaths()`, false),
+    ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
-
     const res = await getShotFilesTree(rootFolder);
     pathStructure = res;
 
     const folderNames = collectFolderNamesByLevel(res);
-    console.log('folderNames', folderNames);
     shotNames = [
       { value: '', label: 'All Shots', selected: true },
       ...folderNames[2].map((shotName) => ({
@@ -111,9 +124,15 @@
       })),
     ];
 
-    selectedSequenceName = sequenceNames[0];
-    selectedShotName = shotNames[0];
-    selectedTaskName = taskNames[0];
+    if ($appStore.latestBuck5LibrarySettings) {
+      selectedSequenceName = $appStore.latestBuck5LibrarySettings.sequenceName;
+      selectedShotName = $appStore.latestBuck5LibrarySettings.shotName;
+      selectedTaskName = $appStore.latestBuck5LibrarySettings.taskName;
+    } else {
+      selectedSequenceName = sequenceNames[0];
+      selectedShotName = shotNames[0];
+      selectedTaskName = taskNames[0];
+    }
     isLoading = false;
   };
 
@@ -257,6 +276,13 @@
     return results;
   }
 
+  function fileExistsInProject(node: PathItem): boolean {
+    const basename = path.basename(node.path);
+    return existingMediaFiles
+      .map((file) => path.basename(file))
+      .includes(basename);
+  }
+
   const importAllVisible = async () => {
     const visibleFileItems = findNodesByType(filteredItems, 'file').map(
       (item) => item.path,
@@ -325,7 +351,7 @@
               <div
                 class="tree-item {node.type} {selectedItemId === node.id
                   ? 'selected'
-                  : ''}"
+                  : ''} {fileExistsInProject(node) ? 'disabled' : ''}"
                 style="margin-left: {depth * 20}px;"
                 on:click={(e) => {
                   e.stopPropagation();
@@ -469,6 +495,16 @@
 
   .file > .item-header {
     background-color: #303030;
+  }
+
+  .tree-item.disabled > .item-header {
+    opacity: 0.4;
+    background-color: #1a1a1a !important;
+  }
+
+  .tree-item.disabled .item-name {
+    color: #666;
+    text-decoration: line-through;
   }
 
   .expand-btn {

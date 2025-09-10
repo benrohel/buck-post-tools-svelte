@@ -17,72 +17,114 @@ export const GetSystemFileVersionsWithShotName = (
   filepath: string,
   shotName: string
 ): Array<any> => {
-  const versionRegex = /(\w+)_(v\w+|v\d+)(.)/i;
-  const dir = path.dirname(filepath);
-  // const versions = fs.readdirSync(dir);
-
-  // regex to match the file extension
-  const extRegex = /\.(\w+)$/i;
-  const extMatch = filepath.match(extRegex);
-  const ext = extMatch ? extMatch[1] : null;
-  const sourceRegex = /(?<name>\w+)_v(?<version>\d+)(?<suffix>.+)/;
-  const matchRegex = /(?<name>\w+)_v(?<version>\d+)(?<suffix>.+)/;
-  let sourceSuffix = '';
-  const sourceSuffixResult = matchRegex.exec(
-    path.basename(path.basename(filepath))
-  )?.groups;
-  if (sourceSuffixResult) {
-    sourceSuffix = sourceSuffixResult.suffix;
+  const versionRegex = /_v(\d+)/i;
+  
+  // Get file extension
+  const ext = path.extname(filepath);
+  const filename = path.basename(filepath);
+  
+  // Extract the base name without version (from both filename and folder)
+  // For: /path/to/CR010_Intro_comp_v009/CR010_Intro_comp_ProRes_v009.mov
+  // We want: CR010_Intro_comp_ProRes
+  const baseFilename = filename.replace(versionRegex, '').replace(ext, '');
+  
+  // Find the first parent directory that doesn't have "_v" in its name
+  let searchRoot = path.dirname(filepath);
+  const pathParts = filepath.split(path.sep);
+  
+  // Walk up the directory tree to find the first directory without "_v"
+  for (let i = pathParts.length - 1; i >= 0; i--) {
+    const part = pathParts[i];
+    if (!part.includes('_v')) {
+      // Found the first directory without version, search from here
+      searchRoot = pathParts.slice(0, i + 1).join(path.sep);
+      break;
+    }
   }
-
+  
+  console.log('Original filepath:', filepath);
+  console.log('Base filename (no version):', baseFilename);
+  console.log('Search root (first dir without _v):', searchRoot);
+  
   let versions: string[] = [];
-  const sourceFolderStructure = filepath.split(/_v\d+/)[0];
-
-  console.log('SOURCE FOLDER STRUCTURE', sourceFolderStructure);
-
+  
   try {
-    for (const file of readAllFiles(path.dirname(dir))) {
-      const matchExt = path.extname(file) === `.${ext}`;
-      const matchSuffix = matchRegex.exec(path.basename(file))?.groups;
-      if (matchSuffix === undefined) continue;
-      const { suffix } = matchSuffix;
-      const targeteFolderStructure = file.split(/_v\d+/)[0];
-      if (
-        matchExt &&
-        suffix === sourceSuffix &&
-        targeteFolderStructure === sourceFolderStructure &&
-        path
-          .basename(file)
-          .toLowerCase()
-          .replace(/v\d+/g, '')
-          .match(path.basename(filepath).toLowerCase().replace(/v\d+/g, ''))
-      )
-        versions.push(file);
+    for (const file of readAllFiles(searchRoot)) {
+      // Must have same extension
+      if (path.extname(file) !== ext) continue;
+      
+      const currentFilename = path.basename(file);
+      
+      // Remove version from current filename
+      const currentBaseFilename = currentFilename.replace(versionRegex, '').replace(ext, '');
+      
+      // Check if the base filename matches
+      if (currentBaseFilename === baseFilename) {
+        // Additional check: make sure the file path structure is similar
+        // by checking if the relative path from searchRoot has similar structure
+        const relativeOriginal = path.relative(searchRoot, filepath);
+        const relativeCurrent = path.relative(searchRoot, file);
+        
+        // Remove version numbers from both relative paths for comparison
+        const cleanOriginal = relativeOriginal.replace(/_v\d+/g, '');
+        const cleanCurrent = relativeCurrent.replace(/_v\d+/g, '');
+        
+        if (cleanOriginal === cleanCurrent) {
+          versions.push(file);
+          console.log('Found version:', file);
+        }
+      }
     }
 
-    // regex to match the file extension
-    // const extRegex = /\.(\w+)$/i;
-    // const extMatch = filepath.match(extRegex);
-    // const ext = extMatch ? extMatch[1] : null;
+    console.log('All versions found:', versions);
 
     const versionsMapped = versions.map((v) => {
-      const match = v.match(versionRegex);
-      const version = match ? match[2] : '';
-      const name = match ? match[1] : '';
-      // let displayName =match && variation ? `${variation} | ${version}` : `${version}`;
-      let displayName = `${version}`;
+      // Try to extract version from filename first, then from folder path
+      let versionNumber = '';
+      const filenameMatch = path.basename(v).match(versionRegex);
+      
+      if (filenameMatch) {
+        versionNumber = filenameMatch[1];
+      } else {
+        // Look for version in any part of the path
+        const pathMatch = v.match(/_v(\d+)/);
+        if (pathMatch) {
+          versionNumber = pathMatch[1];
+        }
+      }
+      
+      const version = versionNumber ? `v${versionNumber}` : '';
+      const displayName = version || 'unknown';
 
       return {
         filepath: v,
         version: version,
-        name: name,
+        name: baseFilename,
         displayName: displayName,
       };
     });
-    return versionsMapped;
+
+    // Sort by version number (descending)
+    versionsMapped.sort((a, b) => {
+      const versionA = parseInt(a.version.replace('v', ''), 10) || 0;
+      const versionB = parseInt(b.version.replace('v', ''), 10) || 0;
+      return versionB - versionA;
+    });
+
+    return versionsMapped.length > 0 ? versionsMapped : [{
+      filepath: filepath,
+      version: 'current',
+      name: baseFilename,
+      displayName: 'current'
+    }];
   } catch (e) {
-    console.log(e);
-    return [filepath];
+    console.log('Error finding versions:', e);
+    return [{
+      filepath: filepath,
+      version: 'current',
+      name: baseFilename,
+      displayName: 'current'
+    }];
   }
 };
 
@@ -120,9 +162,6 @@ export const GetSystemFileVersions = (
 export const GetFileVersion = (filepath: string) => {
   const versionRegex = /_(v\d+)/i;
   const dir = path.dirname(filepath);
-
-
-
   const match = path.basename(filepath.toLowerCase()).match(versionRegex);
   return match ? match[1] : null;
 };
@@ -135,10 +174,7 @@ export const GetRenamedFiles = async (
 ) => {
   let renamedFile = path.basename(filepath).replace(from, to);
   renamedFile = renamedFile.replaceAll(/v\d+/g, '');
-  const files = fs.readdirSync(rootFolder);
   let renamedFiles: string[] = [];
-
-
 
   for (const file of readAllFiles(rootFolder)) {
     let trimmedFileName = path.basename(file).replaceAll(/v\d+/g, '');
@@ -281,14 +317,13 @@ export const GetFilesLibrary = (dir: string): Array<any> => {
   const flatShots = collectFilesByExtensions(shotsFolder, extensions);
   // const shots = groupFilesBySubFolders(rootFolder, flatShots);
   const flatAssets = collectFilesByExtensions(assetsFolder, extensions);
-  const assets = groupFilesBySubFolders(rootFolder, flatAssets);
 
   // Convert the shots and assets objects to arrays
   const shotsArray = Object.entries(flatShots)
-    .map(([key, value]) => value)
+    .map(([, value]) => value)
     .flat();
   const assetsArray = Object.entries(flatAssets)
-    .map(([key, value]) => value)
+    .map(([, value]) => value)
     .flat();
   return [...shotsArray, ...assetsArray];
 };

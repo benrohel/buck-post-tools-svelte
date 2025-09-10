@@ -1,8 +1,8 @@
 import { padLeft, selectFolder, padStart } from '../utils/utils';
 export { selectFolder };
 
-import { getProjectFile } from './ppro-utils';
-export { getProjectFile };
+import { getProjectFile, collectAllFilePaths } from './ppro-utils';
+export { getProjectFile, collectAllFilePaths };
 declare var JSON: any;
 declare const qe: undefined | any;
 
@@ -440,9 +440,8 @@ export const addPrefixOrSuffix = (options: any) => {
   }
 
   for (var c = 0; c < selectedClips.length; c++) {
-    const newName = `${options.prefix ? options.prefix + '_' : ''}${
-      selectedClips[c].name
-    }${options.suffix ? '_' + options.suffix : ''}`;
+    const newName = `${options.prefix ? options.prefix + '_' : ''}${selectedClips[c].name
+      }${options.suffix ? '_' + options.suffix : ''}`;
     selectedClips[c].name = newName;
   }
 };

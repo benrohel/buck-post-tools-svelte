@@ -1,5 +1,5 @@
-const fg = require('fast-glob');
-import { path } from '../../lib/cep/node';
+const { fdir } = require('fdir');
+import { path, fs } from '../../lib/cep/node';
 import { type PathItem } from '../../api/exporter';
 interface HSFile {
   path: string;
@@ -10,20 +10,28 @@ interface HSFile {
 
 export const getFilteredFiles = async (rootPath: string, filter: string[]): Promise<HSFile[]> => {
   const productionRoot = path.join(rootPath, 'Production');
-  const entries = await fg(filter, {
-    cwd: productionRoot,
-    ignore: ['**/temp/**', '.*'],
-    onlyFiles: true,
-    stats: true
-  });
+  const fs = require('fs');
+
+  const entries = await new fdir()
+    .withFullPaths()
+    .exclude((dirName: string) => dirName.includes('temp') || dirName.startsWith('.'))
+    .filter((filePath: string) => {
+      const fileName = path.basename(filePath);
+      return filter.some(pattern => fileName.match(pattern.replace(/\*/g, '.*')));
+    })
+    .crawl(productionRoot)
+    .withPromise();
 
   return entries
-    .map((entry: any) => ({
-      path: path.join(productionRoot, entry.path),
-      modified: entry.stats.mtime,
-      name: path.basename(entry.path),
-      version: extractVersion(entry.path)
-    }))
+    .map((entry: string) => {
+      const stats = fs.statSync(entry);
+      return {
+        path: entry,
+        modified: stats.mtime,
+        name: path.basename(entry),
+        version: extractVersion(entry)
+      };
+    })
     .sort((a: any, b: any) => b.version - a.version); // example sort by version descending
 };
 
@@ -38,31 +46,37 @@ export function extractVersion(filename: string) {
  * @returns 
  */
 export const getShotFiles = async (rootPath: string) => {
-  const productionRoot = path.join(rootPath, 'Production');
-  const entriesWildCards = ['*.mov', '*.mp4', '**/Shots/**/render/**/*.mp4', '**/Shots/**/render/**/*.mov', '**/Shots/**/render/**/*.mp4'];
+  const productionRoot = path.join(rootPath, 'Production', 'shots');
+  const targetExtensions = ['.mov', '.mp4'];
 
-  const entries = await fg(entriesWildCards, {
-    cwd: productionRoot,
-    ignore: ['**/temp/**', '.*'],
-    onlyFiles: true,
-    stats: true,
-    caseSensitiveMatch: false,
 
-  });
+  const entries = await new fdir()
+    .withFullPaths()
+    .exclude((dirName: string) => dirName.includes('temp') || dirName.startsWith('.'))
+    .filter((filePath: string) => {
+      const ext = path.extname(filePath).toLowerCase();
+      const isTargetFile = targetExtensions.includes(ext);
+      const isInShotsRender = filePath.toLowerCase().includes('/shots/') && filePath.toLowerCase().includes('/render/');
+      const isRootVideo = !filePath.includes('/') && targetExtensions.includes(ext);
+      return isTargetFile && (isInShotsRender || isRootVideo);
+    })
+    .crawl(productionRoot)
+    .withPromise();
 
   return entries
-    .map((entry: any) => {
-      const parsed = parseHierarchy(path.join(productionRoot, entry.path));
+    .map((entry: string) => {
+      const stats = fs.statSync(entry);
+      const parsed = parseHierarchy(entry);
 
       return {
         ...parsed,
-        path: path.join(productionRoot, entry.path),
-        modified: entry.stats.mtime,
-        name: path.basename(entry.path),
-        version: parsed?.version
+        path: entry,
+        modified: stats.mtime,
+        name: path.basename(entry)
       }
     })
-    .sort((a: any, b: any) => b.version - a.version); // example sort by version descending
+    .filter((item: any) => item !== null)
+    .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0)); // example sort by version descending
 };
 
 interface ParsedFileInfo {
@@ -162,9 +176,7 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
 
 export const getShotFilesTree = async (rootPath: string) => {
   const files = await getShotFiles(rootPath);
-  console.log('files', files);
   const tree = buildPathTreeFromParsedFiles(files);
-  console.log('tree', tree);
   return tree;
 };
 
@@ -222,7 +234,8 @@ export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions
     if (node.children && node.children.length > 0) {
       const filteredChildren = node.children
         .map(child => filterNode(child, depth + 1))
-        .filter(child => child !== null);
+        .filter(child => child !== null)
+        .sort((a: any, b: any) => a.path.localeCompare(b.path));
 
       // Return node with filtered children
       return {

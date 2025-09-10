@@ -10,9 +10,17 @@ interface AiService {
   apiKey: string;
 }
 
+interface LatestBuck5LibrarySettings {
+  sequenceName: string;
+  shotName: string;
+  taskName: string;
+}
+
+
 export interface AppStore {
   showTooltips: boolean;
   defaultToBuck5ShotLibrary: boolean;
+  latestBuck5LibrarySettings: LatestBuck5LibrarySettings;
   appId: string;
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
@@ -27,6 +35,11 @@ export interface AppStore {
 export const defaultAppStore: AppStore = {
   showTooltips: false,
   defaultToBuck5ShotLibrary: false,
+  latestBuck5LibrarySettings: {
+    sequenceName: '',
+    shotName: '',
+    taskName: '',
+  },
   appId: appId,
   rememberLastFolderSearch: true,
   rememberLastExportPath: true,
