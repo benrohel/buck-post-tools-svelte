@@ -7,6 +7,7 @@
     FilePlay,
     Download,
     Eye,
+    Film,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import {
@@ -24,27 +25,23 @@
   import { SyncLoader } from 'svelte-loading-spinners';
   import { appStore, type AppStore } from '../../stores/app-store';
   import { localAppStore } from '../../stores/local-storage';
+  import { buck5ShotLibraryStore } from '../../stores/buck5-shot-library-store';
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import path from 'path';
-  let pathStructure: PathItem[] = [];
   let selectedItemIds: Set<string> = new Set();
   let lastClickedId: string | null = null;
   let filteredItems: PathItem[] = [];
   let isLoading = false;
-  let shotNames: any[] = [];
-  let sequenceNames: any[] = [];
-  let taskNames: any[] = [];
-  let existingMediaFiles: string[] = [];
 
   let onlyShowLatestVersions = false;
 
-  $: shotNames;
-  $: sequenceNames;
-  $: taskNames;
+  $: shotNames = $buck5ShotLibraryStore.shotNames;
+  $: sequenceNames = $buck5ShotLibraryStore.sequenceNames;
+  $: taskNames = $buck5ShotLibraryStore.taskNames;
+  $: pathStructure = $buck5ShotLibraryStore.pathStructure;
+  $: existingMediaFiles = $buck5ShotLibraryStore.existingMediaFiles;
 
   $: console.log('sequenceNames', sequenceNames);
-
-  let selectedSequences: any[] = [];
 
   let selectedSequenceName: any = '';
   let selectedShotName: any = '';
@@ -81,9 +78,9 @@
     appStore.update((s: AppStore) => ({
       ...s,
       latestBuck5LibrarySettings: {
-        sequenceName: selectedSequenceName.value,
-        shotName: selectedShotName.value,
-        taskName: selectedTaskName.value,
+        sequenceName: selectedSequenceName.value ?? 'All Sequences',
+        shotName: selectedShotName.value ?? 'All Shots',
+        taskName: selectedTaskName.value ?? 'All Tasks',
       },
     }));
     localAppStore.set($appStore);
@@ -92,15 +89,14 @@
   const loadShotLibrary = async () => {
     isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
-    existingMediaFiles = JSON.parse(
+    const existingMediaFilesData = JSON.parse(
       await evalES(`collectAllFilePaths()`, false),
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
     const res = await getShotFilesTree(rootFolder);
-    pathStructure = res;
 
     const folderNames = collectFolderNamesByLevel(res);
-    shotNames = [
+    const shotNamesData = [
       { value: '', label: 'All Shots', selected: true },
       ...folderNames[2].map((shotName) => ({
         value: shotName,
@@ -108,7 +104,7 @@
         selected: true,
       })),
     ];
-    sequenceNames = [
+    const sequenceNamesData = [
       { value: '', label: 'All Sequences', selected: true },
       ...folderNames[1].map((sequenceName) => ({
         value: sequenceName,
@@ -116,7 +112,7 @@
         selected: true,
       })),
     ];
-    taskNames = [
+    const taskNamesData = [
       { value: '', label: 'All Tasks', selected: true },
       ...folderNames[3].map((taskName) => ({
         value: taskName,
@@ -125,15 +121,27 @@
       })),
     ];
 
+    // Update the store with new data
+    buck5ShotLibraryStore.update((store) => ({
+      ...store,
+      pathStructure: res,
+      shotNames: shotNamesData,
+      sequenceNames: sequenceNamesData,
+      taskNames: taskNamesData,
+      existingMediaFiles: existingMediaFilesData,
+      lastUpdated: new Date(),
+      isLoaded: true,
+    }));
+
     if ($appStore.latestBuck5LibrarySettings) {
       selectedSequenceName =
         $appStore.latestBuck5LibrarySettings.sequenceName ?? '';
       selectedShotName = $appStore.latestBuck5LibrarySettings.shotName ?? '';
       selectedTaskName = $appStore.latestBuck5LibrarySettings.taskName ?? '';
     } else {
-      selectedSequenceName = sequenceNames[0];
-      selectedShotName = shotNames[0];
-      selectedTaskName = taskNames[0];
+      selectedSequenceName = sequenceNamesData[0];
+      selectedShotName = shotNamesData[0];
+      selectedTaskName = taskNamesData[0];
     }
     isLoading = false;
   };
@@ -142,21 +150,74 @@
     openFile(itemId);
   };
 
-  // Function to handle item selection with multi-select support
+  // Helper function to apply saved filter settings from appStore
+  function applyStoredFilterSettings() {
+    if ($appStore.latestBuck5LibrarySettings) {
+      const settings = $appStore.latestBuck5LibrarySettings;
+
+      // Find matching options in the current data
+      if (settings.sequenceName && sequenceNames.length > 0) {
+        const foundSequence = sequenceNames.find(
+          (item) => item.value === settings.sequenceName,
+        );
+        if (foundSequence) {
+          selectedSequenceName = foundSequence;
+        }
+      }
+
+      if (settings.shotName && shotNames.length > 0) {
+        const foundShot = shotNames.find(
+          (item) => item.value === settings.shotName,
+        );
+        if (foundShot) {
+          selectedShotName = foundShot;
+        }
+      }
+
+      if (settings.taskName && taskNames.length > 0) {
+        const foundTask = taskNames.find(
+          (item) => item.value === settings.taskName,
+        );
+        if (foundTask) {
+          selectedTaskName = foundTask;
+        }
+      }
+    }
+
+    // Set defaults if nothing was found or no stored settings
+    if (!selectedSequenceName && sequenceNames.length > 0) {
+      selectedSequenceName = sequenceNames[0];
+    }
+    if (!selectedShotName && shotNames.length > 0) {
+      selectedShotName = shotNames[0];
+    }
+    if (!selectedTaskName && taskNames.length > 0) {
+      selectedTaskName = taskNames[0];
+    }
+  }
+
+  // Function to handle item selection with multi-select support (files only)
   function handleItemClick(itemId: string, event: MouseEvent) {
     const flatItems = flattenTree(filteredItems).map((item) => item.node);
+    const clickedNode = findNodeById(filteredItems, itemId);
+
+    if (!clickedNode) return;
+
+    // Only handle selection for files, ignore folder clicks for selection
+    if (clickedNode.type !== 'file') return;
 
     if (event.metaKey || event.ctrlKey) {
-      // Cmd/Ctrl+Click: Toggle selection
-      if (selectedItemIds.has(itemId)) {
-        selectedItemIds.delete(itemId);
+      // Cmd/Ctrl+Click: Toggle file selection
+      const newSelection = new Set(selectedItemIds);
+      if (newSelection.has(itemId)) {
+        newSelection.delete(itemId);
       } else {
-        selectedItemIds.add(itemId);
+        newSelection.add(itemId);
       }
-      selectedItemIds = new Set(selectedItemIds); // Trigger reactivity
+      selectedItemIds = newSelection;
       lastClickedId = itemId;
     } else if (event.shiftKey && lastClickedId) {
-      // Shift+Click: Select range
+      // Shift+Click: Select range of files
       const currentIndex = flatItems.findIndex((item) => item.id === itemId);
       const lastIndex = flatItems.findIndex(
         (item) => item.id === lastClickedId,
@@ -166,14 +227,18 @@
         const startIndex = Math.min(currentIndex, lastIndex);
         const endIndex = Math.max(currentIndex, lastIndex);
 
-        // Add all items in range to selection
+        // Add all files in range to selection
+        const newSelection = new Set(selectedItemIds);
         for (let i = startIndex; i <= endIndex; i++) {
-          selectedItemIds.add(flatItems[i].id);
+          const rangeNode = flatItems[i];
+          if (rangeNode.type === 'file') {
+            newSelection.add(rangeNode.id);
+          }
         }
-        selectedItemIds = new Set(selectedItemIds); // Trigger reactivity
+        selectedItemIds = newSelection;
       }
     } else {
-      // Regular click: Select only this item
+      // Regular click: Select only this file
       selectedItemIds = new Set([itemId]);
       lastClickedId = itemId;
     }
@@ -358,7 +423,13 @@
   };
 
   onMount(() => {
-    loadShotLibrary();
+    // Only load if not already loaded
+    if (!$buck5ShotLibraryStore.isLoaded) {
+      loadShotLibrary();
+    } else {
+      // Data is already loaded, just apply stored filter settings
+      applyStoredFilterSettings();
+    }
   });
 </script>
 
@@ -373,6 +444,11 @@
           <span>Only show latest versions</span>
         </div>
         <div class="flex-row-end">
+          {#if $buck5ShotLibraryStore.lastUpdated}
+            <span class="last-updated-text">
+              Updated: {$buck5ShotLibraryStore.lastUpdated.toLocaleTimeString()}
+            </span>
+          {/if}
           <button on:click={loadShotLibrary}>
             <RefreshCcw size={16} />
           </button>
@@ -447,7 +523,7 @@
                     {#if node.type === 'folder'}
                       <Folder color="white" size="20" />
                     {:else}
-                      <FilePlay color="white" size="20" strokeWidth="1" />
+                      <Film color="white" size="20" strokeWidth="1" />
                     {/if}
                   </div>
 
@@ -686,5 +762,11 @@
     color: #e0e0e0;
     padding: 5px;
     border-radius: 3px;
+  }
+  .last-updated-text {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+    margin-right: 8px;
   }
 </style>
