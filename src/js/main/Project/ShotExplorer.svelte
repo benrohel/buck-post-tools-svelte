@@ -27,7 +27,8 @@
   import Toggle from '../../components/Toggle/Toggle.svelte';
   import path from 'path';
   let pathStructure: PathItem[] = [];
-  let selectedItemId: string | null = null;
+  let selectedItemIds: Set<string> = new Set();
+  let lastClickedId: string | null = null;
   let filteredItems: PathItem[] = [];
   let isLoading = false;
   let shotNames: any[] = [];
@@ -125,9 +126,10 @@
     ];
 
     if ($appStore.latestBuck5LibrarySettings) {
-      selectedSequenceName = $appStore.latestBuck5LibrarySettings.sequenceName;
-      selectedShotName = $appStore.latestBuck5LibrarySettings.shotName;
-      selectedTaskName = $appStore.latestBuck5LibrarySettings.taskName;
+      selectedSequenceName =
+        $appStore.latestBuck5LibrarySettings.sequenceName ?? '';
+      selectedShotName = $appStore.latestBuck5LibrarySettings.shotName ?? '';
+      selectedTaskName = $appStore.latestBuck5LibrarySettings.taskName ?? '';
     } else {
       selectedSequenceName = sequenceNames[0];
       selectedShotName = shotNames[0];
@@ -139,6 +141,49 @@
   const handleOpenFile = (itemId: string) => {
     openFile(itemId);
   };
+
+  // Function to handle item selection with multi-select support
+  function handleItemClick(itemId: string, event: MouseEvent) {
+    const flatItems = flattenTree(filteredItems).map((item) => item.node);
+
+    if (event.metaKey || event.ctrlKey) {
+      // Cmd/Ctrl+Click: Toggle selection
+      if (selectedItemIds.has(itemId)) {
+        selectedItemIds.delete(itemId);
+      } else {
+        selectedItemIds.add(itemId);
+      }
+      selectedItemIds = new Set(selectedItemIds); // Trigger reactivity
+      lastClickedId = itemId;
+    } else if (event.shiftKey && lastClickedId) {
+      // Shift+Click: Select range
+      const currentIndex = flatItems.findIndex((item) => item.id === itemId);
+      const lastIndex = flatItems.findIndex(
+        (item) => item.id === lastClickedId,
+      );
+
+      if (currentIndex !== -1 && lastIndex !== -1) {
+        const startIndex = Math.min(currentIndex, lastIndex);
+        const endIndex = Math.max(currentIndex, lastIndex);
+
+        // Add all items in range to selection
+        for (let i = startIndex; i <= endIndex; i++) {
+          selectedItemIds.add(flatItems[i].id);
+        }
+        selectedItemIds = new Set(selectedItemIds); // Trigger reactivity
+      }
+    } else {
+      // Regular click: Select only this item
+      selectedItemIds = new Set([itemId]);
+      lastClickedId = itemId;
+    }
+  }
+
+  // Function to clear selection when clicking outside items
+  function handleContainerClick() {
+    selectedItemIds = new Set();
+    lastClickedId = null;
+  }
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
@@ -294,6 +339,24 @@
     );
   };
 
+  const importSelectedItems = async () => {
+    if (selectedItemIds.size === 0) return;
+
+    // Get selected file items
+    const allItems = findNodesByType(filteredItems, 'file');
+    const selectedFileItems = allItems
+      .filter((item) => selectedItemIds.has(item.id))
+      .map((item) => item.path);
+
+    if (selectedFileItems.length > 0) {
+      await evalES(
+        `importMediaFiles(${JSON.stringify(selectedFileItems)})`,
+      ).then((res) => {
+        res ? true : false;
+      });
+    }
+  };
+
   onMount(() => {
     loadShotLibrary();
   });
@@ -313,8 +376,15 @@
           <button on:click={loadShotLibrary}>
             <RefreshCcw size={16} />
           </button>
-          <button on:click={importAllVisible}>
-            <Download size={16} />
+          <button
+            on:click={importSelectedItems}
+            disabled={selectedItemIds.size === 0}
+            title="Import Selected ({selectedItemIds.size} items)"
+          >
+            <Download size={16} /> Selected ({selectedItemIds.size})
+          </button>
+          <button on:click={importAllVisible} title="Import All Visible">
+            <Download size={16} /> All
           </button>
         </div>
       </div>
@@ -345,17 +415,17 @@
           <SyncLoader color="#adadad" size="20" />
         </div>
       {:else}
-        <div class="tree-container">
+        <div class="tree-container" on:click={handleContainerClick}>
           <div class="tree-structure">
             {#each flattenTree(filteredItems) as { node, depth }}
               <div
-                class="tree-item {node.type} {selectedItemId === node.id
+                class="tree-item {node.type} {selectedItemIds.has(node.id)
                   ? 'selected'
                   : ''} {fileExistsInProject(node) ? 'disabled' : ''}"
                 style="margin-left: {depth * 20}px;"
                 on:click={(e) => {
                   e.stopPropagation();
-                  selectedItemId = node.id;
+                  handleItemClick(node.id, e);
                 }}
               >
                 <div class="item-header">
@@ -387,10 +457,20 @@
                       on:keydown={(e) => {
                         e.preventDefault();
                         if (e.key === 'Enter') {
+                          if (selectedItemIds.size > 1) {
+                            importSelectedItems();
+                          } else {
+                            importItem(node.id);
+                          }
+                        }
+                      }}
+                      on:dblclick={() => {
+                        if (selectedItemIds.size > 1) {
+                          importSelectedItems();
+                        } else {
                           importItem(node.id);
                         }
                       }}
-                      on:dblclick={() => importItem(node.id)}
                     >
                       <span class={`item-name`}>{node.name || '[empty]'}</span>
                       {#if node.type === 'file'}
@@ -426,6 +506,15 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 10px;
+    position: relative;
+  }
+
+  .flex-row-end {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin: 1px;
     position: relative;
   }
   .export-path-builder {
@@ -472,8 +561,9 @@
   }
 
   .tree-item {
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     border-radius: 3px;
+    cursor: pointer;
   }
 
   .tree-item.selected > .item-header {
@@ -498,13 +588,12 @@
   }
 
   .tree-item.disabled > .item-header {
-    opacity: 0.4;
+    opacity: 0.5;
     background-color: #1a1a1a !important;
   }
 
   .tree-item.disabled .item-name {
     color: #666;
-    text-decoration: line-through;
   }
 
   .expand-btn {
