@@ -4,10 +4,10 @@
     ChevronDown,
     ChevronRight,
     Folder,
-    FilePlay,
     Download,
     Eye,
     Film,
+    CircleX,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import {
@@ -16,6 +16,10 @@
     filterByDepth,
     type HierarchyFilters,
   } from '../../api/files/buck5-file-browser';
+  import {
+    getShotFilesTreeBuck3,
+    collectFolderNamesByLevelBuck3,
+  } from '../../api/files/buck3-file-browser';
   import { PROJECT_ROOT } from '../../api/files/files';
   import { evalES } from '../../lib/utils/bolt';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
@@ -27,11 +31,14 @@
   import { localAppStore } from '../../stores/local-storage';
   import { buck5ShotLibraryStore } from '../../stores/buck5-shot-library-store';
   import Toggle from '../../components/Toggle/Toggle.svelte';
+
   import path from 'path';
   let selectedItemIds: Set<string> = new Set();
   let lastClickedId: string | null = null;
   let filteredItems: PathItem[] = [];
   let isLoading = false;
+  let prefix = '';
+  let isBuck5 = true;
 
   let onlyShowLatestVersions = false;
 
@@ -46,12 +53,21 @@
   let selectedSequenceName: any = '';
   let selectedShotName: any = '';
   let selectedTaskName: any = '';
+  let selectedExtensionName: any = '';
+
+  // Extension filter options
+  const extensionNames = [
+    { value: '', label: 'All Extensions', selected: true },
+    { value: 'mov', label: 'mov', selected: false },
+    { value: 'mp4', label: 'mp4', selected: false },
+  ];
 
   let filters: HierarchyFilters;
   $: filters = {
     sequence: [selectedSequenceName.value ? selectedSequenceName.value : ''],
     shot: [selectedShotName.value ? selectedShotName.value : ''],
     task: [selectedTaskName.value ? selectedTaskName.value : ''],
+    extension: [selectedExtensionName.value ? selectedExtensionName.value : ''],
   };
 
   $: depthFilters = [
@@ -62,25 +78,28 @@
     (node: PathItem) => node.name.includes(''), // Level 4: only v042 files
   ];
 
-  $: filteredItems = filterByDepth(
+  $: filteredItemsAfterDepth = filterByDepth(
     pathStructure,
     depthFilters,
     onlyShowLatestVersions,
   );
 
+  // Additional filtering by extension
+  $: filteredItems = filterByExtension(
+    filteredItemsAfterDepth,
+    selectedExtensionName.value,
+  );
+
   // $: console.log('filteredItems', JSON.stringify(filteredItems));
 
   const handleOnMenuChange = (value: any) => {
-    console.log(selectedShotName);
-    console.log(selectedSequenceName);
-    console.log(selectedTaskName);
-    console.log(filters);
     appStore.update((s: AppStore) => ({
       ...s,
       latestBuck5LibrarySettings: {
         sequenceName: selectedSequenceName.value ?? 'All Sequences',
         shotName: selectedShotName.value ?? 'All Shots',
         taskName: selectedTaskName.value ?? 'All Tasks',
+        extensionName: selectedExtensionName.value ?? 'All Extensions',
       },
     }));
     localAppStore.set($appStore);
@@ -93,9 +112,14 @@
       await evalES(`collectAllFilePaths()`, false),
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
-    const res = await getShotFilesTree(rootFolder);
-
-    const folderNames = collectFolderNamesByLevel(res);
+    let getShotFilesTreeFunc = getShotFilesTree;
+    let collectFolderNamesByLevelFunc = collectFolderNamesByLevel;
+    if (!isBuck5) {
+      getShotFilesTreeFunc = getShotFilesTreeBuck3;
+      collectFolderNamesByLevelFunc = collectFolderNamesByLevelBuck3;
+    }
+    const res = await getShotFilesTreeFunc(rootFolder, isBuck5, prefix);
+    const folderNames = collectFolderNamesByLevelFunc(res);
     const shotNamesData = [
       { value: '', label: 'All Shots', selected: true },
       ...folderNames[2].map((shotName) => ({
@@ -182,6 +206,15 @@
           selectedTaskName = foundTask;
         }
       }
+
+      if (settings.extensionName && extensionNames.length > 0) {
+        const foundExtension = extensionNames.find(
+          (item) => item.value === settings.extensionName,
+        );
+        if (foundExtension) {
+          selectedExtensionName = foundExtension;
+        }
+      }
     }
 
     // Set defaults if nothing was found or no stored settings
@@ -194,6 +227,70 @@
     if (!selectedTaskName && taskNames.length > 0) {
       selectedTaskName = taskNames[0];
     }
+    if (!selectedExtensionName && extensionNames.length > 0) {
+      selectedExtensionName = extensionNames[0];
+    }
+  }
+
+  // Function to filter files by extension
+  function filterByExtension(
+    items: PathItem[],
+    extensionFilter: string,
+  ): PathItem[] {
+    if (!extensionFilter || extensionFilter === '') {
+      return items; // No filter applied, return all items
+    }
+
+    function filterNodeRecursively(node: PathItem): PathItem | null {
+      if (node.type === 'file') {
+        // For files, check if the extension matches
+        const fileName = node.name.toLowerCase();
+        const hasExtension = fileName.endsWith(
+          `.${extensionFilter.toLowerCase()}`,
+        );
+        return hasExtension ? node : null;
+      } else if (node.type === 'folder') {
+        // For folders, recursively filter children
+        const filteredChildren = node.children
+          ? (node.children
+              .map((child) => filterNodeRecursively(child))
+              .filter((child) => child !== null) as PathItem[])
+          : [];
+
+        // Keep folder if it has any matching children
+        if (filteredChildren.length > 0) {
+          return {
+            ...node,
+            children: filteredChildren,
+          };
+        }
+      }
+      return null;
+    }
+
+    return items
+      .map((item) => filterNodeRecursively(item))
+      .filter((item) => item !== null) as PathItem[];
+  }
+
+  function clearFilters() {
+    // Reset all filters to default "All" options
+    selectedSequenceName = sequenceNames.length > 0 ? sequenceNames[0] : '';
+    selectedShotName = shotNames.length > 0 ? shotNames[0] : '';
+    selectedTaskName = taskNames.length > 0 ? taskNames[0] : '';
+    selectedExtensionName = extensionNames.length > 0 ? extensionNames[0] : '';
+
+    // Update app store with cleared filters
+    appStore.update((s: AppStore) => ({
+      ...s,
+      latestBuck5LibrarySettings: {
+        sequenceName: '',
+        shotName: '',
+        taskName: '',
+        extensionName: '',
+      },
+    }));
+    localAppStore.set($appStore);
   }
 
   // Function to handle item selection with multi-select support (files only)
@@ -441,8 +538,14 @@
       <div class="flex-row-between">
         <div class="flex-row-start">
           <Toggle bind:checked={onlyShowLatestVersions} />
-          <span>Only show latest versions</span>
+          <span>latest versions</span>
         </div>
+        <div class="flex-row-start">
+          <span>Buck 3</span>
+          <Toggle bind:checked={isBuck5} />
+          <span>Buck 5</span>
+        </div>
+
         <div class="flex-row-end">
           {#if $buck5ShotLibraryStore.lastUpdated}
             <span class="last-updated-text">
@@ -465,24 +568,45 @@
         </div>
       </div>
       <div class="flex-row-start">
-        <MenuSelect
-          items={sequenceNames}
-          placeholder="Sequence"
-          bind:value={selectedSequenceName}
-          onChange={handleOnMenuChange}
-        />
-        <MenuSelect
-          items={shotNames}
-          placeholder="Shot"
-          bind:value={selectedShotName}
-          onChange={handleOnMenuChange}
-        />
+        {#if !isBuck5}
+          <div>
+            <input type="text" bind:value={prefix} placeholder="prefix" />
+          </div>
+          <MenuSelect
+            items={sequenceNames}
+            placeholder="Shot"
+            bind:value={selectedSequenceName}
+            onChange={handleOnMenuChange}
+          />
+        {:else}
+          <MenuSelect
+            items={sequenceNames}
+            placeholder="Sequence"
+            bind:value={selectedSequenceName}
+            onChange={handleOnMenuChange}
+          />
+          <MenuSelect
+            items={shotNames}
+            placeholder="Shot"
+            bind:value={selectedShotName}
+            onChange={handleOnMenuChange}
+          />
+        {/if}
         <MenuSelect
           items={taskNames}
           placeholder="Task"
           bind:value={selectedTaskName}
           onChange={handleOnMenuChange}
         />
+        <MenuSelect
+          items={extensionNames}
+          placeholder="Extension"
+          bind:value={selectedExtensionName}
+          onChange={handleOnMenuChange}
+        />
+        <button on:click={clearFilters}>
+          <CircleX size={16} />
+        </button>
       </div>
       {#if isLoading}
         <div

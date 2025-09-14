@@ -1,6 +1,6 @@
 const { fdir } = require('fdir');
 import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../../api/exporter';
+import { type PathItem } from '../exporter';
 interface HSFile {
   path: string;
   modified: Date;
@@ -8,7 +8,7 @@ interface HSFile {
   version: number;
 }
 
-export const getFilteredFiles = async (rootPath: string, filter: string[]): Promise<HSFile[]> => {
+export const getFilteredFilesBuck3 = async (rootPath: string, filter: string[]): Promise<HSFile[]> => {
   const productionRoot = path.join(rootPath, 'Production');
   const fs = require('fs');
 
@@ -45,9 +45,17 @@ export function extractVersion(filename: string) {
  * @param rootPath is the Project folder
  * @returns 
  */
-export const getShotFiles = async (rootPath: string) => {
-  const productionRoot = path.join(rootPath, 'Production', 'shots');
+export const getShotFilesBuck3 = async (rootPath: string, buck5: boolean = true, prefix: string = "production") => {
+
+  let productionRoot = path.join(rootPath, 'Production');
+
+  if (buck5) {
+    productionRoot = path.join(rootPath, 'Production', 'shots');
+  }
+
   const targetExtensions = ['.mov', '.mp4'];
+
+  const isInShotsRenderPattern = buck5 ? 'shots' : prefix;
 
 
   const entries = await new fdir()
@@ -56,12 +64,20 @@ export const getShotFiles = async (rootPath: string) => {
     .filter((filePath: string) => {
       const ext = path.extname(filePath).toLowerCase();
       const isTargetFile = targetExtensions.includes(ext);
-      const isInShotsRender = filePath.toLowerCase().includes('/shots/') && filePath.toLowerCase().includes('/render/');
+      const isInShotsRender = filePath.toLowerCase().includes('shots') && filePath.toLowerCase().includes('/render/');
       const isRootVideo = !filePath.includes('/') && targetExtensions.includes(ext);
-      return isTargetFile && (isInShotsRender || isRootVideo);
+      const isBuck3Prefix = filePath.toLowerCase().match(new RegExp(`production/${prefix}`, 'i'));
+
+      if (buck5) {
+        return isTargetFile && (isInShotsRender || isRootVideo);
+      } else {
+        return isTargetFile && isBuck3Prefix !== null;
+      }
     })
     .crawl(productionRoot)
     .withPromise();
+
+  console.log('entries', entries);
 
   return entries
     .map((entry: string) => {
@@ -89,19 +105,20 @@ interface ParsedFileInfo {
   name: string;
 }
 
-function parseHierarchy(filePath: string): ParsedFileInfo | null {
+function parseHierarchy(filePath: string, buck5: boolean = true): ParsedFileInfo | null {
   const normalizedPath = path.normalize(filePath);
   const parts = normalizedPath.split(path.sep);
 
+  console.log('parts', parts, filePath, buck5);
   // Find the "Shots" folder (case-insensitive)
-  const shotsIndex = parts.findIndex(p => p.toLowerCase() === 'shots');
+  const shotsIndex = parts.findIndex(p => p.toLowerCase() === 'production');
   if (shotsIndex === -1 || parts.length < shotsIndex + 4) {
     return null; // Not enough levels after "Shots" to extract hierarchy
   }
 
-  const sequence = parts[shotsIndex + 1];
-  const shot = parts[shotsIndex + 2];
-  const task = parts[shotsIndex + 3];
+  const sequence = buck5 ? parts[shotsIndex + 1] : "";
+  const shot = buck5 ? parts[shotsIndex + 2] : parts[shotsIndex + 1];
+  const task = buck5 ? parts[shotsIndex + 3] : parts[shotsIndex + 2];
   const name = path.basename(filePath);
 
   // Try to extract version from filename: _v###
@@ -120,7 +137,7 @@ function parseHierarchy(filePath: string): ParsedFileInfo | null {
   };
 }
 
-function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
+function buildPathTreeFromParsedFiles(files: ParsedFileInfo[], buck5: boolean = true): PathItem[] {
   const root: PathItem[] = [];
   const idMap = new Map<string, PathItem>();
 
@@ -128,7 +145,8 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
     const { sequence, shot, task, path: fullPath, name } = file;
 
     // Build hierarchy: Shots → Sequence → Shot → Task → File
-    const pathSegments = ['Shots', sequence, shot, task];
+    let pathSegments = ['Shots', sequence, shot, task];
+
     let currentPath = '';
     let parentId: string | null = null;
     let children = root;
@@ -174,13 +192,15 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
   return root;
 }
 
-export const getShotFilesTree = async (rootPath: string, isBuck5: boolean = true, prefix: string = "") => {
-  const files = await getShotFiles(rootPath,);
-  const tree = buildPathTreeFromParsedFiles(files);
+export const getShotFilesTreeBuck3 = async (rootPath: string, isBuck5: boolean = true, prefix: string = "") => {
+  const files = await getShotFilesBuck3(rootPath, isBuck5, prefix);
+  console.log('files', files);
+  const tree = buildPathTreeFromParsedFiles(files, isBuck5);
+  console.log('tree', tree);
   return tree;
 };
 
-export const collectFolderNamesByLevel = (tree: PathItem[]): string[][] => {
+export const collectFolderNamesByLevelBuck3 = (tree: PathItem[], isBuck5: boolean = true): string[][] => {
 
   const levels: Map<number, Set<string>> = new Map();
 

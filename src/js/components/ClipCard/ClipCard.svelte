@@ -94,11 +94,14 @@
   };
 
   $: getSyncedColor = (): string => {
-    const fileVersion = GetFileVersion(clip.filepath)?.split('_v')[1];
+    const fileVersion = clip.clipName?.split('_v')[1];
+    console.log('fileVersion', fileVersion);
     if (!fileVersion) {
       return 'color: #f6d55c';
     }
     const timelineVersion = parseInt(fileVersion);
+    console.log('timelineVersion', timelineVersion);
+    console.log('selectedVersion', selectedVersion);
     if (selectedVersion.version == undefined) return 'color: #f6d55c';
     const intSelectedVersion = parseInt(
       selectedVersion.version?.match(/\d+/)[0],
@@ -115,8 +118,6 @@
   };
 
   $: initCard = async () => {
-    console.log('init card', clip);
-
     if (appId === 'PPRO') {
       // const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
       // console.log(metadata);
@@ -169,7 +170,6 @@
     class={!selected ? 'clip-card' : 'clip-card selected'}
     on:dblclick={handleEditClipCLick}
     on:keydown={handleSelectTask}
-    transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
   >
     <div class="ingest-shot-row">
       {#if clip}

@@ -14,6 +14,7 @@ interface LatestBuck5LibrarySettings {
   sequenceName: string;
   shotName: string;
   taskName: string;
+  extensionName: string;
 }
 
 
@@ -39,6 +40,7 @@ export const defaultAppStore: AppStore = {
     sequenceName: '',
     shotName: '',
     taskName: '',
+    extensionName: '',
   },
   appId: appId,
   rememberLastFolderSearch: true,

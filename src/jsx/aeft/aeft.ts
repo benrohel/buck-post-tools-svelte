@@ -14,6 +14,7 @@ export {
   getProjectSettings,
   setProjectSettings,
 } from './aeft-utils';
+export { getAndSetEssentialProperties, updateEssentialPropertiesFromCSV, listAllComps } from './templater';
 
 export const helloWorld = () => {
   alert('Hello from After Effects!');
@@ -105,9 +106,8 @@ export const addPrefixOrSuffix = (options: any) => {
       return;
   }
   for (var c = 0; c < selectedClips.length; c++) {
-    const newName = `${options.prefix ? options.prefix + '_' : ''}${
-      selectedClips[c].name
-    }${options.suffix ? '_' + options.suffix : ''}`;
+    const newName = `${options.prefix ? options.prefix + '_' : ''}${selectedClips[c].name
+      }${options.suffix ? '_' + options.suffix : ''}`;
     selectedClips[c].name = newName;
   }
 };
@@ -321,9 +321,9 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
     } catch (e: any) {
       alert(
         'Failed to apply template: ' +
-          outputModules[i].outputModuleName +
-          '\n' +
-          e.toString()
+        outputModules[i].outputModuleName +
+        '\n' +
+        e.toString()
       );
       break;
     }
