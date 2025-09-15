@@ -105,7 +105,7 @@
       <h3>Project</h3>
     </div>
     <div class="flex-row-between setting-row">
-      <label for="show-tooltips">Default to Buck5 Shot Library </label>
+      <label for="show-tooltips">Default to Shot Library</label>
       <Toggle
         checked={$appStore.defaultToBuck5ShotLibrary}
         id="show-tooltips"

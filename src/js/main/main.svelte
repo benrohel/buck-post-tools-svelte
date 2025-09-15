@@ -39,7 +39,7 @@
   import ModalConfirm from '../components/Modal/ModalConfirm.svelte';
   import { notifications } from '../stores/notifications-store';
 
-  let backgroundColor: string = '#272727';
+  let backgroundColor: string = '#232323';
   let modalConfirmOpen = false;
   let latestVersion: { version: string; path: string } | null = null;
 
@@ -117,14 +117,14 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000
+      3000,
     );
     modalConfirmOpen = false;
   };
 
   onMount(async () => {
     if (window.cep) {
-      // subscribeBackgroundColor((c: string) => (backgroundColor = c));
+      subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
       // await connectToDaemon();
       appVersion.set(await evalES(`appVersion()`));

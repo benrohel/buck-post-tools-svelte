@@ -365,7 +365,8 @@ export const importMediaFile = (options: IImportOptions) => {
 };
 
 export const importMediaFiles = (filepaths: string[]) => {
-  app.project.importFiles(filepaths, true, app.project.rootItem, false);
+  const targetBin = app.project.getInsertionBin();
+  app.project.importFiles(filepaths, true, targetBin, false);
 };
 
 export const mapSequence = () => {
@@ -1174,3 +1175,5 @@ export const addGap = ({ gap, trackName }: GapOptions) => {
     }
   }
 };
+
+

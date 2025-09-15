@@ -558,6 +558,7 @@
           <button
             on:click={importSelectedItems}
             disabled={selectedItemIds.size === 0}
+            style={`padding: 2px;${selectedItemIds.size === 0 ? 'opacity: 0.5;' : 'background-color:#086ce7;'}`}
             title="Import Selected ({selectedItemIds.size} items)"
           >
             <Download size={16} /> Selected ({selectedItemIds.size})
@@ -780,7 +781,8 @@
   }
 
   .folder > .item-header {
-    background-color: #2a2a2a;
+    // background-color: #2a2a2a;
+    // border-bottom: 1px solid #444;
   }
 
   .file > .item-header {

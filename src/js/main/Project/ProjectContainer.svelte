@@ -35,7 +35,7 @@
       apps: ['AEFT'],
     },
     {
-      label: 'Buck5 Shot Library',
+      label: 'Shot Library',
       value: 'shotLibrary',
       component: ShotExplorer,
       apps: ['PPRO'],
