@@ -16,10 +16,7 @@
     filterByDepth,
     type HierarchyFilters,
   } from '../../api/files/buck5-file-browser';
-  import {
-    getShotFilesTreeBuck3,
-    collectFolderNamesByLevelBuck3,
-  } from '../../api/files/buck3-file-browser';
+
   import { PROJECT_ROOT } from '../../api/files/files';
   import { evalES } from '../../lib/utils/bolt';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
@@ -112,14 +109,10 @@
       await evalES(`collectAllFilePaths()`, false),
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
-    let getShotFilesTreeFunc = getShotFilesTree;
-    let collectFolderNamesByLevelFunc = collectFolderNamesByLevel;
-    if (!isBuck5) {
-      getShotFilesTreeFunc = getShotFilesTreeBuck3;
-      collectFolderNamesByLevelFunc = collectFolderNamesByLevelBuck3;
-    }
-    const res = await getShotFilesTreeFunc(rootFolder, isBuck5, prefix);
-    const folderNames = collectFolderNamesByLevelFunc(res);
+    const res = await getShotFilesTree(rootFolder, isBuck5, prefix);
+
+    const folderNames = collectFolderNamesByLevel(res);
+
     const shotNamesData = [
       { value: '', label: 'All Shots', selected: true },
       ...folderNames[2].map((shotName) => ({
@@ -540,11 +533,11 @@
           <Toggle bind:checked={onlyShowLatestVersions} />
           <span>latest versions</span>
         </div>
-        <div class="flex-row-start">
+        <!-- <div class="flex-row-start">
           <span>Buck 3</span>
           <Toggle bind:checked={isBuck5} />
           <span>Buck 5</span>
-        </div>
+        </div> -->
 
         <div class="flex-row-end">
           {#if $buck5ShotLibraryStore.lastUpdated}

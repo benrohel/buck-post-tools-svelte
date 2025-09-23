@@ -17,6 +17,7 @@ export const getFilteredFilesBuck3 = async (rootPath: string, filter: string[]):
     .exclude((dirName: string) => dirName.includes('temp') || dirName.startsWith('.'))
     .filter((filePath: string) => {
       const fileName = path.basename(filePath);
+
       return filter.some(pattern => fileName.match(pattern.replace(/\*/g, '.*')));
     })
     .crawl(productionRoot)
@@ -77,7 +78,7 @@ export const getShotFilesBuck3 = async (rootPath: string, buck5: boolean = true,
     .crawl(productionRoot)
     .withPromise();
 
-  console.log('entries', entries);
+
 
   return entries
     .map((entry: string) => {
@@ -109,7 +110,7 @@ function parseHierarchy(filePath: string, buck5: boolean = true): ParsedFileInfo
   const normalizedPath = path.normalize(filePath);
   const parts = normalizedPath.split(path.sep);
 
-  console.log('parts', parts, filePath, buck5);
+
   // Find the "Shots" folder (case-insensitive)
   const shotsIndex = parts.findIndex(p => p.toLowerCase() === 'production');
   if (shotsIndex === -1 || parts.length < shotsIndex + 4) {
@@ -194,9 +195,9 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[], buck5: boolean = 
 
 export const getShotFilesTreeBuck3 = async (rootPath: string, isBuck5: boolean = true, prefix: string = "") => {
   const files = await getShotFilesBuck3(rootPath, isBuck5, prefix);
-  console.log('files', files);
+
   const tree = buildPathTreeFromParsedFiles(files, isBuck5);
-  console.log('tree', tree);
+
   return tree;
 };
 
