@@ -20,7 +20,6 @@
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
   import ToolsContainer from './Tools/ScriptsContainer.svelte';
-  import TemplatesContainer from './Templates/TemplateContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import {
@@ -88,13 +87,6 @@
       icon: Braces,
       apps: ['AEFT'],
     },
-    {
-      label: 'Templates',
-      value: 7,
-      component: TemplatesContainer,
-      icon: Globe,
-      apps: ['AEFT'],
-    },
   ];
 
   let appItems = items;
@@ -117,7 +109,7 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000,
+      3000
     );
     modalConfirmOpen = false;
   };
