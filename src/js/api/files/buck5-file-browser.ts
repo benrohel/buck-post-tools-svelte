@@ -56,9 +56,10 @@ export const getShotFiles = async (rootPath: string) => {
     .filter((filePath: string) => {
       const ext = path.extname(filePath).toLowerCase();
       const isTargetFile = targetExtensions.includes(ext);
+      const isDotFile = path.basename(filePath).startsWith('.');
       const isInShotsRender = filePath.toLowerCase().includes('/shots/') && filePath.toLowerCase().includes('/render/');
       const isRootVideo = !filePath.includes('/') && targetExtensions.includes(ext);
-      return isTargetFile && (isInShotsRender || isRootVideo);
+      return isTargetFile && (isInShotsRender || isRootVideo) && !isDotFile;
     })
     .crawl(productionRoot)
     .withPromise();

@@ -27,6 +27,9 @@
   import { type AppStore, appStore } from '../../stores/app-store';
   import type { Writable } from 'svelte/store';
   import { id } from 'date-fns/locale';
+  import AquariumProjectMenu from '../../components/MultiSelect/AquariumProjectMenu.svelte';
+  import { shots } from '../../stores/aquarium-store';
+  import Toggle from '../../components/Toggle/Toggle.svelte';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
@@ -35,7 +38,11 @@
   $: totalCount = 10;
   $: progressPercentage = 0;
 
+  let useAquarium = false;
+
   $: sequenceClips = [] as any[];
+
+  let currentProject: any = null;
 
   const handleClipSelect = (task: any) => {
     console.log(task);
@@ -123,11 +130,6 @@
     });
   };
 
-  const refreshShots = async () => {
-    const shots = await Shots(storedProject);
-    console.log('client-shots', shots);
-  };
-
   const openTracker = () => {
     if ($sessionProject) {
       openUrl(`http://buck.aquarium.app/${$sessionProject}`);
@@ -140,19 +142,50 @@
     console.log('showWarnings', $showWarnings);
   };
 
-  const handleReloadClips = () => {
+  const findTrackerClip = async (clip: any) => {
+    if ($sessionProject && $shots.length > 0) {
+      const trackerClip = $shots.find((s) => {
+        return s.data.name.match(clip.shotName.split('_')[0]);
+      });
+      return trackerClip;
+    }
+  };
+
+  const handleReloadClips = async () => {
     isLoading = true;
+    if (useAquarium && $sessionProject) {
+      await Shots($sessionProject).then((res) => {
+        console.log('shots', res);
+        shots.set(res);
+      });
+    }
 
     getClips().then((clips) => {
       if (clips.length > 0) {
-        console.log('clips', clips);
-        sequenceClips = clips;
+        if (useAquarium) {
+          sequenceClips = clips.map((c: any) => {
+            return {
+              ...c,
+              trackerClip: findTrackerClip(c),
+            };
+          });
+        } else {
+          sequenceClips = clips;
+        }
         isLoading = false;
       } else {
         sequenceClips = [];
         isLoading = false;
       }
     });
+  };
+
+  const handleProjectChange = (project: any) => {
+    currentProject = project;
+  };
+
+  const handleUseAquarium = () => {
+    useAquarium = !useAquarium;
   };
 
   onMount(() => {
@@ -166,6 +199,18 @@
 </script>
 
 <div class="ingest-container">
+  <div
+    style="display:flex; flex-direction:row; gap:4px; align-items:center; justify-self:start; margin-bottom:4px; margin-top:4px; height:24px"
+  >
+    <Toggle
+      label="Use Aquarium"
+      bind:checked={useAquarium}
+      on:change={handleUseAquarium}
+    />
+    {#if useAquarium}
+      <AquariumProjectMenu />
+    {/if}
+  </div>
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"

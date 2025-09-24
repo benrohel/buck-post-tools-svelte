@@ -504,25 +504,16 @@ export const revertToFilename = (scope: 'project' | 'timeline') => {
         let item = selectedItems[i];
 
         // Check if the item is footage (not a sequence, bin, or other project item)
-        if (item.type === ProjectItemType.CLIP && item.isSequence() === false) {
+        if (item.getMediaPath()) {
           // Get the file path
           var filePath = item.getMediaPath();
           var file = new File(filePath);
-          // Extract just the filename from the path
-          var fileName = file.name;
-
-          // Remove the file extension if desired (comment out these lines to keep extension)
-          // var fileNameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-          // fileName = fileNameWithoutExt;
-
-          // Set the clip name to the file name
-          item.name = fileName;
-
+          item.name = file.name;
           // Increment the counter
           renamedCount++;
         }
       }
-      return true;
+      return renamedCount;
     } catch (error) {
       return false;
     }

@@ -88,9 +88,9 @@ export const Shots = async (projectKey: string): Promise<BUCK5.Item[]> => {
     method: 'GET',
     request: `/projects/${projectKey}/shots`,
   };
-  const shots = (await BuckRequest(projectsOptions)) as BUCK5.Item[];
+  const shots = (await BuckRequest(projectsOptions));
 
-  return Promise.resolve(shots);
+  return Promise.resolve(shots.items);
 };
 
 export const Shot = async (shotKey: string): Promise<BUCK5.Item> => {
@@ -101,6 +101,15 @@ export const Shot = async (shotKey: string): Promise<BUCK5.Item> => {
   const shot = (await BuckRequest(projectsOptions)) as BUCK5.Item;
 
   return Promise.resolve(shot);
+};
+
+export const PublishedFilesOfShot = async (shotKey: string): Promise<BUCK5.Item[]> => {
+  const projectsOptions: BUCK5.BuckRequestConfig = {
+    method: 'GET',
+    request: `/shots/${shotKey}/publishedfiles`,
+  };
+  const publishedFiles = (await BuckRequest(projectsOptions)) as BUCK5.Item;
+  return Promise.resolve(publishedFiles);
 };
 
 export const Tasks = async (projectKey: string): Promise<BUCK5.Task[]> => {
@@ -575,3 +584,5 @@ export const PostFootageAsset = async (libraryKey: string, data: FootageAsset): 
   const res = await BuckRequest(options);
   return Promise.resolve(res);
 };
+
+

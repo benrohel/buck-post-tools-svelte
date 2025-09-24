@@ -14,6 +14,8 @@ export const currentProject = asyncReadable<any>(null, async () => {
   if (proj) return proj;
 });
 
+export const activeProject = writable<any>(null);
+
 export const loggedIn = asyncReadable<boolean>(null, async () => {
   const response = await Authenticated();
 

@@ -18,20 +18,20 @@ export const GetSystemFileVersionsWithShotName = (
   shotName: string
 ): Array<any> => {
   const versionRegex = /_v(\d+)/i;
-  
+
   // Get file extension
   const ext = path.extname(filepath);
   const filename = path.basename(filepath);
-  
+
   // Extract the base name without version (from both filename and folder)
   // For: /path/to/CR010_Intro_comp_v009/CR010_Intro_comp_ProRes_v009.mov
   // We want: CR010_Intro_comp_ProRes
   const baseFilename = filename.replace(versionRegex, '').replace(ext, '');
-  
+
   // Find the first parent directory that doesn't have "_v" in its name
   let searchRoot = path.dirname(filepath);
   const pathParts = filepath.split(path.sep);
-  
+
   // Walk up the directory tree to find the first directory without "_v"
   for (let i = pathParts.length - 1; i >= 0; i--) {
     const part = pathParts[i];
@@ -41,48 +41,46 @@ export const GetSystemFileVersionsWithShotName = (
       break;
     }
   }
-  
-  console.log('Original filepath:', filepath);
-  console.log('Base filename (no version):', baseFilename);
-  console.log('Search root (first dir without _v):', searchRoot);
-  
+
+
+
   let versions: string[] = [];
-  
+
   try {
     for (const file of readAllFiles(searchRoot)) {
       // Must have same extension
       if (path.extname(file) !== ext) continue;
-      
+
       const currentFilename = path.basename(file);
-      
+
       // Remove version from current filename
       const currentBaseFilename = currentFilename.replace(versionRegex, '').replace(ext, '');
-      
+
       // Check if the base filename matches
       if (currentBaseFilename === baseFilename) {
         // Additional check: make sure the file path structure is similar
         // by checking if the relative path from searchRoot has similar structure
         const relativeOriginal = path.relative(searchRoot, filepath);
         const relativeCurrent = path.relative(searchRoot, file);
-        
+
         // Remove version numbers from both relative paths for comparison
         const cleanOriginal = relativeOriginal.replace(/_v\d+/g, '');
         const cleanCurrent = relativeCurrent.replace(/_v\d+/g, '');
-        
+
         if (cleanOriginal === cleanCurrent) {
           versions.push(file);
-          console.log('Found version:', file);
+
         }
       }
     }
 
-    console.log('All versions found:', versions);
+
 
     const versionsMapped = versions.map((v) => {
       // Try to extract version from filename first, then from folder path
       let versionNumber = '';
       const filenameMatch = path.basename(v).match(versionRegex);
-      
+
       if (filenameMatch) {
         versionNumber = filenameMatch[1];
       } else {
@@ -92,7 +90,7 @@ export const GetSystemFileVersionsWithShotName = (
           versionNumber = pathMatch[1];
         }
       }
-      
+
       const version = versionNumber ? `v${versionNumber}` : '';
       const displayName = version || 'unknown';
 
@@ -358,6 +356,7 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
+
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
   return path.join(current[0], 'work', 'current', projectFolders[1]);
@@ -373,6 +372,7 @@ export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
 export declare interface ProjectSettings {
   bitsPerChannel: number;
   compensateForSceneReferredProfiles: boolean;
+
   workingSpace: string;
   workingGamma: 2.2 | 2.4;
   linearizeWorkingSpace: boolean;

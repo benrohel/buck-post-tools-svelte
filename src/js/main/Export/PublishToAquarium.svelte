@@ -12,8 +12,15 @@
   import { evalES } from '../../lib/utils/bolt';
   import { GetActiveSequence } from '../../api/edit';
   import { preferencesDir } from '../../api/preferences';
+  import { PROJECT_ROOT } from '../../api/files/files';
+  import AquariumProjectMenu from '../../components/MultiSelect/AquariumProjectMenu.svelte';
 
-  let projects = [];
+  let projects: any[] = [];
+  $: projectItems = projects.map((p: any) => ({
+    value: p._key,
+    label: p.data.name,
+  }));
+  let projectName = '';
   $: selectedProject = { value: '', label: '' };
 
   const setSelectedProject = (event: any) => {
@@ -30,7 +37,7 @@
     return new Promise((resolve, reject) => {
       const result = evalES(
         `exportSequenceXml("${filepath}","${sequence.id}")`,
-        false
+        false,
       );
       if (result) {
         resolve(result);
@@ -67,25 +74,35 @@
     // });
   };
 
-  onMount(async () => {});
+  const getProjectNameFromPath = async () => {
+    const projectFile = await evalES('getProjectFile()', false);
+    if (!projectFile) {
+      console.log('No project file found');
+      return;
+    }
+
+    const projectPath = await PROJECT_ROOT(projectFile);
+    const projectName = path.basename(projectPath);
+    return projectName;
+  };
+
+  const setDefaultProject = async () => {
+    projectName = await getProjectNameFromPath();
+    if (projects.find((p: any) => p.data.name === projectName)) {
+      selectedProject = { value: projectName, label: projectName };
+    } else {
+      selectedProject = projectItems[0];
+    }
+  };
+
+  onMount(async () => {
+    projects = await Projects();
+    setDefaultProject();
+  });
 </script>
 
-<div
-  class="folder-select"
-  style="display:flex; flex-direction:row; gap:4px; margin-left:2px; margin-right:2px"
->
-  {#await Projects()}
-    <p>Loading...</p>
-  {:then projects}
-    <MenuSelect
-      items={projects.map((p) => ({ value: p._key, label: p.data.name }))}
-      bind:value={selectedProject}
-      placeholder="Select Project"
-      onChange={setSelectedProject}
-    />
-  {:catch error}
-    <p>Error: {error.message}</p>
-  {/await}
+<div class="folder-select" style="display:flex; flex-direction:row; gap:4px; ">
+  <AquariumProjectMenu />
 </div>
 
 <div class="flex-row-end action-row">
