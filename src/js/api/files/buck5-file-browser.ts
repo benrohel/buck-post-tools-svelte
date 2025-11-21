@@ -223,7 +223,7 @@ export type HierarchyFilters = {
 
 
 export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions: boolean = false) => {
-  console.log('filters', filters);
+
   function filterNode(node: PathItem, depth = 0): PathItem | null {
     // Apply filter for current depth if it exists
     const filter = filters[depth];

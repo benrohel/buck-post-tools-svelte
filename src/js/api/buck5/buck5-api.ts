@@ -103,14 +103,14 @@ export const Shot = async (shotKey: string): Promise<BUCK5.Item> => {
   return Promise.resolve(shot);
 };
 
-export const PublishedFilesOfShot = async (shotKey: string): Promise<BUCK5.Item[]> => {
-  const projectsOptions: BUCK5.BuckRequestConfig = {
-    method: 'GET',
-    request: `/shots/${shotKey}/publishedfiles`,
-  };
-  const publishedFiles = (await BuckRequest(projectsOptions)) as BUCK5.Item;
-  return Promise.resolve(publishedFiles);
-};
+// export const PublishedFilesOfShot = async (shotKey: string): Promise<BUCK5.Item[]> => {
+//   const projectsOptions: BUCK5.BuckRequestConfig = {
+//     method: 'GET',
+//     request: `/shots/${shotKey}/publishedfiles`,
+//   };
+//   const publishedFiles = (await BuckRequest(projectsOptions)) as BUCK5.Item;
+//   return Promise.resolve(publishedFiles);
+// };
 
 export const Tasks = async (projectKey: string): Promise<BUCK5.Task[]> => {
   const tasksOptions: BUCK5.BuckRequestConfig = {

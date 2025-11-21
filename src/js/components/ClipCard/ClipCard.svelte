@@ -95,18 +95,16 @@
 
   $: getSyncedColor = (): string => {
     const fileVersion = clip.clipName?.split('_v')[1];
-    console.log('fileVersion', fileVersion);
     if (!fileVersion) {
       return 'color: #f6d55c';
     }
+
     const timelineVersion = parseInt(fileVersion);
-    console.log('timelineVersion', timelineVersion);
-    console.log('selectedVersion', selectedVersion);
     if (selectedVersion.version == undefined) return 'color: #f6d55c';
     const intSelectedVersion = parseInt(
       selectedVersion.version?.match(/\d+/)[0],
     );
-    let isSynced = intSelectedVersion == timelineVersion;
+    const isSynced = intSelectedVersion == timelineVersion;
     let color = 'color: #f6d55c';
     if (isSynced) {
       color = 'color: #3caea3';
@@ -124,7 +122,6 @@
     }
 
     if (!fs.existsSync(clip.filepath)) {
-      console.log(`init card : Clip ${clip.shotName} is missing`);
       isMissing = true;
     }
     if (clip) {

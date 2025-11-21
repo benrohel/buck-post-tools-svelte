@@ -154,8 +154,8 @@ export const GetThumbnail = async (
 const getAeClips = async () => {
   const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
   console.log('selectedClips', selectedClips);
-  const systemClips = selectedClips.map((clip: any) => {
-    const fileVersion = GetSystemFileVersionsWithShotName(
+  const systemClips = await Promise.all(selectedClips.map(async (clip: any) => {
+    const fileVersion = await GetSystemFileVersionsWithShotName(
       clip.filepath,
       clip.shotName
     );
@@ -174,17 +174,17 @@ const getAeClips = async () => {
       versions: fileVersion,
       selectedVersion: fileVersion[0],
     };
-  });
+  }));
   return systemClips;
 };
 
 const getPProClips = async () => {
   const seq = await GetActiveSequence();
   const pproClips = await GetSequencedClips(seq.id);
-  const systemClips = pproClips
+  const systemClips = await Promise.all(pproClips
     .filter((clip) => clip.selected)
-    .map((clip) => {
-      const fileVersion = GetSystemFileVersionsWithShotName(
+    .map(async (clip) => {
+      const fileVersion = await GetSystemFileVersionsWithShotName(
         clip.filepath,
         clip.shotName
       );
@@ -203,7 +203,7 @@ const getPProClips = async () => {
         versions: fileVersion,
         selectedVersion: fileVersion[0],
       };
-    });
+    }));
   return systemClips;
 };
 

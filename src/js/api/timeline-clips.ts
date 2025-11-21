@@ -8,8 +8,8 @@ export const getClips = async () => {
   let sequenceClips = [];
   const seq = await GetActiveSequence();
   const pproClips = await GetSequencedClips(seq.id);
-  const systemClips = pproClips.map((clip) => {
-    const fileVersion = GetSystemFileVersionsWithShotName(
+  const systemClips = await Promise.all(pproClips.map(async (clip) => {
+    const fileVersion = await GetSystemFileVersionsWithShotName(
       clip.filepath,
       clip.shotName
     );
@@ -28,7 +28,7 @@ export const getClips = async () => {
       versions: fileVersion,
       selectedVersion: fileVersion[0],
     };
-  });
+  }));
   sequenceClips = systemClips;
   console.log("sequenceClips", sequenceClips);
   return Promise.resolve(sequenceClips);

@@ -199,7 +199,7 @@
 </script>
 
 <div class="ingest-container">
-  <div
+  <!-- <div
     style="display:flex; flex-direction:row; gap:4px; align-items:center; justify-self:start; margin-bottom:4px; margin-top:4px; height:24px"
   >
     <Toggle
@@ -210,7 +210,7 @@
     {#if useAquarium}
       <AquariumProjectMenu />
     {/if}
-  </div>
+  </div> -->
   <div
     class="ingest-shot-row"
     style="background-color: #161616; margin-bottom:8px. height:20px"
