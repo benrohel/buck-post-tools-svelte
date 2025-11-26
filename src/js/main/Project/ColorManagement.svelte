@@ -44,7 +44,7 @@
   const checkColorSettingsMatch = async () => {
     if (projectColorSettings && projectSettingsTemplate) {
       return Object.keys(projectColorSettings).every(
-        (key) => projectColorSettings[key] === projectSettingsTemplate[key],
+        (key) => projectColorSettings[key] === projectSettingsTemplate[key]
       );
     }
     return false;
@@ -52,7 +52,7 @@
 
   const handleSetProjectSettings = async () => {
     await evalES(
-      `setProjectSettings(${JSON.stringify(projectSettingsTemplate)})`,
+      `setProjectSettings(${JSON.stringify(projectSettingsTemplate)})`
     );
     await handleGetProjectSettings();
     checkColorSettingsMatch().then((match) => {
@@ -75,7 +75,7 @@
       const projectFile = await evalES('getProjectFile()');
       const template = await setProjectSettingsTemplate(
         projectFile,
-        projectColorSettings,
+        projectColorSettings
       );
       console.log('template', template);
       await handleGetProjectSettings();
@@ -92,7 +92,7 @@
         if (match) {
           notifications.success(
             'Template Color settings successfully updated',
-            2000,
+            2000
           );
         } else {
           notifications.error('Error updating Template Color settings', 2000);
@@ -230,15 +230,6 @@
     {/if}
   </div>
 {:else}
-  <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px">
-    <div id="color-management-grid" class="header-row">
-      <div>Setting Name</div>
-      <div>Template settings</div>
-      <div>Project Settings</div>
-      <div>Synced</div>
-    </div>
-  </div>
-
   <div>
     You need to be connected to Buck server to use this feature, and have a
     template file in "/Production/Common/Meta/aeft/project-settings.json"
