@@ -1,12 +1,12 @@
 # Buck Post Tools CEP - Developer Guide
 
 ## Build Commands
-- `yarn dev` - Development mode with hot reloading
-- `yarn watch` - Build with TypeScript and watch for changes
-- `yarn build` - Production build
-- `yarn zxp` - Build and package as Adobe ZXP extension
-- `yarn serve` - Preview the panel
-- `yarn symlink` - Create symbolic links for development
+- `bun run dev` - Development mode with hot reloading
+- `bun run watch` - Build with TypeScript and watch for changes
+- `bun run build` - Production build
+- `bun run zxp` - Build and package as Adobe ZXP extension
+- `bun run serve` - Preview the panel
+- `bun run symlink` - Create symbolic links for development
 
 ## Code Style Guidelines
 - **TypeScript**: Use strict typing with explicit type annotations

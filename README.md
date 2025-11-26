@@ -58,27 +58,27 @@ Buck Post Tools CEP is an Adobe Creative Cloud Extension Panel (CEP) designed to
 1. Clone this repository
 2. Install dependencies:
    ```
-   yarn install
+   bun install
    ```
 3. Create symbolic links for development:
    ```
-   yarn symlink
+   bun run symlink
    ```
 4. Start development server:
    ```
-   yarn dev
+   bun run dev
    ```
 
 ## Development Guide
 
 ### Build Commands
 
-- `yarn dev` - Development mode with hot reloading
-- `yarn watch` - Build with TypeScript and watch for changes
-- `yarn build` - Production build
-- `yarn zxp` - Build and package as Adobe ZXP extension
-- `yarn serve` - Preview the panel
-- `yarn symlink` - Create symbolic links for development
+- `bun run dev` - Development mode with hot reloading
+- `bun run watch` - Build with TypeScript and watch for changes
+- `bun run build` - Production build
+- `bun run zxp` - Build and package as Adobe ZXP extension
+- `bun run serve` - Preview the panel
+- `bun run symlink` - Create symbolic links for development
 
 ### Code Style Guidelines
 
