@@ -13,13 +13,17 @@
     Code,
     Braces,
     Globe,
+    Star,
+    ToolCase,
+    BookMarked,
   } from 'lucide-svelte';
   import { connectToDaemon } from './backend';
   import ProjectContainer from './Project/ProjectContainer.svelte';
   import RenameContext from './Rename/RenameContext.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
-  import ToolsContainer from './Tools/ScriptsContainer.svelte';
+  import ToolsContainer from './Tools/ToolsContainer.svelte';
+  import BookmarksContainer from './Bookmarks/BookmarksContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import {
@@ -53,38 +57,45 @@
       apps: ['AEFT', 'PPRO'],
     },
     {
+      label: 'Bookmarks',
+      value: 3,
+      component: BookmarksContainer,
+      icon: BookMarked,
+      apps: ['AEFT', 'PPRO'],
+    },
+    {
       label: 'Renaming Tools',
-      value: 2,
+      value: 4,
       component: RenameContext,
       icon: WrapText,
       apps: ['AEFT', 'PPRO'],
     },
     {
       label: 'Version Manamgment',
-      value: 3,
+      value: 5,
       component: IngestContainer,
       icon: ArrowDownUp,
       apps: ['AEFT', 'PPRO'],
     },
     {
       label: 'Export',
-      value: 4,
+      value: 6,
       component: ExportContainer,
       icon: ArrowRightFromLine,
       apps: ['AEFT', 'PPRO'],
     },
     {
-      label: 'Scripts',
-      value: 5,
-      component: ToolsContainer,
-      icon: Code,
+      label: 'Expressions',
+      value: 7,
+      component: AeExpressionsContainer,
+      icon: Braces,
       apps: ['AEFT'],
     },
     {
-      label: 'Expressions',
-      value: 6,
-      component: AeExpressionsContainer,
-      icon: Braces,
+      label: 'Tools',
+      value: 8,
+      component: ToolsContainer,
+      icon: ToolCase,
       apps: ['AEFT'],
     },
   ];
@@ -109,7 +120,7 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000
+      3000,
     );
     modalConfirmOpen = false;
   };

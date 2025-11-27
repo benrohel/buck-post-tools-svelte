@@ -1,7 +1,8 @@
 import { fs, path, os } from '../../lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
-import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER } from '../files/files';
+import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER, PROJECT_COMMON_AE_FOLDER } from '../files/files';
 import { platform } from 'os';
+
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx
 
 export interface Script {
@@ -123,23 +124,55 @@ export const getLocalScripts = (
 };
 
 export const getProjectScripts = async (appId: string, projectPath: string): Promise<Script[]> => {
-  let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
-  console.log(scriptsFolder);
-  if (!fs.existsSync(scriptsFolder)) {
+  try {
+    let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
+    console.log(scriptsFolder);
+    if (!fs.existsSync(scriptsFolder)) {
+      console.log('Project scripts folder not found');
+      return [];
+    }
+
+    return fs
+      .readdirSync(scriptsFolder)
+      .filter((file) => !file.startsWith('.'))
+      .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
+      .map((file) => {
+        const name = file.replace(/\.(jsx|jsxbin)$/, '');
+        return {
+          name: name,
+          filepath: path.join(scriptsFolder, file),
+          filename: file
+        };
+      });
+  } catch (e) {
+    console.error('Error getting project scripts', e);
+    return [];
+  }
+};
+
+
+export interface CommonSharedFile {
+  name: string;
+  path: string;
+}
+export const getProjectCommonFiles = (appId: string, projectPath: string): CommonSharedFile[] => {
+  console.log(appId, projectPath);
+  let commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
+  console.log("common scripts folder", commonFolder);
+  if (!fs.existsSync(commonFolder)) {
     console.log('Project scripts folder not found');
     return [];
   }
 
   return fs
-    .readdirSync(scriptsFolder)
+    .readdirSync(commonFolder)
     .filter((file) => !file.startsWith('.'))
-    .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
+    .filter((file) => file.endsWith('.aep'))
     .map((file) => {
-      const name = file.replace(/\.(jsx|jsxbin)$/, '');
+      const name = file.replace(/\.(aep)$/, '');
       return {
         name: name,
-        filepath: path.join(scriptsFolder, file),
-        filename: file
+        path: path.join(commonFolder, file),
       };
     });
 };

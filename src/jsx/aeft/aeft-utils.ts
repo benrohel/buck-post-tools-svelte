@@ -263,11 +263,11 @@ export const importProjectAndSaveOutputModules = (projectFilePath: string) => {
           } catch (e: any) {
             alert(
               'Error saving output module ' +
-                j +
-                ' from item ' +
-                i +
-                ': ' +
-                e.toString()
+              j +
+              ' from item ' +
+              i +
+              ': ' +
+              e.toString()
             );
           }
         }
@@ -330,7 +330,7 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
     project.workingGamma === projectSettings.workingGamma &&
     project.workingSpace === projectSettings.workingSpace &&
     project.compensateForSceneReferredProfiles ===
-      projectSettings.compensateForSceneReferredProfiles &&
+    projectSettings.compensateForSceneReferredProfiles &&
     project.linearizeWorkingSpace === projectSettings.linearizeWorkingSpace &&
     project.linearBlending === projectSettings.linearBlending
   ) {
@@ -338,4 +338,11 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
   } else {
     return false;
   }
+};
+
+
+export const openExistingFolder = (folderPath: string) => {
+  var startFolder = new Folder(folderPath);
+  var selectedFolder = startFolder.selectDlg("Select a folder");
+  return selectedFolder.absoluteURI;
 };

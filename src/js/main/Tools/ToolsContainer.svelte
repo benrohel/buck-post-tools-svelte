@@ -6,8 +6,11 @@
     getBuckScripts,
     getProjectScripts,
     type Script,
+    getProjectCommonFiles,
+    type CommonSharedFile,
   } from '../../api/scripts/tools-scripts';
   import ToolCard from '../../components/ClipCard/ToolCard.svelte';
+  import AssetCard from '../../components/ClipCard/AssetCard.svelte';
 
   interface ToolData {
     name: string;
@@ -36,7 +39,8 @@
     $appStore.userScriptsFolder,
   );
   $: buckScripts = getBuckScripts(appId);
-  $: projectScripts = [];
+  $: commonFiles = [] as CommonSharedFile[];
+  $: projectScripts = [] as Script[];
 
   // $: buckToolArray = () => {
   //   return Object.keys(tools)
@@ -66,47 +70,77 @@
     );
     buckScripts = getBuckScripts(appId);
     const projectPath = (await evalES(`getProjectFile()`, false)) as string;
+    console.log('project path', projectPath);
     projectScripts = await getProjectScripts(appId, projectPath);
+    console.log('project scripts', projectScripts);
+    commonFiles = await getProjectCommonFiles(appId, projectPath);
   });
 </script>
 
 <div class="tools-container">
-  <div class="tools-section">
+  <section class="tools-section">
     <div class="settings-header">
-      <h3>Buck Scripts</h3>
+      <h3>Common</h3>
     </div>
-    <div class="tools-list">
-      {#each buckScripts as script}
-        <ToolCard scriptTool={script} />
-      {/each}
-    </div>
-  </div>
-  {#if projectScripts.length > 0}
     <div class="tools-section">
-      <div class="settings-header">
-        <h3>Project Scripts</h3>
+      <div class="tools-list">
+        {#each commonFiles as aepFile}
+          <AssetCard {aepFile} />
+        {/each}
       </div>
-      <div class="tools-list grid-layout">
-        {#each projectScripts as script}
+    </div>
+  </section>
+  <section class="tools-section">
+    <div class="settings-header">
+      <h3>Scripts</h3>
+    </div>
+    <div class="tools-section">
+      <h4>Buck</h4>
+      <div class="tools-list">
+        {#each buckScripts as script}
           <ToolCard scriptTool={script} />
         {/each}
       </div>
     </div>
-  {/if}
-  <div class="tools-section">
-    <div class="settings-header">
-      <h3>Local Scripts</h3>
+    {#if projectScripts.length > 0}
+      <div class="tools-section">
+        <h4>Project</h4>
+        <div class="tools-list grid-layout">
+          {#each projectScripts as script}
+            <ToolCard scriptTool={script} />
+          {/each}
+        </div>
+      </div>
+    {/if}
+    <div class="tools-section">
+      <h4>Local</h4>
+      <div class="tools-list grid-layout">
+        {#each localScripts as script}
+          <ToolCard scriptTool={script} />
+        {/each}
+      </div>
     </div>
-    <div class="tools-list grid-layout">
-      {#each localScripts as script}
-        <ToolCard scriptTool={script} />
-      {/each}
-    </div>
-  </div>
+  </section>
 </div>
 
 <style lang="scss">
   @use '../../variables.scss' as *;
+
+  section {
+    border-bottom: 1px solid $dark;
+    border-radius: 4px;
+    width: 100%;
+    padding: 8px;
+  }
+
+  .tools-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-self: flex-start;
+    justify-items: start;
+    margin-left: 8px;
+  }
 
   .tools-container {
     display: flex;
@@ -120,9 +154,10 @@
   .tools-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
     align-self: flex-start;
     justify-items: start;
+    margin-left: 8px;
   }
   h3 {
     color: $font;
@@ -130,6 +165,10 @@
     margin-bottom: 4px;
     font-size: 14px;
     text-align: center;
+  }
+
+  h4 {
+    margin: 4px;
   }
 
   .settings-header {
@@ -147,6 +186,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    margin-left: 8px;
   }
   .grid-layout {
     display: grid;

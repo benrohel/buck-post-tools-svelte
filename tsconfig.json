@@ -20,8 +20,9 @@
     "paths": {
       "@esTypes/*": ["./src/jsx"],
       "@/components": ["./src/js/components"],
-      "@lib": ["src/js/lib"],
-      "@api": ["src/js/api"]
+      "@/lib": ["./src/js/lib"],
+      "@/api": ["./src/js/api"],
+      "@/stores": ["./src/js/stores"],
     }
   },
   "include": ["./src", "./src/js/api/buck5/index.d.ts"],

@@ -32,7 +32,7 @@ export const GetSystemFileVersionsWithShotName = async (
   // Smarter search root logic - limit to reasonable scope (max 3 levels up)
   let searchRoot = path.dirname(filepath);
   const maxLevelsUp = 3;
-  
+
   for (let level = 0; level < maxLevelsUp && searchRoot !== path.dirname(searchRoot); level++) {
     const parentDir = path.dirname(searchRoot);
     if (!path.basename(searchRoot).includes('_v')) {
@@ -45,8 +45,8 @@ export const GetSystemFileVersionsWithShotName = async (
     // Use fdir for fast, filtered file traversal
     const entries = await new fdir()
       .withFullPaths()
-      .exclude((dirName: string) => 
-        dirName.includes('temp') || 
+      .exclude((dirName: string) =>
+        dirName.includes('temp') ||
         dirName.startsWith('.') ||
         dirName.includes('cache') ||
         dirName.includes('node_modules')
@@ -54,10 +54,10 @@ export const GetSystemFileVersionsWithShotName = async (
       .filter((filePath: string) => {
         // Quick extension check first
         if (path.extname(filePath) !== ext) return false;
-        
+
         const currentFilename = path.basename(filePath);
         const currentBaseFilename = currentFilename.replace(versionRegex, '').replace(ext, '');
-        
+
         // Must match base filename
         return currentBaseFilename === baseFilename;
       })
@@ -68,11 +68,11 @@ export const GetSystemFileVersionsWithShotName = async (
     const versions = entries.filter((file: string) => {
       const relativeOriginal = path.relative(searchRoot, filepath);
       const relativeCurrent = path.relative(searchRoot, file);
-      
+
       // Remove version numbers from both relative paths for comparison
       const cleanOriginal = relativeOriginal.replace(/_v\d+/g, '');
       const cleanCurrent = relativeCurrent.replace(/_v\d+/g, '');
-      
+
       return cleanOriginal === cleanCurrent;
     });
 
@@ -355,7 +355,6 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
-
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
   return path.join(current[0], 'work', 'current', projectFolders[1]);
@@ -416,9 +415,17 @@ export const setProjectSettingsTemplate = (
 };
 
 export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
-  const productionFolder = PRODUCTION_ROOT(projectPath);
+  const productionFolder = PROJECT_ROOT(projectPath);
   if (!productionFolder) return null;
-  const scriptsFolder = path.join(productionFolder, 'Common', 'Meta', 'aeft', 'scripts');
+  const scriptsFolder = path.join(productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
   if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
+};
+
+export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
+  const projectRoot = PROJECT_ROOT(projectPath);
+  if (!projectRoot) return null;
+  const commonFolder = path.join(projectRoot, 'Production', 'Common', 'Work', 'AE');
+  if (!fs.existsSync(commonFolder)) return null;
+  return commonFolder;
 };

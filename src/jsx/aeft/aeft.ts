@@ -13,6 +13,7 @@ export {
   importProjectAndSaveOutputModules,
   getProjectSettings,
   setProjectSettings,
+  openExistingFolder,
 } from './aeft-utils';
 export { getAndSetEssentialProperties, updateEssentialPropertiesFromCSV, listAllComps } from './templater';
 

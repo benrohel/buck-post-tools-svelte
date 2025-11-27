@@ -1,0 +1,58 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import BookMarkCard from '../../components/ClipCard/BookMarkCard.svelte';
+  import { createBookmarkStore } from '../../stores/bookmark-store';
+  import { Plus, XCircle } from 'lucide-svelte';
+  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+
+  const bookmarks = createBookmarkStore('bookmarks');
+
+  let newName = '';
+  let newPath = '';
+
+  function setPath(path: string) {
+    newPath = path;
+    newName = path.split('/').pop() ?? '';
+  }
+
+  function addBookmark() {
+    $bookmarks = [
+      ...$bookmarks,
+      { name: newName, path: newPath, isRelative: false },
+    ];
+    newName = '';
+    newPath = '';
+  }
+
+  function removeBookmark(index: number) {
+    $bookmarks = $bookmarks.filter((_, i) => i !== index);
+  }
+</script>
+
+<div style="display:flex; flex-direction:column; gap:8px">
+  <div style="display:flex; flex-direction:row; align-items:center; gap:4px">
+    <SelectFolderWeb
+      onChange={setPath}
+      bind:value={newPath}
+      label="Choose New Location"
+    />
+    <input bind:value={newName} placeholder="Bookmark Name" />
+    <button class="icon active" on:click={addBookmark}>
+      <Plus />
+    </button>
+  </div>
+
+  <div class="bookmark-list">
+    {#each $bookmarks as bookmark, index}
+      <BookMarkCard {bookmark} onRemove={() => removeBookmark(index)} />
+    {/each}
+  </div>
+</div>
+
+<style lang="scss">
+  .bookmark-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+</style>
