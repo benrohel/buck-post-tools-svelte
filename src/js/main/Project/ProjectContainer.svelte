@@ -4,7 +4,7 @@
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
   import ColorManagement from './ColorManagement.svelte';
-  import ShotExplorer from './ShotExplorer.svelte';
+  import ShotExplorer from '../Explorer/ShotExplorer.svelte';
   import { appId } from '../../lib/utils/cep';
   import { appStore } from '../../stores/app-store';
   import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
@@ -33,12 +33,6 @@
       value: 'colorManagement',
       component: ColorManagement,
       apps: ['AEFT'],
-    },
-    {
-      label: 'Shot Library',
-      value: 'shotLibrary',
-      component: ShotExplorer,
-      apps: ['PPRO'],
     },
   ];
 

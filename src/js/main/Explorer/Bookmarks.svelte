@@ -4,11 +4,12 @@
   import { createBookmarkStore } from '../../stores/bookmark-store';
   import { Plus, XCircle } from 'lucide-svelte';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-
+  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
   const bookmarks = createBookmarkStore('bookmarks');
 
   let newName = '';
   let newPath = '';
+  $: folderType = 'relative';
 
   function setPath(path: string) {
     newPath = path;
@@ -18,7 +19,7 @@
   function addBookmark() {
     $bookmarks = [
       ...$bookmarks,
-      { name: newName, path: newPath, isRelative: false },
+      { name: newName, path: newPath, isRelative: folderType === 'relative' },
     ];
     newName = '';
     newPath = '';
@@ -34,14 +35,26 @@
     <SelectFolderWeb
       onChange={setPath}
       bind:value={newPath}
-      label="Choose New Location"
+      label="Choose New bookmark"
     />
-    <input bind:value={newName} placeholder="Bookmark Name" />
+  </div>
+  <div style="display:flex; flex-direction:row; align-items:center; gap:8px">
+    <input bind:value={newName} placeholder="Name" />
+
+    <ButtonGroup
+      items={[
+        { label: 'Relative', value: 'relative' },
+        { label: 'Absolute', value: 'absolute' },
+      ]}
+      onSelectionChange={(value) => {
+        console.log(value);
+        folderType = value;
+      }}
+    />
     <button class="icon active" on:click={addBookmark}>
       <Plus />
     </button>
   </div>
-
   <div class="bookmark-list">
     {#each $bookmarks as bookmark, index}
       <BookMarkCard {bookmark} onRemove={() => removeBookmark(index)} />

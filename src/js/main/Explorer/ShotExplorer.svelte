@@ -37,7 +37,7 @@
   let prefix = '';
   let isBuck5 = true;
 
-  let onlyShowLatestVersions = false;
+  let onlyShowLatestVersions = true;
 
   $: shotNames = $buck5ShotLibraryStore.shotNames;
   $: sequenceNames = $buck5ShotLibraryStore.sequenceNames;
@@ -707,8 +707,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
-    margin: 1px;
+    margin: 2px;
     position: relative;
   }
   .export-path-builder {
@@ -841,7 +840,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-right: 4px;
   }
 
   .dropdown-content {

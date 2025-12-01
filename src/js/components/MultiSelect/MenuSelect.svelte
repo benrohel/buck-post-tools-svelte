@@ -37,7 +37,7 @@
 <style lang="scss">
   .svelte-select-container {
     width: 100%;
-    margin-bottom: 0px;
+    margin-bottom: 4px;
 
     :global(.foo) {
     }

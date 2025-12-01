@@ -23,7 +23,7 @@
   import IngestContainer from './Ingest/IngestContainer.svelte';
   import ExportContainer from './Export/ExportContainer.svelte';
   import ToolsContainer from './Tools/ToolsContainer.svelte';
-  import BookmarksContainer from './Bookmarks/BookmarksContainer.svelte';
+  import ExplorerContainer from './Explorer/ExplorerContainer.svelte';
   import Footer from './Footer.svelte';
   import Toast from '../components/Toast/Toast.svelte';
   import {
@@ -50,50 +50,50 @@
 
   let items = [
     {
-      label: 'Starter',
+      label: 'Explorer',
       value: 1,
+      component: ExplorerContainer,
+      icon: BookMarked,
+      apps: ['AEFT', 'PPRO'],
+    },
+    {
+      label: 'Starter',
+      value: 2,
       component: ProjectContainer,
       icon: PencilRuler,
       apps: ['AEFT', 'PPRO'],
     },
     {
-      label: 'Bookmarks',
-      value: 3,
-      component: BookmarksContainer,
-      icon: BookMarked,
-      apps: ['AEFT', 'PPRO'],
-    },
-    {
       label: 'Renaming Tools',
-      value: 4,
+      value: 3,
       component: RenameContext,
       icon: WrapText,
       apps: ['AEFT', 'PPRO'],
     },
     {
       label: 'Version Manamgment',
-      value: 5,
+      value: 4,
       component: IngestContainer,
       icon: ArrowDownUp,
       apps: ['AEFT', 'PPRO'],
     },
     {
       label: 'Export',
-      value: 6,
+      value: 5,
       component: ExportContainer,
       icon: ArrowRightFromLine,
       apps: ['AEFT', 'PPRO'],
     },
     {
       label: 'Expressions',
-      value: 7,
+      value: 6,
       component: AeExpressionsContainer,
       icon: Braces,
       apps: ['AEFT'],
     },
     {
       label: 'Tools',
-      value: 8,
+      value: 7,
       component: ToolsContainer,
       icon: ToolCase,
       apps: ['AEFT'],

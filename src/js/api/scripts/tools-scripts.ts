@@ -62,12 +62,14 @@ export const getLocalScripts = (
   userScriptsFolder?: string
 ): Script[] => {
   let scriptsFolder = '';
-  const regVersion = new RegExp(/(\d+)\.(\d+)\.(\d+)/);
+  const regVersion = new RegExp(/(\d+)\./);
+
   const versionMatch = appVersion.match(regVersion);
   if (!versionMatch) {
     return [];
   }
-  const [_, major, minor, micro] = versionMatch;
+  const [_, major] = versionMatch;
+
 
   if (os.platform() === 'win32') {
     scriptsFolder = path.join(
@@ -82,11 +84,11 @@ export const getLocalScripts = (
       `Adobe After Effects 20${major}`,
       'Scripts'
     );
+
   } else if (os.platform() === 'linux') {
     // scriptsFolder = path.join(SHARED_FOLDER, 'AFTER_EFFECTS', 'scripts');
   }
 
-  console.log(scriptsFolder);
   if (!fs.existsSync(scriptsFolder)) {
     return [];
   }

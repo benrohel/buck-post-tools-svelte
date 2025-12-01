@@ -543,3 +543,48 @@ export const getSelectedPropertyPath = () => {
   var prop = getSelectedProperty();
   return traverseProperty(prop, '');
 };
+
+
+/**
+ * Collect all unique media file paths in the current project.
+ * Works in ExtendScript (no Array#indexOf).
+ * @returns {string} JSON stringified array of file paths
+ */
+export function collectAllFilePaths() {
+  var results: string[] = [];
+  var seen = {}; // map for O(1) dedupe
+  var isWindows = ($.os && $.os.toLowerCase().indexOf("windows") !== -1);
+
+  function norm(p: string) {
+    // Normalize for dedupe: case-insensitive on Windows
+    return isWindows && p ? p.toLowerCase() : p;
+  }
+
+  // After Effects uses app.project.items - a 1-indexed collection
+  for (var i = 1; i <= app.project.items.length; i++) {
+    var item = app.project.items[i];
+
+    try {
+      // Check if it's a FootageItem with a file
+      if (item instanceof FootageItem && item.file) {
+        var p = item.file.fsName; // Get file system path
+        if (p && !seen[norm(p)]) {
+          seen[norm(p)] = true;
+          results.push(p); // keep original casing
+        }
+      }
+      // Also check mainSource for some footage types
+      else if (item instanceof FootageItem && item.mainSource && item.mainSource.file) {
+        var p = item.mainSource.file.fsName;
+        if (p && !seen[norm(p)]) {
+          seen[norm(p)] = true;
+          results.push(p);
+        }
+      }
+    } catch (e) {
+      // Solids, placeholders, or synthetic items might throw—ignore
+    }
+  }
+
+  return JSON.stringify(results);
+}

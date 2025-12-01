@@ -7,14 +7,21 @@
   import { evalES, evalFile } from '../../lib/utils/bolt';
   import { notifications } from '../../stores/notifications-store';
   import { openFile } from '../../lib/utils/utils';
-
+  import { PROJECT_ROOT } from '../../api/files/files';
   export let bookmark: Bookmark;
   export let onRemove: () => void;
 
-  let offline = true;
+  let actualPath = async () => {
+    if (bookmark.isRelative) {
+      const projectDir = await evalES(`getProjectDir()`);
+      return `${PROJECT_ROOT(projectDir)}/${bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()}`;
+    } else {
+      return bookmark.path;
+    }
+  };
 
   async function handleImportFolder() {
-    let folderPath = await evalES(`openExistingFolder("${bookmark.path}")`);
+    let folderPath = await evalES(`openExistingFolder("${actualPath()}")`);
     console.log(folderPath);
 
     if (folderPath && fs.existsSync(folderPath)) {
@@ -39,8 +46,9 @@
     }
   }
 
-  function handleRevealFolder() {
-    openFile(bookmark.path);
+  async function handleRevealFolder() {
+    const path = await actualPath();
+    openFile(path);
   }
 
   function handleRemove() {
@@ -58,9 +66,15 @@
         <ExternalLink />
       </button>
     </div>
-    <div class="clip-name-header">
-      <div class="shot-label">{bookmark.name}</div>
-      <div class="shot-path">{bookmark.path}</div>
+    <div
+      style="display: flex; flex-direction: row; align-items: center; width: 100%;"
+    >
+      <div class="clip-name-header">
+        {#await actualPath() then path}
+          <div class="shot-label">{bookmark.name}</div>
+          <div class="shot-path" aria-label={path}>{path}</div>
+        {/await}
+      </div>
     </div>
     <button class="icon" on:click={handleRemove}><XCircle /></button>
   {/if}
@@ -99,7 +113,6 @@
   }
 
   .shot-path {
-    width: 50%;
     font-size: 11px;
     text-align: start;
     margin-left: 6px;

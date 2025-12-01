@@ -33,11 +33,7 @@
 
   console.log(getLocalScripts(appId, $appVersion));
 
-  $: localScripts = getLocalScripts(
-    appId,
-    $appVersion,
-    $appStore.userScriptsFolder,
-  );
+  let localScripts = [] as Script[];
   $: buckScripts = getBuckScripts(appId);
   $: commonFiles = [] as CommonSharedFile[];
   $: projectScripts = [] as Script[];
@@ -53,7 +49,6 @@
   // };
 
   // $: console.log(buckToolArray());
-  $: console.log('local scripts', localScripts);
 
   interface SelectToolItem {
     value: string;
@@ -80,7 +75,7 @@
 <div class="tools-container">
   <section class="tools-section">
     <div class="settings-header">
-      <h3>Common</h3>
+      <h3>Project Common</h3>
     </div>
     <div class="tools-section">
       <div class="tools-list">

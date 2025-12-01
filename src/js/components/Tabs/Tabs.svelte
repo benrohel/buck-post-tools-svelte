@@ -27,7 +27,7 @@
           <Tooltip
             action={$appStore.showTooltips ? 'hover' : 'none'}
             content={item.label}
-            position="right"
+            position="down"
             delay={1000}
           >
             <svelte:component this={item.icon} size="16" />
