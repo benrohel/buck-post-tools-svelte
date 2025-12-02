@@ -10,7 +10,6 @@ export interface Script {
   filename: string;
   filepath: string;
 }
-
 export const getBuckScripts = (appId: string): Script[] => {
 
   let scriptsFolder = '';
@@ -128,7 +127,7 @@ export const getLocalScripts = (
 export const getProjectScripts = async (appId: string, projectPath: string): Promise<Script[]> => {
   try {
     let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
-    console.log(scriptsFolder);
+    console.log("project scripts Folder", scriptsFolder);
     if (!fs.existsSync(scriptsFolder)) {
       console.log('Project scripts folder not found');
       return [];

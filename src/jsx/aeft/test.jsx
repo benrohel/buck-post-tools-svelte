@@ -1,3 +1,3 @@
-var folder = new Folder("/System/Volumes/Data/buck/work/current/FCB_QUICKBOOKS_LEDGER_FCBNY-N0003/Production");
+var folder = new Folder("\\buck\\work\\current\\BUCK5_SANDBOX\\Production\\Common");
 folder.selectDlg();
 alert(folder.name);

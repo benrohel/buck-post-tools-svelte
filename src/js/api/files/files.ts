@@ -417,7 +417,10 @@ export const setProjectSettingsTemplate = (
 export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
   const productionFolder = PROJECT_ROOT(projectPath);
   if (!productionFolder) return null;
-  const scriptsFolder = path.join(productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
+  const platformRoot =
+    os.platform() === 'win32' ? '\\' : '/';
+  const scriptsFolder = path.join(platformRoot+productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
+  
   if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
 };
@@ -425,7 +428,9 @@ export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
 export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
   const projectRoot = PROJECT_ROOT(projectPath);
   if (!projectRoot) return null;
-  const commonFolder = path.join(projectRoot, 'Production', 'Common', 'Work', 'AE');
+  const platformRoot =
+    os.platform() === 'win32' ? '\\' : '/';
+  const commonFolder = path.join(platformRoot+projectRoot, 'Production', 'Common', 'Work', 'AE');
   if (!fs.existsSync(commonFolder)) return null;
   return commonFolder;
 };

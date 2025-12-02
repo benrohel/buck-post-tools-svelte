@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import BookMarkCard from '../../components/ClipCard/BookMarkCard.svelte';
   import { createBookmarkStore } from '../../stores/bookmark-store';
-  import { Plus, XCircle } from 'lucide-svelte';
+  import { Plus } from 'lucide-svelte';
   import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
   const bookmarks = createBookmarkStore('bookmarks');
@@ -28,6 +28,11 @@
   function removeBookmark(index: number) {
     $bookmarks = $bookmarks.filter((_, i) => i !== index);
   }
+
+  function handleOnButtonGroupChange(item: any) {
+    folderType = item.value;
+  }
+
 </script>
 
 <div style="display:flex; flex-direction:column; gap:8px">
@@ -46,10 +51,7 @@
         { label: 'Relative', value: 'relative' },
         { label: 'Absolute', value: 'absolute' },
       ]}
-      onSelectionChange={(value) => {
-        console.log(value);
-        folderType = value;
-      }}
+      onSelectionChange={handleOnButtonGroupChange}
     />
     <button class="icon active" on:click={addBookmark}>
       <Plus />

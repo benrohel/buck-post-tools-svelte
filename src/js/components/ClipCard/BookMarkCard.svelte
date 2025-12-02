@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { fs, os } from '../../lib/cep/node';
-  import { ExternalLink, FolderOpen, CircleX } from 'lucide-svelte';
+  import { fs, os, path } from '../../lib/cep/node';
+  import { ExternalLink, FolderOpen, CircleX, ClipboardCopy } from 'lucide-svelte';
   import { Bookmark } from '../../stores/bookmark-store';
   import { evalES, evalFile } from '../../lib/utils/bolt';
   import { notifications } from '../../stores/notifications-store';
   import { openFile } from '../../lib/utils/utils';
+  import csInterface from '../../lib/cep/csinterface';
   import { PROJECT_ROOT } from '../../api/files/files';
-  import {path} from '../../lib/cep/node';
+  import {copyToClipboard} from '../../lib/utils/utils';
+  import { platform } from 'os';
   export let bookmark: Bookmark;
   export let onRemove: () => void;
 
@@ -16,7 +18,6 @@
       console.log("projectDir", projectDir);
       console.log('PROJECT_ROOT(projectDir)', PROJECT_ROOT(projectDir));
       console.log('bookmark.path', bookmark.path.split(PROJECT_ROOT(bookmark.path)));
-
       const macPath = path.posix.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
       const windowsPath = path.win32.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
 
@@ -26,10 +27,20 @@
     }
   };
 
-  async function handleImportFolder() {
 
+
+
+  async function handleImportFolder() {
     const sourceFolder = await actualPath();
-    alert('Opening folder at path: ' + sourceFolder);
+    console.log("sourceFolder", sourceFolder);
+    copyToClipboard(sourceFolder);
+   
+    
+    if(os.platform() === 'win32') {
+      notifications.info(`Path copied to clipboard: ${sourceFolder}`, 2000);
+      return;
+    }
+    
     let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
     console.log("folderPath", folderPath);
 
@@ -70,7 +81,12 @@
   {#if bookmark}
     <div class="tool-card-action">
       <button class="icon" on:click={handleImportFolder}>
-        <FolderOpen />
+        {#if os.platform()== "win32"}
+          <ClipboardCopy />
+          {:else}
+          <FolderOpen />
+        {/if}
+
       </button>
       <button class="icon" on:click={handleRevealFolder}>
         <ExternalLink />

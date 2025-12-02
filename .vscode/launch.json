@@ -5,6 +5,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "extendscript-debug",
+      "request": "attach",
+      "name": "Attach to ExtendScript Engine"
+    },
+  {
+    "type": "extendscript-debug",
+    "request": "launch",
+    "name": "Launch Script in ExtendScript Engine"
+  },
+    {
       "name": "Attach to Chrome",
       "port": 8961,
       "request": "attach",
