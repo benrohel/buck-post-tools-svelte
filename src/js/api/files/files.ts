@@ -357,7 +357,7 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 export const PROJECT_ROOT = (projectPath: string) => {
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
-  return path.join(current[0], 'work', 'current', projectFolders[1]);
+  return path.posix.join(current[0], 'work', 'current', projectFolders[1]);
 };
 
 

@@ -1,34 +1,44 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { fs, os } from '../../lib/cep/node';
-  import { CommonSharedFile } from '../../api/scripts/tools-scripts';
-  import { ExternalLink, FolderOpen, XCircle } from 'lucide-svelte';
+  import { ExternalLink, FolderOpen, CircleX } from 'lucide-svelte';
   import { Bookmark } from '../../stores/bookmark-store';
   import { evalES, evalFile } from '../../lib/utils/bolt';
   import { notifications } from '../../stores/notifications-store';
   import { openFile } from '../../lib/utils/utils';
   import { PROJECT_ROOT } from '../../api/files/files';
+  import {path} from '../../lib/cep/node';
   export let bookmark: Bookmark;
   export let onRemove: () => void;
 
   let actualPath = async () => {
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
-      return `${PROJECT_ROOT(projectDir)}/${bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()}`;
+      console.log("projectDir", projectDir);
+      console.log('PROJECT_ROOT(projectDir)', PROJECT_ROOT(projectDir));
+      console.log('bookmark.path', bookmark.path.split(PROJECT_ROOT(bookmark.path)));
+
+      const macPath = path.posix.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
+      const windowsPath = path.win32.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
+
+      return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
     } else {
       return bookmark.path;
     }
   };
 
   async function handleImportFolder() {
-    let folderPath = await evalES(`openExistingFolder("${actualPath()}")`);
-    console.log(folderPath);
+
+    const sourceFolder = await actualPath();
+    alert('Opening folder at path: ' + sourceFolder);
+    let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
+    console.log("folderPath", folderPath);
 
     if (folderPath && fs.existsSync(folderPath)) {
       const options = {
         filepath: folderPath,
         isSequence: false,
       };
+      
       evalES(`importMediaFile(${JSON.stringify(options)})`, false).then(
         (res) => {
           if (res) {
@@ -76,7 +86,7 @@
         {/await}
       </div>
     </div>
-    <button class="icon" on:click={handleRemove}><XCircle /></button>
+    <button class="icon" on:click={handleRemove}><CircleX /></button>
   {/if}
 </div>
 

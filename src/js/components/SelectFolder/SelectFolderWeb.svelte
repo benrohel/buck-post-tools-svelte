@@ -8,7 +8,8 @@
   export let onChange: Function = () => {};
 
   const handleSetOutputFolder = async () => {
-    let folderPath = await evalES(`selectFolder("${label}")`);
+    let res = await evalES(`selectFolder("${label}")`);
+    let folderPath = JSON.parse(res).absoluteURI;
     folderPath = folderPath.replace('file://', '');
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;

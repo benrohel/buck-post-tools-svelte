@@ -8,7 +8,7 @@ export const selectFolder = (
   const folder = Folder.selectDialog(msg);
   // alert(file.fsName);
   if (folder.exists) {
-    return folder.fsName;
+    return JSON.stringify({ fsName: folder.fsName, absoluteURI: folder.absoluteURI });
   }
   return false;
 };
@@ -42,7 +42,7 @@ export const getProjectDir = () => {
   app.project.file;
   if (app.project.file !== null) {
     //@ts-ignore
-    return app.project.file.parent;
+    return app.project.file.parent.absoluteURI;
   } else {
     return '';
   }
@@ -342,7 +342,10 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
 
 
 export const openExistingFolder = (folderPath: string) => {
+  alert('Opening folder at path: ' + folderPath);
+  
   var startFolder = new Folder(folderPath);
+  alert('Opening folder: ' + JSON.stringify(startFolder.absoluteURI));
   var selectedFolder = startFolder.selectDlg("Select a folder");
   return selectedFolder.absoluteURI;
 };
