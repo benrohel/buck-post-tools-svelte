@@ -343,7 +343,6 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
 
 export const openExistingFolder = (folderPath: string) => {
   var startFolder = new Folder(folderPath);
-    alert('Opening folder: ' + JSON.stringify(startFolder.absoluteURI));
   var selectedFolder = startFolder.selectDlg("Select a folder");
   return selectedFolder.absoluteURI;
 };
