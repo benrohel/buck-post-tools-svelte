@@ -208,9 +208,11 @@ interface IImportOptions {
 export const importMediaFile = (options: IImportOptions) => {
   const f = new File(options.filepath);
   const importOptions = new ImportOptions();
-  importOptions.sequence = options.isSequence;
   importOptions.file = f;
-  importOptions.forceAlphabetical = true;
+  if (options.isSequence) {
+    importOptions.sequence = options.isSequence;
+    importOptions.forceAlphabetical = true;
+  }
   var importedItem = app.project.importFile(importOptions);
   return importedItem.id;
 };

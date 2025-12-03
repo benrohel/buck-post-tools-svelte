@@ -29,16 +29,11 @@
   let fileTreeItems: PathItem[] = [];
   let isLoadingTree = false;
   let showFileBrowser = false;
+  let groupSequences = true;
 
   let actualPath = async () => {
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
-      console.log('projectDir', projectDir);
-      console.log('PROJECT_ROOT(projectDir)', PROJECT_ROOT(projectDir));
-      console.log(
-        'bookmark.path',
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)),
-      );
       const macPath = path.posix.join(
         PROJECT_ROOT(projectDir),
         bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
@@ -99,7 +94,7 @@
     isLoadingTree = true;
     try {
       const rootPath = await actualPath();
-      fileTreeItems = await getRootFolder(rootPath);
+      fileTreeItems = await getRootFolder(rootPath, groupSequences);
       showFileBrowser = !showFileBrowser;
     } catch (error) {
       console.error('Error loading file browser:', error);
@@ -110,15 +105,38 @@
   }
 
   async function handleLoadFolder(
-    event: CustomEvent<{ folderId: string; folderPath: string }>,
+    event: CustomEvent<{
+      folderId: string;
+      folderPath: string;
+      groupSequences: boolean;
+    }>,
   ) {
     try {
-      const { folderId, folderPath } = event.detail;
-      const children = await loadFolderChildren(folderPath, folderId);
+      const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
+      const children = await loadFolderChildren(folderPath, folderId, groupSeq);
       fileTreeItems = updateNodeChildren(fileTreeItems, folderId, children);
     } catch (error) {
       console.error('Error loading folder children:', error);
       notifications.error('Failed to load folder contents', 3000);
+    }
+  }
+
+  async function handleSequenceToggle(
+    event: CustomEvent<{ groupSequences: boolean }>,
+  ) {
+    groupSequences = event.detail.groupSequences;
+    // Reload the file tree with new settings
+    if (showFileBrowser && fileTreeItems.length > 0) {
+      isLoadingTree = true;
+      try {
+        const rootPath = await actualPath();
+        fileTreeItems = await getRootFolder(rootPath, groupSequences);
+      } catch (error) {
+        console.error('Error reloading file browser:', error);
+        notifications.error('Failed to reload folder contents', 3000);
+      } finally {
+        isLoadingTree = false;
+      }
     }
   }
 
@@ -131,9 +149,18 @@
   async function handleImportFile(
     event: CustomEvent<{ fileId: string; filePath: string }>,
   ) {
+    const node = findNodeById(fileTreeItems, event.detail.fileId);
+    const isSequence = node?.metadata?.isSequence || false;
+
+    // For sequences, use the first frame's path
+    let filepath = event.detail.filePath;
+    if (isSequence && node?.metadata?.files && node.metadata.files.length > 0) {
+      filepath = node.metadata.files[0]; // First frame
+    }
+
     const options = {
-      filepath: event.detail.filePath,
-      isSequence: false,
+      filepath: filepath,
+      isSequence: isSequence,
     };
 
     const result = await evalES(
@@ -141,10 +168,28 @@
       false,
     );
     if (result) {
-      notifications.success('Successfully imported file', 2000);
+      if (isSequence && node?.metadata?.frameCount) {
+        notifications.success(
+          `Successfully imported sequence (${node.metadata.frameCount} frames)`,
+          2000,
+        );
+      } else {
+        notifications.success('Successfully imported file', 2000);
+      }
     } else {
       notifications.error('Failed to import file', 3000);
     }
+  }
+
+  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children) {
+        const found = findNodeById(node.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
   }
 
   async function handleImportFiles(
@@ -205,10 +250,14 @@
           existingFiles={[]}
           showFileActions={true}
           allowMultiSelect={true}
+          showSequenceToggle={true}
+          bind:groupSequences
+          height="400px"
           on:loadFolder={handleLoadFolder}
           on:openFile={handleOpenFileFromBrowser}
           on:importFile={handleImportFile}
           on:importFiles={handleImportFiles}
+          on:sequenceToggle={handleSequenceToggle}
         />
       </div>
     {/if}

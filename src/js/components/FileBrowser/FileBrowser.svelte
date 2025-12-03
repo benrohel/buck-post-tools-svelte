@@ -6,6 +6,7 @@
     Download,
     Eye,
     Film,
+    Layers,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import path from 'path';
@@ -17,13 +18,16 @@
   export let showFileActions: boolean = true;
   export let allowMultiSelect: boolean = true;
   export let height: string = 'calc(100vh - 168px)';
+  export let showSequenceToggle: boolean = false;
+  export let groupSequences: boolean = true;
 
   const dispatch = createEventDispatcher<{
-    loadFolder: { folderId: string; folderPath: string };
+    loadFolder: { folderId: string; folderPath: string; groupSequences: boolean };
     openFile: { fileId: string; filePath: string };
     importFile: { fileId: string; filePath: string };
     importFiles: { fileIds: string[]; filePaths: string[] };
     selectionChange: { selectedIds: Set<string> };
+    sequenceToggle: { groupSequences: boolean };
   }>();
 
   let selectedItemIds: Set<string> = new Set();
@@ -197,13 +201,22 @@
 
     // If folder is being expanded and has no children loaded, trigger load
     if (!node.expanded && (!node.children || node.children.length === 0)) {
-      dispatch('loadFolder', { folderId: itemId, folderPath: node.path });
+      dispatch('loadFolder', {
+        folderId: itemId,
+        folderPath: node.path,
+        groupSequences: groupSequences,
+      });
     }
 
     items = updateNodeInTree(items, itemId, (n) => ({
       ...n,
       expanded: !n.expanded,
     }));
+  }
+
+  function handleSequenceToggle() {
+    groupSequences = !groupSequences;
+    dispatch('sequenceToggle', { groupSequences });
   }
 
   function fileExistsInProject(node: PathItem): boolean {
@@ -280,6 +293,14 @@
 </script>
 
 <div class="file-browser" style="height: {height};">
+  {#if showSequenceToggle}
+    <div class="sequence-toggle-bar">
+      <button class="toggle-button" on:click={handleSequenceToggle}>
+        <Layers size={16} />
+        <span>{groupSequences ? 'Show Individual Files' : 'Group Sequences'}</span>
+      </button>
+    </div>
+  {/if}
   <div class="tree-container" on:click={handleContainerClick}>
     <div class="tree-structure">
       {#each flattenTree(items) as { node, depth }}
@@ -311,6 +332,8 @@
             <div class="item-icon">
               {#if node.type === 'folder'}
                 <Folder color="white" size="20" />
+              {:else if node.metadata?.isSequence}
+                <Layers color="white" size="20" strokeWidth="1.5" />
               {:else}
                 <Film color="white" size="20" strokeWidth="1" />
               {/if}
@@ -355,6 +378,32 @@
   .file-browser {
     display: flex;
     flex-direction: column;
+  }
+
+  .sequence-toggle-bar {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: #2a2a2a;
+    border-bottom: 1px solid #444;
+  }
+
+  .toggle-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #e0e0e0;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #4a4a4a;
+    }
   }
 
   .flex-row-end {

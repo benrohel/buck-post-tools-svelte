@@ -23,6 +23,15 @@ export interface PathItem {
   children?: PathItem[];
   expanded?: boolean;
   parentId?: string | null;
+  metadata?: {
+    isSequence?: boolean;
+    frameRange?: [number, number];
+    frameCount?: number;
+    frames?: number[];
+    pattern?: string;
+    files?: string[];
+    [key: string]: any;
+  };
 }
 
 export interface Exporter {

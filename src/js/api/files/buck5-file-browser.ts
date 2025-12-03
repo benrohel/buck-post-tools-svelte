@@ -221,7 +221,6 @@ export type HierarchyFilters = {
 
 
 
-
 export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions: boolean = false) => {
 
   function filterNode(node: PathItem, depth = 0): PathItem | null {
