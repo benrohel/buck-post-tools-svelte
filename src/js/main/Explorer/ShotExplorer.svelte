@@ -1,14 +1,5 @@
 <script lang="ts">
-  import {
-    RefreshCcw,
-    ChevronDown,
-    ChevronRight,
-    Folder,
-    Download,
-    Eye,
-    Film,
-    CircleX,
-  } from 'lucide-svelte';
+  import { RefreshCcw, Download, CircleX } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
   import {
     getShotFilesTree,
@@ -28,14 +19,15 @@
   import { localAppStore } from '../../stores/local-storage';
   import { buck5ShotLibraryStore } from '../../stores/buck5-shot-library-store';
   import Toggle from '../../components/Toggle/Toggle.svelte';
+  import FileBrowser from '../../components/FileBrowser/FileBrowser.svelte';
 
   import path from 'path';
-  let selectedItemIds: Set<string> = new Set();
-  let lastClickedId: string | null = null;
   let filteredItems: PathItem[] = [];
   let isLoading = false;
   let prefix = '';
   let isBuck5 = true;
+  let fileBrowserRef: FileBrowser;
+  let selectedItemIds: Set<string> = new Set();
 
   let onlyShowLatestVersions = true;
 
@@ -163,10 +155,6 @@
     isLoading = false;
   };
 
-  const handleOpenFile = (itemId: string) => {
-    openFile(itemId);
-  };
-
   // Helper function to apply saved filter settings from appStore
   function applyStoredFilterSettings() {
     if ($appStore.latestBuck5LibrarySettings) {
@@ -286,170 +274,18 @@
     localAppStore.set($appStore);
   }
 
-  // Function to handle item selection with multi-select support (files only)
-  function handleItemClick(itemId: string, event: MouseEvent) {
-    const flatItems = flattenTree(filteredItems).map((item) => item.node);
-    const clickedNode = findNodeById(filteredItems, itemId);
-
-    if (!clickedNode) return;
-
-    // Only handle selection for files, ignore folder clicks for selection
-    if (clickedNode.type !== 'file') return;
-
-    if (event.metaKey || event.ctrlKey) {
-      // Cmd/Ctrl+Click: Toggle file selection
-      const newSelection = new Set(selectedItemIds);
-      if (newSelection.has(itemId)) {
-        newSelection.delete(itemId);
-      } else {
-        newSelection.add(itemId);
-      }
-      selectedItemIds = newSelection;
-      lastClickedId = itemId;
-    } else if (event.shiftKey && lastClickedId) {
-      // Shift+Click: Select range of files
-      const currentIndex = flatItems.findIndex((item) => item.id === itemId);
-      const lastIndex = flatItems.findIndex(
-        (item) => item.id === lastClickedId,
-      );
-
-      if (currentIndex !== -1 && lastIndex !== -1) {
-        const startIndex = Math.min(currentIndex, lastIndex);
-        const endIndex = Math.max(currentIndex, lastIndex);
-
-        // Add all files in range to selection
-        const newSelection = new Set(selectedItemIds);
-        for (let i = startIndex; i <= endIndex; i++) {
-          const rangeNode = flatItems[i];
-          if (rangeNode.type === 'file') {
-            newSelection.add(rangeNode.id);
-          }
-        }
-        selectedItemIds = newSelection;
-      }
-    } else {
-      // Regular click: Select only this file
-      selectedItemIds = new Set([itemId]);
-      lastClickedId = itemId;
-    }
+  // Handler for file browser events
+  function handleOpenFile(
+    event: CustomEvent<{ fileId: string; filePath: string }>,
+  ) {
+    openFile(event.detail.filePath);
   }
 
-  // Function to clear selection when clicking outside items
-  function handleContainerClick() {
-    selectedItemIds = new Set();
-    lastClickedId = null;
-  }
-
-  // Function to flatten the tree for iterative rendering
-  function flattenTree(
-    nodes: PathItem[],
-  ): Array<{ node: PathItem; depth: number; path: string[] }> {
-    const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
-    const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
-
-    // Initialize stack with root nodes
-    for (let i = nodes.length - 1; i >= 0; i--) {
-      stack.push({
-        node: nodes[i],
-        depth: 0,
-        path: [nodes[i].name],
-      });
-    }
-
-    // Process stack iteratively instead of recursively
-    while (stack.length > 0) {
-      const item = stack.pop()!;
-      const { node, depth, path } = item;
-
-      // Add current node to result
-      result.push(item);
-
-      // If folder is expanded and has children, push children to stack
-      if (
-        node.type === 'folder' &&
-        node.expanded &&
-        node.children &&
-        node.children.length > 0 &&
-        depth < 10
-      ) {
-        // Add children in reverse order so they appear in correct order when popped
-        for (let i = node.children.length - 1; i >= 0; i--) {
-          const child = node.children[i];
-          stack.push({
-            node: child,
-            depth: depth + 1,
-            path: [...path, child.name],
-          });
-        }
-      }
-    }
-
-    return result;
-  }
-
-  // Helper function to find a node by ID in the tree
-  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
-    // First check at the current level
-    const directMatch = nodes.find((node) => node.id === id);
-    if (directMatch) return directMatch;
-
-    // Then check children
-    for (const node of nodes) {
-      if (node.children && node.children.length > 0) {
-        const childMatch = findNodeById(node.children, id);
-        if (childMatch) return childMatch;
-      }
-    }
-
-    return null;
-  }
-
-  // Function to build a path for a node
-  function buildPath(node: PathItem): string {
-    if (node.parentId === null) {
-      return node.name;
-    }
-    const parentNode = findNodeById(pathStructure, node.parentId);
-    if (!parentNode) {
-      return node.name;
-    }
-    return `${buildPath(parentNode)}/${node.name}`;
-  }
-
-  // Helper function to update a node in the tree by ID
-  function updateNodeInTree(
-    nodes: PathItem[],
-    nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
-  ): PathItem[] {
-    return nodes.map((node) => {
-      if (node.id === nodeId) {
-        node.path = buildPath(node);
-        return updateFn(node);
-      } else if (node.children && node.children.length > 0) {
-        return {
-          ...node,
-          children: updateNodeInTree(node.children, nodeId, updateFn),
-        };
-      }
-      return node;
-    });
-  }
-
-  // Function to toggle node expansion
-  function toggleExpand(itemId: string) {
-    pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
-      ...node,
-      expanded: !node.expanded,
-    }));
-  }
-
-  // Function to edit an item by ID
-  function importItem(itemId: string) {
-    console.log('importItem', itemId);
-
+  function handleImportFile(
+    event: CustomEvent<{ fileId: string; filePath: string }>,
+  ) {
     const importOptions = {
-      filepath: itemId,
+      filepath: event.detail.filePath,
       isSequence: false,
     };
 
@@ -458,59 +294,82 @@
     });
   }
 
-  // Helper function to find node of a specific type and return an array of nodes
-  function findNodesByType(nodes: PathItem[], type: string): PathItem[] {
-    let results: PathItem[] = [];
-
-    // Add matches at the current level
-    results = results.concat(nodes.filter((node) => node.type === type));
-
-    // Then recursively check children
-    for (const node of nodes) {
-      if (node.children && node.children.length > 0) {
-        const childMatches = findNodesByType(node.children, type);
-        results = results.concat(childMatches);
-      }
+  function handleImportFiles(
+    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
+  ) {
+    for (let i = 0; i < event.detail.filePaths.length; i++) {
+      const importOptions = {
+        filepath: event.detail.filePaths[i],
+        isSequence: false,
+      };
+      evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
+        (res) => {
+          res ? true : false;
+        },
+      );
     }
-
-    return results;
   }
 
-  function fileExistsInProject(node: PathItem): boolean {
-    const basename = path.basename(node.path);
-    return existingMediaFiles
-      .map((file) => path.basename(file))
-      .includes(basename);
+  function handleSelectionChange(
+    event: CustomEvent<{ selectedIds: Set<string> }>,
+  ) {
+    selectedItemIds = event.detail.selectedIds;
   }
 
   const importAllVisible = async () => {
-    const visibleFileItems = findNodesByType(filteredItems, 'file').map(
-      (item) => item.path,
-    );
-    await evalES(`importMediaFiles(${JSON.stringify(visibleFileItems)})`).then(
-      (res) => {
-        res ? true : false;
-      },
-    );
+    if (fileBrowserRef) {
+      const allVisibleFiles = getAllFilesFromTree(filteredItems);
+
+      for (let i = 0; i < allVisibleFiles.length; i++) {
+        const importOptions = {
+          filepath: allVisibleFiles[i],
+          isSequence: false,
+        };
+        evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
+          (res) => {
+            res ? true : false;
+          },
+        );
+      }
+    }
   };
 
   const importSelectedItems = async () => {
-    if (selectedItemIds.size === 0) return;
-
-    // Get selected file items
-    const allItems = findNodesByType(filteredItems, 'file');
-    const selectedFileItems = allItems
-      .filter((item) => selectedItemIds.has(item.id))
-      .map((item) => item.path);
-
-    if (selectedFileItems.length > 0) {
-      await evalES(
-        `importMediaFiles(${JSON.stringify(selectedFileItems)})`,
-      ).then((res) => {
-        res ? true : false;
-      });
+    if (fileBrowserRef && selectedItemIds.size > 0) {
+      const selectedFiles = fileBrowserRef
+        .getSelectedItems()
+        .map((item) => item.path);
+      if (selectedFiles.length > 0) {
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const importOptions = {
+            filepath: selectedFiles[i],
+            isSequence: false,
+          };
+          evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
+            (res) => {
+              res ? true : false;
+            },
+          );
+        }
+      }
     }
   };
+
+  // Helper to get all files from tree recursively
+  function getAllFilesFromTree(nodes: PathItem[]): string[] {
+    let filePaths: string[] = [];
+
+    for (const node of nodes) {
+      if (node.type === 'file') {
+        filePaths.push(node.path);
+      }
+      if (node.children && node.children.length > 0) {
+        filePaths = filePaths.concat(getAllFilesFromTree(node.children));
+      }
+    }
+
+    return filePaths;
+  }
 
   onMount(() => {
     // Only load if not already loaded
@@ -609,81 +468,17 @@
           <SyncLoader color="#adadad" size="20" />
         </div>
       {:else}
-        <div class="tree-container" on:click={handleContainerClick}>
-          <div class="tree-structure">
-            {#each flattenTree(filteredItems) as { node, depth }}
-              <div
-                class="tree-item {node.type} {selectedItemIds.has(node.id)
-                  ? 'selected'
-                  : ''} {fileExistsInProject(node) ? 'disabled' : ''}"
-                style="margin-left: {depth * 20}px;"
-                on:click={(e) => {
-                  e.stopPropagation();
-                  handleItemClick(node.id, e);
-                }}
-              >
-                <div class="item-header">
-                  {#if node.type === 'folder'}
-                    <button
-                      class="icon-only"
-                      on:click|stopPropagation={() => toggleExpand(node.id)}
-                    >
-                      {#if node.expanded}
-                        <ChevronDown />
-                      {:else}
-                        <ChevronRight />
-                      {/if}
-                    </button>
-                  {:else}
-                    <span class="indent"></span>
-                  {/if}
-                  <div class="item-icon">
-                    {#if node.type === 'folder'}
-                      <Folder color="white" size="20" />
-                    {:else}
-                      <Film color="white" size="20" strokeWidth="1" />
-                    {/if}
-                  </div>
-
-                  <div class="item-content">
-                    <div
-                      class="item-info"
-                      on:keydown={(e) => {
-                        e.preventDefault();
-                        if (e.key === 'Enter') {
-                          if (selectedItemIds.size > 1) {
-                            importSelectedItems();
-                          } else {
-                            importItem(node.id);
-                          }
-                        }
-                      }}
-                      on:dblclick={() => {
-                        if (selectedItemIds.size > 1) {
-                          importSelectedItems();
-                        } else {
-                          importItem(node.id);
-                        }
-                      }}
-                    >
-                      <span class={`item-name`}>{node.name || '[empty]'}</span>
-                      {#if node.type === 'file'}
-                        <div class="flex-row-end">
-                          <button on:click={() => handleOpenFile(node.id)}
-                            ><Eye size="16" color="white" /></button
-                          >
-                          <button on:click={() => importItem(node.id)}
-                            ><Download size="16" color="white" /></button
-                          >
-                        </div>
-                      {/if}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            {/each}
-          </div>
-        </div>
+        <FileBrowser
+          bind:this={fileBrowserRef}
+          items={filteredItems}
+          existingFiles={existingMediaFiles}
+          showFileActions={true}
+          allowMultiSelect={true}
+          on:openFile={handleOpenFile}
+          on:importFile={handleImportFile}
+          on:importFiles={handleImportFiles}
+          on:selectionChange={handleSelectionChange}
+        />
       {/if}
     </div>
   {/if}
@@ -736,141 +531,6 @@
     align-items: center;
     gap: 4px;
     width: 100%;
-  }
-
-  .tree-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 168px);
-    overflow-y: auto;
-  }
-
-  .tree-structure {
-    flex: 1;
-    border: 1px solid #444;
-    border-radius: 3px;
-    overflow-y: auto;
-    padding: 4px;
-  }
-
-  .tree-item {
-    margin-bottom: 1px;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-
-  .tree-item.selected > .item-header {
-    background-color: $darker;
-    border: 1px solid $active;
-    box-shadow: 0 0 2px rgba(255, 255, 255, 0.1);
-  }
-
-  .item-header {
-    display: flex;
-    padding: 0px;
-    align-items: center;
-    border-radius: 3px;
-  }
-
-  .folder > .item-header {
-    // background-color: #2a2a2a;
-    // border-bottom: 1px solid #444;
-  }
-
-  .file > .item-header {
-    background-color: #303030;
-  }
-
-  .tree-item.disabled > .item-header {
-    opacity: 0.5;
-    background-color: #1a1a1a !important;
-  }
-
-  .tree-item.disabled .item-name {
-    color: #666;
-  }
-
-  .expand-btn {
-    background: none;
-    border: none;
-    color: #aaa;
-    cursor: pointer;
-    font-size: 10px;
-    padding: 0 5px;
-    width: 20px;
-    text-align: center;
-  }
-
-  .indent {
-    display: inline-block;
-    width: 20px;
-  }
-
-  .children {
-    padding-left: 5px;
-  }
-
-  .item-icon {
-    text-align: center;
-    margin-right: 6px;
-  }
-
-  .item-content {
-    flex: 1;
-    position: relative;
-    display: flex;
-  }
-
-  .item-name {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-
-    text-align: left;
-  }
-
-  .item-name-file {
-    font-family: 'Roboto Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    text-align: left;
-  }
-
-  .item-info {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .dropdown-content {
-    background-color: $extra-dark;
-    border: 1px solid #555;
-    border-radius: 3px;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  /* Container for dropdowns */
-  .dropdown-container {
-    position: fixed !important;
-    z-index: 200 !important; /* Even higher z-index */
-    pointer-events: auto !important; /* Ensure clicks are captured */
-  }
-
-  /* Container for tree and actions */
-  .container {
-    display: flex;
-    gap: 10px;
-    position: relative;
-  }
-
-  .no-selection {
-    color: #888;
-    font-style: italic;
-    font-size: 13px;
-    text-align: center;
   }
 
   select {
