@@ -7,11 +7,11 @@
     Eye,
     Film,
     Layers,
+    ExternalLink,
   } from 'lucide-svelte';
   import { type PathItem } from '../../api/exporter';
-  import path from 'path';
   import { createEventDispatcher } from 'svelte';
-
+  import { path } from '../../lib/cep/node';
   export let rootFolder: string = '';
   export let items: PathItem[] = [];
   export let existingFiles: string[] = [];
@@ -24,8 +24,13 @@
   export let extensionFilter: string = '';
 
   const dispatch = createEventDispatcher<{
-    loadFolder: { folderId: string; folderPath: string; groupSequences: boolean };
+    loadFolder: {
+      folderId: string;
+      folderPath: string;
+      groupSequences: boolean;
+    };
     openFile: { fileId: string; filePath: string };
+    revealFile: { fileId: string; filePath: string };
     importFile: { fileId: string; filePath: string };
     importFiles: { fileIds: string[]; filePaths: string[] };
     selectionChange: { selectedIds: Set<string> };
@@ -302,6 +307,13 @@
     }
   }
 
+  function handleRevealFile(itemId: string) {
+    const node = findNodeById(items, itemId);
+    if (node && node.type === 'file') {
+      dispatch('revealFile', { fileId: itemId, filePath: node.path });
+    }
+  }
+
   function handleImportFile(itemId: string) {
     const node = findNodeById(items, itemId);
     if (node && node.type === 'file') {
@@ -369,7 +381,11 @@
       {#if showSequenceToggle}
         <button class="toggle-button" on:click={handleSequenceToggle}>
           <Layers size={16} />
-          <span>{groupSequences ? 'Show Individual Files' : 'Group Sequences'}</span>
+          <span
+            >{groupSequences
+              ? 'Show Individual Files'
+              : 'Group Sequences'}</span
+          >
         </button>
       {/if}
       {#if showExtensionFilter}
@@ -437,6 +453,9 @@
                 <span class="item-name">{node.name || '[empty]'}</span>
                 {#if node.type === 'file' && showFileActions}
                   <div class="flex-row-end">
+                    <button on:click={() => handleRevealFile(node.id)}
+                      ><ExternalLink size="16" color="white" /></button
+                    >
                     <button on:click={() => handleOpenFile(node.id)}
                       ><Eye size="16" color="white" /></button
                     >

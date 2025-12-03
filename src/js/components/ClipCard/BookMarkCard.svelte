@@ -208,6 +208,19 @@
       notifications.error('Failed to import files', 3000);
     }
   }
+
+  function handleRevealFile(
+    event: CustomEvent<{ fileId: string; filePath: string }>,
+  ) {
+    // TODO: Implement reveal file functionality
+    console.log('Reveal file:', event.detail.filePath);
+
+    openFile(path.dirname(event.detail.filePath));
+    // You can use the CEP API to reveal the file in the OS file explorer
+    // For now, just log it
+    // TODO: Use CEP API to reveal file
+    // Example: cep.fs.revealInFileBrowser(event.detail.filePath);
+  }
 </script>
 
 <div class="bookmark-container">
@@ -256,6 +269,7 @@
           height="400px"
           on:loadFolder={handleLoadFolder}
           on:openFile={handleOpenFileFromBrowser}
+          on:revealFile={handleRevealFile}
           on:importFile={handleImportFile}
           on:importFiles={handleImportFiles}
           on:sequenceToggle={handleSequenceToggle}

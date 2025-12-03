@@ -214,6 +214,7 @@ export const importMediaFile = (options: IImportOptions) => {
     importOptions.forceAlphabetical = true;
   }
   var importedItem = app.project.importFile(importOptions);
+  renameClipFromSource(importedItem);
   return importedItem.id;
 };
 
