@@ -32,8 +32,10 @@
   let groupSequences = true;
 
   let actualPath = async () => {
+    console.log('bookmark:', bookmark);
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
+      console.log('projectDir:', projectDir);
       const macPath = path.posix.join(
         PROJECT_ROOT(projectDir),
         bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),

@@ -162,7 +162,7 @@
   };
 
   const handleSetOutputFolder = async (folderPath: string) => {
-    if (folderPath) {
+    if (folderPath && typeof folderPath === 'string') {
       rootFolder = folderPath;
       if ($appStore.rememberLastFolderSearch) {
         lastFolderSearch.set(folderPath);

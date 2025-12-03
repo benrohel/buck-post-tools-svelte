@@ -80,7 +80,7 @@ export const selectFolder = (
 ): string | false => {
   const folder = Folder.selectDialog(msg);
   if (folder.exists) {
-    return folder.fsName;
+    return JSON.stringify({ fsName: folder.fsName, absoluteURI: folder.absoluteURI });
   }
   return false;
 };
