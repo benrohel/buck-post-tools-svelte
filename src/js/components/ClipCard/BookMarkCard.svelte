@@ -251,6 +251,7 @@
           showFileActions={true}
           allowMultiSelect={true}
           showSequenceToggle={true}
+          showExtensionFilter={true}
           bind:groupSequences
           height="400px"
           on:loadFolder={handleLoadFolder}

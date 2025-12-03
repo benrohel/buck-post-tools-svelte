@@ -148,8 +148,13 @@ export async function getDirectoryChildren(
 
     // Separate folders from files
     for (const entry of entries) {
-      // Skip hidden files and folders
+      // Skip hidden files/folders (starting with .)
       if (entry.startsWith('.')) {
+        continue;
+      }
+
+      // Skip temporary files
+      if (entry.endsWith('.tmp')) {
         continue;
       }
 

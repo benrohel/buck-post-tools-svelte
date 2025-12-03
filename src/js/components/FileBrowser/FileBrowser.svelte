@@ -20,6 +20,8 @@
   export let height: string = 'calc(100vh - 168px)';
   export let showSequenceToggle: boolean = false;
   export let groupSequences: boolean = true;
+  export let showExtensionFilter: boolean = false;
+  export let extensionFilter: string = '';
 
   const dispatch = createEventDispatcher<{
     loadFolder: { folderId: string; folderPath: string; groupSequences: boolean };
@@ -32,6 +34,75 @@
 
   let selectedItemIds: Set<string> = new Set();
   let lastClickedId: string | null = null;
+
+  // Common VFX file extensions
+  const commonExtensions = [
+    { value: '', label: 'All Extensions' },
+    { value: 'exr', label: 'EXR' },
+    { value: 'dpx', label: 'DPX' },
+    { value: 'tif', label: 'TIF/TIFF' },
+    { value: 'png', label: 'PNG' },
+    { value: 'jpg', label: 'JPG/JPEG' },
+    { value: 'mov', label: 'MOV' },
+    { value: 'mp4', label: 'MP4' },
+    { value: 'avi', label: 'AVI' },
+  ];
+
+  // Filter items by extension
+  $: filteredItems = filterByExtension(items, extensionFilter);
+
+  function filterByExtension(
+    itemList: PathItem[],
+    extFilter: string,
+  ): PathItem[] {
+    if (!extFilter || extFilter === '') {
+      return itemList;
+    }
+
+    function filterNodeRecursively(node: PathItem): PathItem | null {
+      if (node.type === 'file') {
+        // For sequences, check the pattern
+        if (node.metadata?.isSequence && node.metadata?.pattern) {
+          const fileName = node.metadata.pattern.toLowerCase();
+          const hasExtension =
+            fileName.endsWith(`.${extFilter.toLowerCase()}`) ||
+            (extFilter === 'tif' && fileName.endsWith('.tiff')) ||
+            (extFilter === 'jpg' &&
+              (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')));
+          return hasExtension ? node : null;
+        } else {
+          // For regular files
+          const fileName = node.name.toLowerCase();
+          const hasExtension =
+            fileName.endsWith(`.${extFilter.toLowerCase()}`) ||
+            (extFilter === 'tif' && fileName.endsWith('.tiff')) ||
+            (extFilter === 'jpg' &&
+              (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')));
+          return hasExtension ? node : null;
+        }
+      } else if (node.type === 'folder') {
+        // For folders, recursively filter children
+        const filteredChildren = node.children
+          ? (node.children
+              .map((child) => filterNodeRecursively(child))
+              .filter((child) => child !== null) as PathItem[])
+          : [];
+
+        // Keep folder if it has any matching children
+        if (filteredChildren.length > 0) {
+          return {
+            ...node,
+            children: filteredChildren,
+          };
+        }
+      }
+      return null;
+    }
+
+    return itemList
+      .map((item) => filterNodeRecursively(item))
+      .filter((item) => item !== null) as PathItem[];
+  }
 
   // Function to handle item selection with multi-select support (files only)
   function handleItemClick(itemId: string, event: MouseEvent) {
@@ -293,17 +364,30 @@
 </script>
 
 <div class="file-browser" style="height: {height};">
-  {#if showSequenceToggle}
-    <div class="sequence-toggle-bar">
-      <button class="toggle-button" on:click={handleSequenceToggle}>
-        <Layers size={16} />
-        <span>{groupSequences ? 'Show Individual Files' : 'Group Sequences'}</span>
-      </button>
+  {#if showSequenceToggle || showExtensionFilter}
+    <div class="toolbar">
+      {#if showSequenceToggle}
+        <button class="toggle-button" on:click={handleSequenceToggle}>
+          <Layers size={16} />
+          <span>{groupSequences ? 'Show Individual Files' : 'Group Sequences'}</span>
+        </button>
+      {/if}
+      {#if showExtensionFilter}
+        <select
+          class="extension-filter"
+          bind:value={extensionFilter}
+          on:change={() => (selectedItemIds = new Set())}
+        >
+          {#each commonExtensions as ext}
+            <option value={ext.value}>{ext.label}</option>
+          {/each}
+        </select>
+      {/if}
     </div>
   {/if}
   <div class="tree-container" on:click={handleContainerClick}>
     <div class="tree-structure">
-      {#each flattenTree(items) as { node, depth }}
+      {#each flattenTree(filteredItems) as { node, depth }}
         <div
           class="tree-item {node.type} {selectedItemIds.has(node.id)
             ? 'selected'
@@ -380,9 +464,10 @@
     flex-direction: column;
   }
 
-  .sequence-toggle-bar {
+  .toolbar {
     display: flex;
     align-items: center;
+    gap: 8px;
     padding: 4px 8px;
     background-color: #2a2a2a;
     border-bottom: 1px solid #444;
@@ -403,6 +488,26 @@
 
     &:hover {
       background-color: #4a4a4a;
+    }
+  }
+
+  .extension-filter {
+    padding: 4px 8px;
+    background-color: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #e0e0e0;
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 120px;
+
+    &:hover {
+      background-color: #4a4a4a;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #1473e6;
     }
   }
 
