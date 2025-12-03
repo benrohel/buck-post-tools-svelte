@@ -27,9 +27,9 @@
 
   const handleImport = () => {
     let filepath = aepFile.path;
-    if (os.platform() === 'win32') {
-      filepath = aepFile.path.replace(/\\/g, '\\\\');
-    }
+    // if (os.platform() === 'win32') {
+    //   filepath = aepFile.path.replace(/\\/g, '\\\\');
+    // }
 
     const options = {
       filepath: filepath,
