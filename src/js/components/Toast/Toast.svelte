@@ -6,7 +6,7 @@
     error: 'ed553b',
     success: '#3cae5c',
     warning: '#fc7439',
-    info: '#ef4426',
+    info: '#086ce7',
     default: '#aaaaaa',
   };
 </script>

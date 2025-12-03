@@ -45,13 +45,21 @@ export const generateId = (): string => {
   return Math.random().toString(36).substring(2, 10);
 };
 
-export   const copyToClipboard = (text:string) => {
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.style.position = "fixed";  // Prevent scrolling
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
+export const copyToClipboard = (text: string) => {
+
+  if (os.platform() === 'darwin') {
+    const { exec } = require("child_process");
+    const escaped = text.replace(/'/g, "'\\''"); // Escape single quotes
+    exec(`echo '${escaped}' | pbcopy`);
+
+  } else {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";  // Prevent scrolling
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  }
 }

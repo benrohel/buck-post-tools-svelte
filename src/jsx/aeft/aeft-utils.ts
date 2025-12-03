@@ -343,6 +343,12 @@ export const setProjectSettings = (projectSettings: ProjectSettings) => {
 
 export const openExistingFolder = (folderPath: string) => {
   var startFolder = new Folder(folderPath);
-  var selectedFolder = startFolder.selectDlg("Select a folder");
-  return selectedFolder.absoluteURI;
+  // var selectedFolder = startFolder.selectDlg("Select a folder");
+  var dialog = File(startFolder.fsName);
+  dialog.openDlg();
+  if (dialog.exists) {
+    return dialog.fsName;
+  } else {
+    return null;
+  }
 };

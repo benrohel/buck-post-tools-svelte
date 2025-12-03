@@ -1,13 +1,18 @@
 <script lang="ts">
   import { fs, os, path } from '../../lib/cep/node';
-  import { ExternalLink, FolderOpen, CircleX, ClipboardCopy } from 'lucide-svelte';
+  import {
+    ExternalLink,
+    FolderOpen,
+    CircleX,
+    ClipboardCopy,
+  } from 'lucide-svelte';
   import { Bookmark } from '../../stores/bookmark-store';
   import { evalES, evalFile } from '../../lib/utils/bolt';
   import { notifications } from '../../stores/notifications-store';
   import { openFile } from '../../lib/utils/utils';
   import csInterface from '../../lib/cep/csinterface';
   import { PROJECT_ROOT } from '../../api/files/files';
-  import {copyToClipboard} from '../../lib/utils/utils';
+  import { copyToClipboard } from '../../lib/utils/utils';
   import { platform } from 'os';
   export let bookmark: Bookmark;
   export let onRemove: () => void;
@@ -15,11 +20,20 @@
   let actualPath = async () => {
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
-      console.log("projectDir", projectDir);
+      console.log('projectDir', projectDir);
       console.log('PROJECT_ROOT(projectDir)', PROJECT_ROOT(projectDir));
-      console.log('bookmark.path', bookmark.path.split(PROJECT_ROOT(bookmark.path)));
-      const macPath = path.posix.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
-      const windowsPath = path.win32.join(PROJECT_ROOT(projectDir), bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop());
+      console.log(
+        'bookmark.path',
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)),
+      );
+      const macPath = path.posix.join(
+        PROJECT_ROOT(projectDir),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+      );
+      const windowsPath = path.win32.join(
+        PROJECT_ROOT(projectDir),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+      );
 
       return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
     } else {
@@ -27,44 +41,36 @@
     }
   };
 
-
-
-
   async function handleImportFolder() {
     const sourceFolder = await actualPath();
-    console.log("sourceFolder", sourceFolder);
+    console.log('sourceFolder', sourceFolder);
     copyToClipboard(sourceFolder);
-   
-    
-    if(os.platform() === 'win32') {
-      notifications.info(`Path copied to clipboard: ${sourceFolder}`, 2000);
-      return;
-    }
-    
-    let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
-    console.log("folderPath", folderPath);
+    notifications.info(`Path copied to clipboard: ${sourceFolder}`, 2000);
 
-    if (folderPath && fs.existsSync(folderPath)) {
-      const options = {
-        filepath: folderPath,
-        isSequence: false,
-      };
-      
-      evalES(`importMediaFile(${JSON.stringify(options)})`, false).then(
-        (res) => {
-          if (res) {
-            notifications.success(
-              `Successfully imported ${bookmark.name}`,
-              3000,
-            );
-          } else {
-            notifications.error(`Failed to import ${bookmark.name}`, 3000);
-          }
-        },
-      );
-    } else {
-      await evalES(`alert("You must choose a file")`, true);
-    }
+    // let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
+    // console.log("folderPath", folderPath);
+
+    // if (folderPath && fs.existsSync(folderPath)) {
+    //   const options = {
+    //     filepath: folderPath,
+    //     isSequence: false,
+    //   };
+
+    //   evalES(`importMediaFile(${JSON.stringify(options)})`, false).then(
+    //     (res) => {
+    //       if (res) {
+    //         notifications.success(
+    //           `Successfully imported ${bookmark.name}`,
+    //           3000,
+    //         );
+    //       } else {
+    //         notifications.error(`Failed to import ${bookmark.name}`, 3000);
+    //       }
+    //     },
+    //   );
+    // } else {
+    //   await evalES(`alert("You must choose a file")`, true);
+    // }
   }
 
   async function handleRevealFolder() {
@@ -81,12 +87,7 @@
   {#if bookmark}
     <div class="tool-card-action">
       <button class="icon" on:click={handleImportFolder}>
-        {#if os.platform()== "win32"}
-          <ClipboardCopy />
-          {:else}
-          <FolderOpen />
-        {/if}
-
+        <ClipboardCopy />
       </button>
       <button class="icon" on:click={handleRevealFolder}>
         <ExternalLink />
