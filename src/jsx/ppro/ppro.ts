@@ -1,8 +1,8 @@
 import { padLeft, selectFolder, padStart } from '../utils/utils';
 export { selectFolder };
 
-import { getProjectFile, collectAllFilePaths } from './ppro-utils';
-export { getProjectFile, collectAllFilePaths };
+import { getProjectFile, collectAllFilePaths, getProjectDir } from './ppro-utils';
+export { getProjectFile, collectAllFilePaths, getProjectDir };
 declare var JSON: any;
 declare const qe: undefined | any;
 

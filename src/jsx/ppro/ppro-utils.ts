@@ -247,3 +247,15 @@ export function collectAllFilePaths() {
   walk(app.project.rootItem);
   return JSON.stringify(results);
 }
+
+
+export const getProjectDir = () => {
+
+  if (app.project.path !== null) {
+    //@ts-ignore
+    var projectFile = File(app.project.path);
+    return projectFile.parent.absoluteURI;
+  } else {
+    return '';
+  }
+};

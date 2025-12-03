@@ -10,6 +10,8 @@
   import ExportPathBuilder from './ExportPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
 
+  $: console.log('appId:', appId);
+
   interface SelectToolItem {
     value: string;
     label: string;
@@ -57,7 +59,7 @@
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
   let selectedExportMode: SelectToolItem =
-    appId === 'PPRO' ? exportModes[0] : exportModes[3];
+    appId === 'PPRO' ? exportModes[0] : exportModes[4];
 </script>
 
 <MenuSelect

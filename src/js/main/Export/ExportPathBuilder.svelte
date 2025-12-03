@@ -92,7 +92,7 @@
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule =
     outputModules.find(
-      (module) => module === selectedOutputModuleMenuItem?.value
+      (module) => module === selectedOutputModuleMenuItem?.value,
     ) || outputModules[0];
 
   let rootFolder = '';
@@ -102,7 +102,7 @@
   // Preset Name
   let presetName = '';
   $: presetNameExists = exportPresets.some(
-    (preset) => preset.name === presetName
+    (preset) => preset.name === presetName,
   );
 
   $: validPresetName = presetName.length < 5 || presetNameExists;
@@ -129,15 +129,15 @@
       : projectFolder;
 
     const comps = JSON.parse(
-      await evalES('getSelectedCompsForRender()')
+      await evalES('getSelectedCompsForRender()'),
     ) as any;
     dummyComp = comps.comps[0];
 
     const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()')
+      await evalES('getOutputModulesTemplates()'),
     );
     outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN')
+      (p: string) => !p.startsWith('_HIDDEN'),
     );
 
     selectedOutputModule = outputModules[0];
@@ -161,7 +161,7 @@
     }
 
     selectedExportPreset = exportPresets.find(
-      (preset: Exporter) => preset.name === selectedExportPresetName
+      (preset: Exporter) => preset.name === selectedExportPresetName,
     );
 
     if (selectedExportPreset) {
@@ -172,7 +172,7 @@
         label: preset.name,
       }));
       selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-        (preset) => preset.value === selectedExportPreset.name
+        (preset) => preset.value === selectedExportPreset.name,
       );
     }
   });
@@ -194,12 +194,12 @@
     if (missingOm.length > 0) {
       notifications.warning(
         `Missing Output modules : ${missingOm.join(', ')} `,
-        2000
+        2000,
       );
     }
     selectedExportPresetMenuItem = value;
     selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value
+      (preset) => preset.name === value.value,
     );
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
@@ -212,11 +212,11 @@
 
   function handleOnChangeOutputModule(
     id: string,
-    value: { value: string; label: string }
+    value: { value: string; label: string },
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value
+      (module) => module === value.value,
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
@@ -230,7 +230,7 @@
     if (exportPresets.some((preset) => preset.name === name)) {
       notifications.error(
         'Exporter preset with this name already exists',
-        2000
+        2000,
       );
       return;
     }
@@ -274,7 +274,7 @@
       relativePath: useProjectFolder,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
     );
     console.log('updatedExportPresets', updatedExportPresets);
     setExporterPresets(appId, updatedExportPresets).then((result) => {
@@ -285,7 +285,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name
+          (preset) => preset.value === selectedExportPreset.name,
         );
         pathStructure = selectedExportPreset.path;
 
@@ -296,7 +296,7 @@
     });
     selectedExportPreset = updatedExportPreset;
     selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-      (preset) => preset.value === selectedExportPreset.name
+      (preset) => preset.value === selectedExportPreset.name,
     );
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
@@ -322,7 +322,7 @@
     if (node && node.outputModule) {
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
-        (om) => om.value === node.outputModule
+        (om) => om.value === node.outputModule,
       );
     }
   }
@@ -375,7 +375,7 @@
   function addChildToNode(
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem
+    newChild: PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -407,12 +407,12 @@
   // Function to save edits
   function saveItem(itemId: string, event: Event) {
     const newName = (event.target as HTMLInputElement).value.trim();
-    
+
     // Don't save if name is empty
     if (!newName) {
       return;
     }
-    
+
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       name: newName,
@@ -474,7 +474,7 @@
   function updateNodeInTree(
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem
+    updateFn: (node: PathItem) => PathItem,
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -521,7 +521,7 @@
       suggestedTokens = availableTokens.filter(
         (token) =>
           token.token.toLowerCase().includes(partialToken) ||
-          token.name.toLowerCase().includes(partialToken)
+          token.name.toLowerCase().includes(partialToken),
       );
 
       showSuggestions = suggestedTokens.length > 0;
@@ -592,7 +592,7 @@
 
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[]
+    nodes: PathItem[],
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -768,7 +768,7 @@
 
   async function deleteExporter() {
     const updatedExportPresets = exportPresets.filter(
-      (preset) => preset.name !== selectedExportPreset.name
+      (preset) => preset.name !== selectedExportPreset.name,
     );
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -805,6 +805,9 @@
     modalConfirmOpen = false;
   }
 
+  $: console.log('rootFolder:', rootFolder);
+  $: console.log('hasTask:', hasTask);
+
   $: pathPreviews = selectedNode ? getMemoizedPaths(pathStructure) : '';
   $: {
     if (dummyComp && selectedExportPreset) {
@@ -815,7 +818,7 @@
         renderFolder,
         getMemoizedPaths(pathStructure),
         taskName,
-        version
+        version,
       );
     }
     console.log('pathPreviews', pathPreviews);
@@ -990,7 +993,7 @@
                   onChange={() =>
                     handleOnChangeOutputModule(
                       selectedNode.id,
-                      selectedOutputModuleMenuItem
+                      selectedOutputModuleMenuItem,
                     )}
                 />
               {/if}
@@ -1069,16 +1072,18 @@
                           // Only save on blur if we're not clicking on a suggestion
                           const relatedTarget = e.relatedTarget;
                           const inputValue = e.target.value.trim();
-                          
+
                           // Prevent blur if input is empty - keep editing
                           if (!inputValue) {
                             e.target.focus();
                             return;
                           }
-                          
+
                           if (
                             !relatedTarget ||
-                            !relatedTarget?.classList?.contains('suggestion-btn')
+                            !relatedTarget?.classList?.contains(
+                              'suggestion-btn',
+                            )
                           ) {
                             saveItem(node.id, e);
                           }
