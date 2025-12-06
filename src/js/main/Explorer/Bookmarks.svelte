@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import BookMarkCard from '../../components/ClipCard/BookMarkCard.svelte';
-  import { createBookmarkStore } from '../../stores/bookmark-store';
+  import BookMarkCard from '@/components/ClipCard/BookMarkCard.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
+  import { createBookmarkStore } from '@/stores/bookmark-store';
   import { Plus } from 'lucide-svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
   const bookmarks = createBookmarkStore('bookmarks');
 
   let newName = '';
@@ -32,7 +31,6 @@
   function handleOnButtonGroupChange(item: any) {
     folderType = item.value;
   }
-
 </script>
 
 <div style="display:flex; flex-direction:column; gap:8px">

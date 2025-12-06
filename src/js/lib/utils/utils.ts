@@ -1,4 +1,4 @@
-import { child_process, os, path } from '../cep/node';
+import { child_process, os, path } from '@/lib/cep/node';
 const { exec } = child_process;
 
 export const openUrl = (url: string) => {

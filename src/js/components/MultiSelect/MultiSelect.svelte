@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ChevronDown } from 'lucide-svelte';
-  import { clickOutside } from '../../lib/utils/index';
+  import { clickOutside } from '@/lib/utils/index';
   interface MultiSelectOption {
     value: string;
     label: string;

@@ -1,4 +1,4 @@
-import { path, child_process, os } from '../../lib/cep/node';
+import { path, child_process, os } from '@/lib/cep/node';
 interface VideoInfosCheck {
   width: number;
   height: number;

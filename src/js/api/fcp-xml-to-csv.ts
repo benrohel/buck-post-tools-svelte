@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { fs, path, os } from '../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
 const { parseStringPromise } = require('xml2js');
 interface ClipData {
   event: number;

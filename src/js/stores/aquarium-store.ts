@@ -5,8 +5,8 @@ import {
   GetClips,
   Authenticated,
   Project,
-} from '../api/buck5/buck5-api';
-import { storedProject } from './local-storage';
+} from '@/api/buck5/buck5-api';
+import { storedProject } from '@/stores/local-storage';
 export const projects = writable<any[]>([]);
 
 export const currentProject = asyncReadable<any>(null, async () => {

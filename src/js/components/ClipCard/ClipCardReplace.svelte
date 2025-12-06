@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { fs, path } from "../../lib/cep/node";
+  import { fs, path } from '@/lib/cep/node';
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
-  import { evalES } from "../../lib/utils/bolt";
+  import { evalES } from '@/lib/utils/bolt';
 
   export let clip: any;
   export let id = 0;

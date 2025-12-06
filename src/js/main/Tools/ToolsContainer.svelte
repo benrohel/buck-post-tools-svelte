@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { appStore, appVersion } from '../../stores/app-store';
+  import { appStore, appVersion } from '@/stores/app-store';
   import {
     getLocalScripts,
     getBuckScripts,
@@ -8,9 +8,9 @@
     type Script,
     getProjectCommonFiles,
     type CommonSharedFile,
-  } from '../../api/scripts/tools-scripts';
-  import ToolCard from '../../components/ClipCard/ToolCard.svelte';
-  import AssetCard from '../../components/ClipCard/AssetCard.svelte';
+  } from '@/api/scripts/tools-scripts';
+  import ToolCard from '@/components/ClipCard/ToolCard.svelte';
+  import AssetCard from '@/components/ClipCard/AssetCard.svelte';
 
   interface ToolData {
     name: string;
@@ -27,7 +27,7 @@
     [key: string]: ToolData;
   }
   import toolList from './tools.json';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
 
   const appId = $appStore.appId;
 

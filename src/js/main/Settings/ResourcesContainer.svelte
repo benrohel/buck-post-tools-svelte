@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { openLinkInBrowser } from '../../lib/utils/bolt';
+  import { openLinkInBrowser } from '@/lib/utils/bolt';
   import { onMount } from 'svelte';
 
   let scriptResources = [

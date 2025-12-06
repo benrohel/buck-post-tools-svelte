@@ -1,6 +1,6 @@
 import type { ServerStatus } from 'buck-client';
 import { client, getStatus } from 'buck-client';
-import { notifications } from '../stores/notifications-store';
+import { notifications } from '@/stores/notifications-store';
 
 const maxConnectionAttempts = 20;
 let connectionAttempt = 0;

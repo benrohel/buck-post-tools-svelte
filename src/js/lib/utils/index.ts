@@ -1,5 +1,5 @@
-import { evalES } from '../../lib/utils/bolt';
-import { fs, path, os, child_process } from '../cep/node';
+import { evalES } from '@/lib/utils/bolt';
+import { fs, path, os, child_process } from '@/lib/cep/node';
 import upath from 'upath';
 import { platform } from 'os';
 const { exec } = child_process;

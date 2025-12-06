@@ -1,26 +1,26 @@
 <script lang="ts">
-  import { fs, os, path } from '../../lib/cep/node';
+  import { fs, os, path } from '@/lib/cep/node';
   import {
     ExternalLink,
     FolderOpen,
     CircleX,
     ClipboardCopy,
   } from 'lucide-svelte';
-  import { Bookmark } from '../../stores/bookmark-store';
-  import { evalES, evalFile } from '../../lib/utils/bolt';
-  import { notifications } from '../../stores/notifications-store';
-  import { openFile } from '../../lib/utils/utils';
-  import csInterface from '../../lib/cep/csinterface';
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import { copyToClipboard } from '../../lib/utils/utils';
+  import { Bookmark } from '@/stores/bookmark-store';
+  import { evalES, evalFile } from '@/lib/utils/bolt';
+  import { notifications } from '@/stores/notifications-store';
+  import { openFile } from '@/lib/utils/utils';
+  import csInterface from '@/lib/cep/csinterface';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import { copyToClipboard } from '@/lib/utils/utils';
   import FileBrowser from '../FileBrowser/FileBrowser.svelte';
   import { platform } from 'os';
   import {
     getRootFolder,
     loadFolderChildren,
     updateNodeChildren,
-  } from '../../api/files/file-explorer';
-  import { type PathItem } from '../../api/exporter';
+  } from '@/api/files/file-explorer';
+  import { type PathItem } from '@/api/exporter';
 
   export let bookmark: Bookmark;
   export let onRemove: () => void;

@@ -1,8 +1,8 @@
-import { GetActiveSequence, GetSequencedClips } from "../api/edit";
+import { GetActiveSequence, GetSequencedClips } from "@/api/edit";
 import {
   GetSystemFileVersionsWithShotName,
   GetFileVersion,
-} from "../api/files/files";
+} from "@/api/files/files";
 
 export const getClips = async () => {
   let sequenceClips = [];

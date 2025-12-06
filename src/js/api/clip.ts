@@ -1,11 +1,11 @@
-import { evalES } from '../lib/utils/bolt';
-import { fs, path } from '../lib/cep/node';
+import { evalES } from '@/lib/utils/bolt';
+import { fs, path } from '@/lib/cep/node';
 import upath from 'upath';
 import Timecode, { TIMECODE } from 'smpte-timecode';
 import { createTimecode, getFramerate, getTimecodeInTicks } from './timecode';
-import { appId } from '../lib/utils/cep';
-import { GetActiveSequence, GetSequencedClips } from '../api/edit';
-import { GetSystemFileVersionsWithShotName } from '../api/files/files';
+import { appId } from '@/lib/utils/cep';
+import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
+import { GetSystemFileVersionsWithShotName } from '@/api/files/files';
 //@ts-ignore
 import { xmlToJson } from './xml2json';
 

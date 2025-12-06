@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
-  import { openUrl } from '../../lib/utils/utils';
-  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
-  import { Shots } from '../../api/buck5/buck5-api';
-  import { sessionProject, storedProject } from '../../stores/local-storage';
-  import { path } from '../../lib/cep/node';
+  import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
+  import { openUrl } from '@/lib/utils/utils';
+  import ClipCard from '@/components/ClipCard/ClipCard.svelte';
+  import { Shots } from '@/api/buck5/buck5-api';
+  import { sessionProject, storedProject } from '@/stores/local-storage';
+  import { path } from '@/lib/cep/node';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
-  } from '../../api/files/files';
+  } from '@/api/files/files';
   import { asyncDerived, asyncReadable } from '@square/svelte-store';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import {
     Download,
     Check,
@@ -19,7 +19,7 @@
     ExternalLink,
   } from 'lucide-svelte';
   import { onMount, getContext } from 'svelte';
-  import { GetFilesLibrary } from '../../api/files/files';
+  import { GetFilesLibrary } from '@/api/files/files';
   import FileTable from './FileTable.svelte';
   import TreeNode from './TreeNode.svelte';
 

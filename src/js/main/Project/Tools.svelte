@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalFile, evalES } from '../../lib/utils/bolt';
-  import { fs } from '../../lib/cep/node';
+  import { evalFile, evalES } from '@/lib/utils/bolt';
+  import { fs } from '@/lib/cep/node';
   import { v4 as uuidv4 } from 'uuid';
   import path from 'path';
 

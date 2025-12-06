@@ -5,19 +5,19 @@
     RefreshCw,
     ListRestart,
   } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetRenamedFiles } from '../../api/files/files';
-  import ClipCardReplace from '../../components/ClipCard/ClipCardReplace.svelte';
-  import { fs } from '../../lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import { GetRenamedFiles } from '@/api/files/files';
+  import ClipCardReplace from '@/components/ClipCard/ClipCardReplace.svelte';
+  import { fs } from '@/lib/cep/node';
   import { onMount, getContext } from 'svelte';
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { getClips } from '../../api/clip';
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import { getClips } from '@/api/clip';
   import { SyncLoader } from 'svelte-loading-spinners';
-  import { notifications } from '../../stores/notifications-store';
+  import { notifications } from '@/stores/notifications-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { lastFolderSearch } from '../../stores/local-storage';
-  import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
-  import { appStore } from '../../stores/app-store';
+  import { lastFolderSearch } from '@/stores/local-storage';
+  import ProgressBar from '@/components/ProgressBar/ProgressBar.svelte';
+  import { appStore } from '@/stores/app-store';
 
   let find = '';
   let replace = '';

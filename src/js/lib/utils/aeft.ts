@@ -1,4 +1,4 @@
-import { fs, path } from "../cep/node";
+import { fs, path } from "@/lib/cep/node";
 import { csi } from "./bolt";
 
 const getLatestFile = (dir: string, suffix: string): string | null => {

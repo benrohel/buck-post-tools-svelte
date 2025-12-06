@@ -1,25 +1,24 @@
 <script lang="ts">
   import { RefreshCcw, Download, CircleX } from 'lucide-svelte';
-  import { type PathItem } from '../../api/exporter';
+  import { SyncLoader } from 'svelte-loading-spinners';
+  import { type PathItem } from '@/api/exporter';
   import {
     getShotFilesTree,
     collectFolderNamesByLevel,
     filterByDepth,
     type HierarchyFilters,
-  } from '../../api/files/buck5-file-browser';
-
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import { evalES } from '../../lib/utils/bolt';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  } from '@/api/files/buck5-file-browser';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import { evalES } from '@/lib/utils/bolt';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
-  import { openFile } from '../../lib/utils/utils';
-  import { buck5Server } from '../../stores/server-store';
-  import { SyncLoader } from 'svelte-loading-spinners';
-  import { appStore, type AppStore } from '../../stores/app-store';
-  import { localAppStore } from '../../stores/local-storage';
-  import { buck5ShotLibraryStore } from '../../stores/buck5-shot-library-store';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
-  import FileBrowser from '../../components/FileBrowser/FileBrowser.svelte';
+  import { openFile } from '@/lib/utils/utils';
+  import { buck5Server } from '@/stores/server-store';
+  import { appStore, type AppStore } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
+  import { buck5ShotLibraryStore } from '@/stores/buck5-shot-library-store';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+  import FileBrowser from '@/components/FileBrowser/FileBrowser.svelte';
 
   import path from 'path';
   let filteredItems: PathItem[] = [];
@@ -70,13 +69,13 @@
   $: filteredItemsAfterDepth = filterByDepth(
     pathStructure,
     depthFilters,
-    onlyShowLatestVersions,
+    onlyShowLatestVersions
   );
 
   // Additional filtering by extension
   $: filteredItems = filterByExtension(
     filteredItemsAfterDepth,
-    selectedExtensionName.value,
+    selectedExtensionName.value
   );
 
   // $: console.log('filteredItems', JSON.stringify(filteredItems));
@@ -98,7 +97,7 @@
     isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
     const existingMediaFilesData = JSON.parse(
-      await evalES(`collectAllFilePaths()`, false),
+      await evalES(`collectAllFilePaths()`, false)
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
     const res = await getShotFilesTree(rootFolder, isBuck5, prefix);
@@ -163,7 +162,7 @@
       // Find matching options in the current data
       if (settings.sequenceName && sequenceNames.length > 0) {
         const foundSequence = sequenceNames.find(
-          (item) => item.value === settings.sequenceName,
+          (item) => item.value === settings.sequenceName
         );
         if (foundSequence) {
           selectedSequenceName = foundSequence;
@@ -172,7 +171,7 @@
 
       if (settings.shotName && shotNames.length > 0) {
         const foundShot = shotNames.find(
-          (item) => item.value === settings.shotName,
+          (item) => item.value === settings.shotName
         );
         if (foundShot) {
           selectedShotName = foundShot;
@@ -181,7 +180,7 @@
 
       if (settings.taskName && taskNames.length > 0) {
         const foundTask = taskNames.find(
-          (item) => item.value === settings.taskName,
+          (item) => item.value === settings.taskName
         );
         if (foundTask) {
           selectedTaskName = foundTask;
@@ -190,7 +189,7 @@
 
       if (settings.extensionName && extensionNames.length > 0) {
         const foundExtension = extensionNames.find(
-          (item) => item.value === settings.extensionName,
+          (item) => item.value === settings.extensionName
         );
         if (foundExtension) {
           selectedExtensionName = foundExtension;
@@ -216,7 +215,7 @@
   // Function to filter files by extension
   function filterByExtension(
     items: PathItem[],
-    extensionFilter: string,
+    extensionFilter: string
   ): PathItem[] {
     if (!extensionFilter || extensionFilter === '') {
       return items; // No filter applied, return all items
@@ -227,7 +226,7 @@
         // For files, check if the extension matches
         const fileName = node.name.toLowerCase();
         const hasExtension = fileName.endsWith(
-          `.${extensionFilter.toLowerCase()}`,
+          `.${extensionFilter.toLowerCase()}`
         );
         return hasExtension ? node : null;
       } else if (node.type === 'folder') {
@@ -276,13 +275,13 @@
 
   // Handler for file browser events
   function handleOpenFile(
-    event: CustomEvent<{ fileId: string; filePath: string }>,
+    event: CustomEvent<{ fileId: string; filePath: string }>
   ) {
     openFile(event.detail.filePath);
   }
 
   function handleImportFile(
-    event: CustomEvent<{ fileId: string; filePath: string }>,
+    event: CustomEvent<{ fileId: string; filePath: string }>
   ) {
     const importOptions = {
       filepath: event.detail.filePath,
@@ -295,7 +294,7 @@
   }
 
   function handleImportFiles(
-    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
+    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>
   ) {
     for (let i = 0; i < event.detail.filePaths.length; i++) {
       const importOptions = {
@@ -305,13 +304,13 @@
       evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
         (res) => {
           res ? true : false;
-        },
+        }
       );
     }
   }
 
   function handleSelectionChange(
-    event: CustomEvent<{ selectedIds: Set<string> }>,
+    event: CustomEvent<{ selectedIds: Set<string> }>
   ) {
     selectedItemIds = event.detail.selectedIds;
   }
@@ -328,7 +327,7 @@
         evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
           (res) => {
             res ? true : false;
-          },
+          }
         );
       }
     }
@@ -348,7 +347,7 @@
           evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
             (res) => {
               res ? true : false;
-            },
+            }
           );
         }
       }

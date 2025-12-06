@@ -1,14 +1,14 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { getPresetFile } from '../../api/SQPreset';
+  import { evalES } from '@/lib/utils/bolt';
+  import { getPresetFile } from '@/api/SQPreset';
   import { v4 as uuidv4 } from 'uuid';
-  import { fs, path } from '../../lib/cep/node';
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+  import { fs, path } from '@/lib/cep/node';
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import Select from 'svelte-select';
-  import { getProjectTemplate } from '../../api/buck-library';
-  import { buck5Server } from '../../stores/server-store';
-  import { appId } from '../../lib/utils/cep';
+  import { getProjectTemplate } from '@/api/buck-library';
+  import { buck5Server } from '@/stores/server-store';
+  import { appId } from '@/lib/utils/cep';
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },

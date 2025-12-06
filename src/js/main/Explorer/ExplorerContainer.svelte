@@ -1,12 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-
   import ShotExplorer from './ShotExplorer.svelte';
   import Bookmarks from './Bookmarks.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import { appStore } from '../../stores/app-store';
-
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { appId } from '@/lib/utils/cep';
+  import { appStore } from '@/stores/app-store';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
 
   const toolList = [
     {

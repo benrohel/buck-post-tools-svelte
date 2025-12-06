@@ -1,13 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import upath from 'upath';
-  import { getPresetFile } from '../../api/SQPreset';
-  import type { Sequence } from '../../api/sequence';
+  import { getPresetFile } from '@/api/SQPreset';
+  import type { Sequence } from '@/api/sequence';
   import { ArrowRight } from 'lucide-svelte';
   import { v4 as uuidv4 } from 'uuid';
-  import MultiSelect from '../../components/MultiSelect/MultiSelect.svelte';
-  import { fs } from '../../lib/cep/node';
+  import MultiSelect from '@/components/MultiSelect/MultiSelect.svelte';
+  import { fs } from '@/lib/cep/node';
   interface Resolution {
     value: string;
     label: string;

@@ -9,9 +9,9 @@
     Layers,
     ExternalLink,
   } from 'lucide-svelte';
-  import { type PathItem } from '../../api/exporter';
+  import { type PathItem } from '@/api/exporter';
   import { createEventDispatcher } from 'svelte';
-  import { path } from '../../lib/cep/node';
+  import { path } from '@/lib/cep/node';
   export let rootFolder: string = '';
   export let items: PathItem[] = [];
   export let existingFiles: string[] = [];

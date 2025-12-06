@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { os, path } from '../../lib/cep/node';
+  import { os, path } from '@/lib/cep/node';
   import { onMount } from 'svelte';
   import {
     Folder,
@@ -11,34 +11,31 @@
     Save,
     Pencil,
   } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { generateId } from '../../lib/utils/utils';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { lastFolderExport } from '../../stores/local-storage';
-  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
+  import { evalES } from '@/lib/utils/bolt';
+  import { generateId } from '@/lib/utils/utils';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import { lastFolderExport } from '@/stores/local-storage';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import {
-    getExporterPresets,
-    setExporterPresets,
-  } from '../../api/preferences';
-  import { appStore } from '../../stores/app-store';
+  import { getExporterPresets, setExporterPresets } from '@/api/preferences';
+  import { appStore } from '@/stores/app-store';
   import {
     storedExportSettings,
     storedExportRootFolder,
-  } from '../../stores/local-storage';
+  } from '@/stores/local-storage';
   import {
     type Exporter,
     type PathItem,
     type CompRenderData,
     addToRenderQueue,
     buildRenderPath,
-  } from '../../api/exporter';
+  } from '@/api/exporter';
 
-  import { appId } from '../../lib/utils/cep';
-  import { notifications } from '../../stores/notifications-store';
-  import ModalConfirm from '../../components/Modal/ModalConfirm.svelte';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import { appId } from '@/lib/utils/cep';
+  import { notifications } from '@/stores/notifications-store';
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
 
   //
   let isEditing = false;
@@ -407,12 +404,12 @@
   // Function to save edits
   function saveItem(itemId: string, event: Event) {
     const newName = (event.target as HTMLInputElement).value.trim();
-    
+
     // Don't save if name is empty
     if (!newName) {
       return;
     }
-    
+
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       name: newName,
@@ -1069,16 +1066,18 @@
                           // Only save on blur if we're not clicking on a suggestion
                           const relatedTarget = e.relatedTarget;
                           const inputValue = e.target.value.trim();
-                          
+
                           // Prevent blur if input is empty - keep editing
                           if (!inputValue) {
                             e.target.focus();
                             return;
                           }
-                          
+
                           if (
                             !relatedTarget ||
-                            !relatedTarget?.classList?.contains('suggestion-btn')
+                            !relatedTarget?.classList?.contains(
+                              'suggestion-btn'
+                            )
                           ) {
                             saveItem(node.id, e);
                           }

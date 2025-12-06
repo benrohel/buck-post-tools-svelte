@@ -6,10 +6,10 @@
   import RevertToFilename from './RevertToFilename.svelte';
   import ReplaceAndRelink from './ReplaceAndRelink.svelte';
   import VersionUp from './VersionUp.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import QuickRenameTools from './QuickRenameTools.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
+  import { appId } from '@/lib/utils/cep';
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
 
   import { type RenameContext, renameContextKey } from './RenameContext';
 

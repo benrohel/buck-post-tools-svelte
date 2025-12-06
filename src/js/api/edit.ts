@@ -1,5 +1,5 @@
-import { Shots } from '../api/buck5/buck5-api';
-import { evalES } from '../lib/utils/bolt';
+import { Shots } from '@/api/buck5/buck5-api';
+import { evalES } from '@/lib/utils/bolt';
 
 export const GetProjectShots = async (key: string) => {
   const items = await Shots(key);

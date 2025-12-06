@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { GetActiveSequence, GetSequencedClips } from '../../api/edit';
-  import { checkVideoFileUpdate } from '../../api/video/video';
-  import { openUrl } from '../../lib/utils/utils';
-  import ClipCard from '../../components/ClipCard/ClipCard.svelte';
-  import { Shots } from '../../api/buck5/buck5-api';
-  import { sessionProject, storedProject } from '../../stores/local-storage';
-  import { showWarnings } from '../../stores/settings-store';
-  import { getClips } from '../../api/clip';
+  import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
+  import { checkVideoFileUpdate } from '@/api/video/video';
+  import { openUrl } from '@/lib/utils/utils';
+  import ClipCard from '@/components/ClipCard/ClipCard.svelte';
+  import { Shots } from '@/api/buck5/buck5-api';
+  import { sessionProject, storedProject } from '@/stores/local-storage';
+  import { showWarnings } from '@/stores/settings-store';
+  import { getClips } from '@/api/clip';
   import {
     GetSystemFileVersionsWithShotName,
     GetFileVersion,
-  } from '../../api/files/files';
-  import { evalES } from '../../lib/utils/bolt';
+  } from '@/api/files/files';
+  import { evalES } from '@/lib/utils/bolt';
   import {
     Download,
     RefreshCw,
@@ -21,15 +21,15 @@
   } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
-  import { notifications } from '../../stores/notifications-store';
+  import { notifications } from '@/stores/notifications-store';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
-  import { type AppStore, appStore } from '../../stores/app-store';
+  import ProgressBar from '@/components/ProgressBar/ProgressBar.svelte';
+  import { type AppStore, appStore } from '@/stores/app-store';
   import type { Writable } from 'svelte/store';
   import { id } from 'date-fns/locale';
-  import AquariumProjectMenu from '../../components/MultiSelect/AquariumProjectMenu.svelte';
-  import { shots } from '../../stores/aquarium-store';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
+  import { shots } from '@/stores/aquarium-store';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
 
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;

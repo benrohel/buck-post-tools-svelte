@@ -1,5 +1,5 @@
 
-import { fs, os, path } from '../../lib/cep/node';
+import { fs, os, path } from '@/lib/cep/node';
 const { fdir } = require('fdir');
 
 export function* readAllFiles(dir: string): Generator<string> {

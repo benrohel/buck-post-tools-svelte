@@ -3,7 +3,7 @@
   import {
     exportPresets,
     selectedExportPreset,
-  } from "../../stores/local-storage";
+  } from '@/stores/local-storage";
 
   const tokenList = [
     {

@@ -1,5 +1,5 @@
-import { fs, path } from '../../lib/cep/node';
-import { evalES } from '../../lib/utils/bolt';
+import { fs, path } from '@/lib/cep/node';
+import { evalES } from '@/lib/utils/bolt';
 export interface CompRenderData {
   compName: string;
   nodeId: number;

@@ -1,6 +1,6 @@
-import { fs, path, os } from '../../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
-import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER, PROJECT_COMMON_AE_FOLDER } from '../files/files';
+import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER, PROJECT_COMMON_AE_FOLDER } from '@/api/files/files';
 import { platform } from 'os';
 
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx

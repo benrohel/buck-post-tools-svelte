@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ArrowLeftRight } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
   import { getContext } from 'svelte';
 

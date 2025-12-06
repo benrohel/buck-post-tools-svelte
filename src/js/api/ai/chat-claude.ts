@@ -1,4 +1,4 @@
-import { CLAUDE_TOKEN } from '../../../../secrets';
+import { CLAUDE_TOKEN } from '@/../../secrets';
 import afterEffectsAgentSystemRole from './after-effects-agent-system-role';
 import afterEffectsExpressionsSystemRole from './after-effects-expressions-system-role';
 // Define the proxy URL - use proxy server for local development

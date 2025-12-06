@@ -1,5 +1,5 @@
 import upath from 'upath';
-import { evalES } from '../lib/utils/bolt';
+import { evalES } from '@/lib/utils/bolt';
 import { ClipType, setItemTimecodes } from './clip';
 import Papa from 'papaparse';
 

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { csi, evalES, subscribeBackgroundColor } from '../lib/utils/bolt';
-  import '../index.scss';
-  import Tabs from '../components/Tabs/Tabs.svelte';
+  import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
+  import '@/index.scss';
+  import Tabs from '@/components/Tabs/Tabs.svelte';
   import { getAuthAuthenticated, client } from 'buck-client';
   import {
     ArrowDownUp,
@@ -25,22 +25,22 @@
   import ToolsContainer from './Tools/ToolsContainer.svelte';
   import ExplorerContainer from './Explorer/ExplorerContainer.svelte';
   import Footer from './Footer.svelte';
-  import Toast from '../components/Toast/Toast.svelte';
+  import Toast from '@/components/Toast/Toast.svelte';
   import {
     appStore,
     defaultAppStore,
     appVersion,
     extensionVersion,
-  } from '../stores/app-store';
-  import { localAppStore } from '../stores/local-storage';
+  } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
   import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
-  import { appId } from '../lib/utils/cep';
+  import { appId } from '@/lib/utils/cep';
   import {
     checkForUpdate,
     installFromLocalFilepath,
-  } from '../api/buck-library';
-  import ModalConfirm from '../components/Modal/ModalConfirm.svelte';
-  import { notifications } from '../stores/notifications-store';
+  } from '@/api/buck-library';
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
+  import { notifications } from '@/stores/notifications-store';
 
   let backgroundColor: string = '#232323';
   let modalConfirmOpen = false;

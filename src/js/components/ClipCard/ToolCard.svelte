@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { SquareCode, Eye, ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { evalFile } from '../../lib/utils/bolt';
-  import { fs, os } from '../../lib/cep/node';
+  import { evalFile } from '@/lib/utils/bolt';
+  import { fs, os } from '@/lib/cep/node';
   import path from 'path';
-  import { SHARED_FOLDER } from '../../api/files/files';
+  import { SHARED_FOLDER } from '@/api/files/files';
   interface ToolData {
     name: string;
     filename: string;

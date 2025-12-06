@@ -1,19 +1,19 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import {
     Projects,
     GetFootageLibrary,
     PostFootageAsset,
     ListAssetsFromLibrary,
-  } from '../../api/buck5/buck5-api';
-  import { onMount } from 'svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { XmemlParser } from '../../api/fcp-xml-to-csv';
-  import { fs, path } from '../../lib/cep/node';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetActiveSequence } from '../../api/edit';
-  import { preferencesDir } from '../../api/preferences';
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import AquariumProjectMenu from '../../components/MultiSelect/AquariumProjectMenu.svelte';
+  } from '@/api/buck5/buck5-api';
+  import { XmemlParser } from '@/api/fcp-xml-to-csv';
+  import { GetActiveSequence } from '@/api/edit';
+  import { preferencesDir } from '@/api/preferences';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
+  import { fs, path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
 
   let projects: any[] = [];
   $: projectItems = projects.map((p: any) => ({
@@ -37,7 +37,7 @@
     return new Promise((resolve, reject) => {
       const result = evalES(
         `exportSequenceXml("${filepath}","${sequence.id}")`,
-        false,
+        false
       );
       if (result) {
         resolve(result);

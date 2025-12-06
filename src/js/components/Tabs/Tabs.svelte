@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { type AppStore, appStore } from '../../stores/app-store';
+  import { type AppStore, appStore } from '@/stores/app-store';
 
   interface TabItem {
     value: number;

@@ -2,8 +2,8 @@
   import { getContext } from 'svelte';
   import Versioner from './Versioner.svelte';
   import ShotLibrary from './ShotLibrary.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { appId } from '../../lib/utils/cep';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import { appId } from '@/lib/utils/cep';
   const ingestModes = [
     {
       value: 'versions',

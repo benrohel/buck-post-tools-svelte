@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import Freezeframe from 'freezeframe';
-  import buckLogo from '../../../assets/BUCK_ICON_WHITE.svg';
+  import buckLogo from '@/../assets/BUCK_ICON_WHITE.svg';
   import { fly } from 'svelte/transition';
   import markdownToTxt from 'markdown-to-txt';
   import { Star } from 'lucide-svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { ArrowUp10, Undo2 } from 'lucide-svelte';
 

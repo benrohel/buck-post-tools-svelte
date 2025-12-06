@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { GetThumbnail } from '../../api/clip';
+  import { GetThumbnail } from '@/api/clip';
   import {
     GetMarkersThumbnails,
     GetSequence,
     GetSequencedClips,
-  } from '../../api/sequence';
+  } from '@/api/sequence';
 
-  import { notifications } from '../../stores/notifications-store';
-  import { openFile } from '../../lib/utils/utils';
-  import MarkerRow from '../../components/Markers/MarkersSelect.svelte';
-  import type MarkerColor from '../../components/Markers/MarkersSelect.svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { appStore } from '../../stores/app-store';
-  import { stillOutputFolder } from '../../stores/local-storage';
+  import { notifications } from '@/stores/notifications-store';
+  import { openFile } from '@/lib/utils/utils';
+  import MarkerRow from '@/components/Markers/MarkersSelect.svelte';
+  import type MarkerColor from '@/components/Markers/MarkersSelect.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import { appStore } from '@/stores/app-store';
+  import { stillOutputFolder } from '@/stores/local-storage';
   const stillExportModes = [
     {
       label: 'shots',
@@ -67,7 +67,7 @@
       await GetMarkersThumbnails(
         seq.nodeId,
         outputFolder,
-        markerColors.filter((m) => m.selected).map((m) => m.colorIndex),
+        markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
       ).then(() => {
         console.log('done');
       });

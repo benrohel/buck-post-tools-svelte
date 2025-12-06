@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import Button from '../../components/Button/Button.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import { AddGaps } from '../../api/sequence';
+  import { evalES } from '@/lib/utils/bolt';
+  import Button from '@/components/Button/Button.svelte';
+  import { appId } from '@/lib/utils/cep';
+  import { AddGaps } from '@/api/sequence';
   import { getContext } from 'svelte';
   import { RenameContext } from './RenameContext';
   let prefix = 'SH';

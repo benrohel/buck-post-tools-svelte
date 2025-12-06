@@ -1,6 +1,6 @@
 import { writable, Writable } from 'svelte/store';
-import { appId } from '../lib/utils/cep';
-import { version } from "../../../package.json"
+import { appId } from '@/lib/utils/cep';
+import { version } from '../../../package.json';
 
 export const appVersion = writable('');
 export const extensionVersion = writable(version);
@@ -16,7 +16,6 @@ interface LatestBuck5LibrarySettings {
   taskName: string;
   extensionName: string;
 }
-
 
 export interface AppStore {
   showTooltips: boolean;

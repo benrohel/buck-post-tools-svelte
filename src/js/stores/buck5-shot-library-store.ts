@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { type PathItem } from '../api/exporter';
+import { type PathItem } from '@/api/exporter';
 
 interface MenuOption {
   value: string;

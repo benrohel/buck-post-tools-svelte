@@ -1,5 +1,5 @@
 import markdownToTxt from 'markdown-to-txt';
-import { CODA_TOKEN } from '../../../../secrets';
+import { CODA_TOKEN } from '@/../../secrets';
 interface Header {
   [key: string]: string;
 }

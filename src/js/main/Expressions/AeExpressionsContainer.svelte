@@ -1,13 +1,13 @@
 <script lang="ts">
-  // import { SaveUserProfile, GetUserProfile } from '../../api/preferences';
+  // import { SaveUserProfile, GetUserProfile } from '@/api/preferences';
   import ExpressionCard from './ExpressionCard.svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import { onMount } from 'svelte';
-  import { GetExpressions } from '../../api/coda/coda-web';
+  import { GetExpressions } from '@/api/coda/coda-web';
   import ModalCode from './ModalCode.svelte';
   import { flip } from 'svelte/animate';
-  import { appStore } from '../../stores/app-store';
-  import { localAppStore } from '../../stores/local-storage';
+  import { appStore } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
   import { Star, Download, FileCode } from 'lucide-svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { Tooltip } from '@svelte-plugins/tooltips';

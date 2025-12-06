@@ -1,4 +1,4 @@
-import { fs, path, os } from '../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
 import pkg from '../../../package.json';
 import { Exporter } from './exporter';
 import { defaultExportPresets } from './exporter/exporters-default';

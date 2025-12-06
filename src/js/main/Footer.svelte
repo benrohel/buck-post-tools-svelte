@@ -1,12 +1,12 @@
 <script lang="ts">
   import { Server, RefreshCw, Settings, LibraryBig } from 'lucide-svelte';
-  import { buck5Server } from '../stores/server-store';
+  import { buck5Server } from '@/stores/server-store';
   import pkg from '../../../package.json';
-  import buckLogo from '../../assets/BUCK_ICON_WHITE.svg';
+  import buckLogo from '../../../src/assets/BUCK_ICON_WHITE.svg';
   import SettingsContainer from './Settings/SettingsContainer.svelte';
-  import ModalSettings from '../components/Modal/ModalSettings.svelte';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { appStore } from '../stores/app-store';
+  import { appStore } from '@/stores/app-store';
   import ResourcesContainer from './Settings/ResourcesContainer.svelte';
   export let authenticated: boolean = false;
   $: showSettings = false;

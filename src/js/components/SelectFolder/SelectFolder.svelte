@@ -1,6 +1,6 @@
 <script lang="ts">
   import { FolderSearch } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
 
   export let onChange: Function;
   export let defaultFolder = '';

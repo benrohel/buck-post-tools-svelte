@@ -1,5 +1,5 @@
-import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../exporter';
+import { path, fs } from '@/lib/cep/node';
+import { type PathItem } from '@/api/exporter';
 
 /**
  * Common VFX image sequence extensions

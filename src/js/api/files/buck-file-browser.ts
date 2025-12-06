@@ -1,6 +1,6 @@
 const { fdir } = require('fdir');
-import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../exporter';
+import { path, fs } from '@/lib/cep/node';
+import { type PathItem } from '@/api/exporter';
 interface HSFile {
   path: string;
   modified: Date;

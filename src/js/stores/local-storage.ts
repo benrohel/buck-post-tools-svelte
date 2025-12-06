@@ -1,6 +1,6 @@
 import { writable, Writable } from 'svelte/store';
-import type * as BUCK5 from '../api/buck5/index.d';
-import { defaultAppStore, type AppStore } from '../stores/app-store';
+import type * as BUCK5 from '@/api/buck5/index.d';
+import { defaultAppStore, type AppStore } from '@/stores/app-store';
 const safeload = (key: string) => {
   try {
     if (localStorage.getItem(key) === null) {

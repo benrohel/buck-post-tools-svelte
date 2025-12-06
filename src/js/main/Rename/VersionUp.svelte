@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import { getContext } from 'svelte';
   import { RenameContext } from './RenameContext';
 

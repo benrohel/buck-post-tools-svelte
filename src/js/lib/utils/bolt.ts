@@ -1,7 +1,7 @@
-import CSInterface from "../cep/csinterface";
-import Vulcan, { VulcanMessage } from "../cep/vulcan";
-import { ns } from "../../../shared/shared";
-import { fs } from "../cep/node";
+import CSInterface from "@/lib/cep/csinterface";
+import Vulcan, { VulcanMessage } from "@/lib/cep/vulcan";
+import { ns } from '@/../shared/shared';
+import { fs } from "@/lib/cep/node";
 
 export const csi = new CSInterface();
 export const vulcan = new Vulcan();

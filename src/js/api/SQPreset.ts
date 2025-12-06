@@ -1,4 +1,4 @@
-import { fs, os } from '../lib/cep/node';
+import { fs, os } from '@/lib/cep/node';
 import upath from 'upath';
 import { gePremiereFramerate, gePremiereVideoFramerate } from './timecode';
 import pkg from '../../../package.json';

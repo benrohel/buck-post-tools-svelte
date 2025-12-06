@@ -6,8 +6,8 @@
   import {
     callAnthropicAPI,
     extractCodeFromMarkdown,
-  } from '../../api/ai/chat-claude';
-  import ChatInput from '../../components/ChatInput/ChatInput.svelte';
+  } from '@/api/ai/chat-claude';
+  import ChatInput from '@/components/ChatInput/ChatInput.svelte';
   hljs.registerLanguage('javascript', javascript);
 
   // `highlight` takes the input code and returns the highlighted HTML markup
@@ -18,18 +18,18 @@
 </script>
 
 <script lang="ts">
-  import { fs, path } from '../../lib/cep/node';
+  import { fs, path } from '@/lib/cep/node';
   import { Circle3 } from 'svelte-loading-spinners';
   import 'svelte-highlight/styles/atom-one-dark.css';
-  import { appStore } from '../../stores/app-store';
+  import { appStore } from '@/stores/app-store';
   import horizonDark from 'svelte-highlight/styles/horizon-dark';
-  import { evalES, evalFile, evalTS } from '../../lib/utils/bolt';
+  import { evalES, evalFile, evalTS } from '@/lib/utils/bolt';
   import { ArrowUpFromLine, Braces, Code, CircleX } from 'lucide-svelte';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
   import { CodeJar } from '@novacbn/svelte-codejar';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { localAppStore } from '../../stores/local-storage';
-  import { notifications } from '../../stores/notifications-store';
+  import { localAppStore } from '@/stores/local-storage';
+  import { notifications } from '@/stores/notifications-store';
   export let onClose: Function = () => {};
   export let onApplyCode: Function = () => {};
   export let expression: ExpressionSnippet;

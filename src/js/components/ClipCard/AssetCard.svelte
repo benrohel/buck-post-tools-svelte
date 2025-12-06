@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { SquareCode, ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { evalES, evalFile } from '../../lib/utils/bolt';
-  import { fs, os } from '../../lib/cep/node';
-  import { CommonSharedFile } from '../../api/scripts/tools-scripts';
-  import AeLogo from '../../../assets/ae-logo.svg';
-  import { notifications } from '../../stores/notifications-store';
+  import { evalES, evalFile } from '@/lib/utils/bolt';
+  import { fs, os } from '@/lib/cep/node';
+  import { CommonSharedFile } from '@/api/scripts/tools-scripts';
+  import AeLogo from '@/../assets/ae-logo.svg';
+  import { notifications } from '@/stores/notifications-store';
   export let aepFile: CommonSharedFile;
 
   let isMenuOpen = false;

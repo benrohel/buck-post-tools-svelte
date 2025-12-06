@@ -1,15 +1,15 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { openFile } from '../../lib/utils/utils';
+  import { openFile } from '@/lib/utils/utils';
   import { fly } from 'svelte/transition';
   import { Download, ArrowUpDown, Eye } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetFileVersion } from '../../api/files/files';
-  import { checkVideoFileUpdate } from '../../api/video/video';
-  import { appStore } from '../../stores/app-store';
-  import { fs, path } from '../../lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import { GetFileVersion } from '@/api/files/files';
+  import { checkVideoFileUpdate } from '@/api/video/video';
+  import { appStore } from '@/stores/app-store';
+  import { fs, path } from '@/lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { appId } from '../../lib/utils/cep';
+  import { appId } from '@/lib/utils/cep';
   export let clip: any;
   export let id = 0;
   export let selected = false;

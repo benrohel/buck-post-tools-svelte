@@ -1,21 +1,18 @@
 <script lang="ts">
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { sequenceOutputFolder } from '../../stores/local-storage';
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import { evalES } from '@/lib/utils/bolt';
+  import { sequenceOutputFolder } from '@/stores/local-storage';
   import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
-  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
   import { onMount } from 'svelte';
-  import { fs, path } from '../../lib/cep/node';
-  import {
-    setPreferenceByKey,
-    getPreferenceByKey,
-  } from '../../api/preferences';
-  import type { ExportNamePreset } from '../../api/preferences';
+  import { fs, path } from '@/lib/cep/node';
+  import { setPreferenceByKey, getPreferenceByKey } from '@/api/preferences';
+  import type { ExportNamePreset } from '@/api/preferences';
   //@ts-ignore
   import { Tooltip } from '@svelte-plugins/tooltips';
 
   import Select from 'svelte-select';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
 
   const tokenList = [
     {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onMount } from 'svelte';
   import { ArrowLeftRight } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
+  import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
 
   let find = '';

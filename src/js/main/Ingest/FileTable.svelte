@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
-  import { path } from '../../lib/cep/node';
+  import { path } from '@/lib/cep/node';
   interface FileEntry {
     name: string;
     filepath: string;

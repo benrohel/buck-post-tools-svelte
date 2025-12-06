@@ -3,22 +3,22 @@
     localAppStore,
     lastFolderExport,
     storedExportRootFolder,
-  } from '../../stores/local-storage';
-  import { appStore } from '../../stores/app-store';
+  } from '@/stores/local-storage';
+  import { appStore } from '@/stores/app-store';
 
-  import { GetSelectedSequences } from '../../api/sequence';
+  import { GetSelectedSequences } from '@/api/sequence';
 
-  import { fs, path } from '../../lib/cep/node';
-  import { notifications } from '../../stores/notifications-store';
+  import { fs, path } from '@/lib/cep/node';
+  import { notifications } from '@/stores/notifications-store';
   import { onMount } from 'svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { GetThumbnail, type ClipType } from '../../api/clip';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import { GetThumbnail, type ClipType } from '@/api/clip';
   import {
     exportSequenceCSV,
     GetSequencedClips,
     type Sequence,
-  } from '../../api/sequence';
-  import { recursiveMkDir } from '../../lib/utils/index';
+  } from '@/api/sequence';
+  import { recursiveMkDir } from '@/lib/utils/index';
 
   $: uploadThumbnails = false;
   let suffix = '';

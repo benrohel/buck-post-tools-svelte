@@ -1,5 +1,5 @@
 import { rename } from 'fs';
-import { fs, path, os, child_process, zlib } from '../lib/cep/node';
+import { fs, path, os, child_process, zlib } from '@/lib/cep/node';
 import { DOMParser } from 'xmldom';
 import { preferencesDir } from './preferences';
 import { execSync } from 'child_process';
