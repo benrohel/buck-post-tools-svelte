@@ -1,8 +1,9 @@
 <script lang="ts">
+  import type { FolderSelectCallback } from '@/types/callbacks';
   import { FolderSearch } from 'lucide-svelte';
   import { evalES } from '@/lib/utils/bolt';
 
-  export let onChange: Function;
+  export let onChange: FolderSelectCallback;
   export let defaultFolder = '';
   export let label = 'Select Folder';
   export let message = 'Select Folder';

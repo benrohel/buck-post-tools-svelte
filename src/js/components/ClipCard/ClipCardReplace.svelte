@@ -1,13 +1,15 @@
 <script lang="ts">
+  import type { ClipMetadata } from '@/types/models';
+  import type { OnChange2 } from '@/types/callbacks';
   import { fs, path } from '@/lib/cep/node';
   import { onMount } from "svelte";
   import { fly } from "svelte/transition";
   import { evalES } from '@/lib/utils/bolt';
 
-  export let clip: any;
+  export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
-  export let onChange: Function;
+  export let onChange: OnChange2<ClipMetadata, string>;
   export let selectedVersion = "";
 
   const handleSelectVersion = async () => {

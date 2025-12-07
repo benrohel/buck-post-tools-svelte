@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { ExpressionSnippet } from '@/types/models';
+  import type { ExpressionSelectCallback, ExpressionUpdateCallback } from '@/types/callbacks';
   import { onDestroy, onMount } from 'svelte';
   import Freezeframe from 'freezeframe';
   import buckLogo from '@/../assets/BUCK_ICON_WHITE.svg';
@@ -9,8 +11,8 @@
   export let expression: ExpressionSnippet;
   export let id = 0;
   export let selected = false;
-  export let onSelect: Function;
-  export let onUpdate: Function;
+  export let onSelect: ExpressionSelectCallback;
+  export let onUpdate: ExpressionUpdateCallback;
 
   let open = false;
   const reg = new RegExp(/```/, 'g');

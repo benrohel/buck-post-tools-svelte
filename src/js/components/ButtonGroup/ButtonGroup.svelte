@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { SelectionChangeCallback } from '@/types/callbacks';
   import { onMount } from 'svelte';
   interface ButtonGroupItem {
     value: any;
@@ -6,7 +7,7 @@
   }
 
   export let items: ButtonGroupItem[] = [];
-  export let onSelectionChange: Function;
+  export let onSelectionChange: SelectionChangeCallback<ButtonGroupItem>;
   export let selected = 0;
 </script>
 

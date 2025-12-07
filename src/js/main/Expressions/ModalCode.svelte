@@ -26,12 +26,14 @@
   import { evalES, evalFile, evalTS } from '@/lib/utils/bolt';
   import { ArrowUpFromLine, Braces, Code, CircleX } from 'lucide-svelte';
   import Toggle from '@/components/Toggle/Toggle.svelte';
+  import type { ExpressionSnippet } from '@/types/models';
+  import type { OnClose, CodeChangeCallback } from '@/types/callbacks';
   import { CodeJar } from '@novacbn/svelte-codejar';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { localAppStore } from '@/stores/local-storage';
   import { notifications } from '@/stores/notifications-store';
-  export let onClose: Function = () => {};
-  export let onApplyCode: Function = () => {};
+  export let onClose: OnClose = () => {};
+  export let onApplyCode: CodeChangeCallback = () => {};
   export let expression: ExpressionSnippet;
   let isScript: boolean = false;
   let isLoading: boolean = false;

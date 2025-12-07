@@ -1,11 +1,12 @@
 <script lang="ts">
+  import type { FolderSelectCallback } from '@/types/callbacks';
   import { FolderSearch } from 'lucide-svelte';
   import { fs, path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
   export let defaultFolder = '';
   export let label = 'Select Folder';
   export let value = defaultFolder;
-  export let onChange: Function = () => {};
+  export let onChange: FolderSelectCallback = () => {};
 
   const handleSetOutputFolder = async () => {
     let res = await evalES(`selectFolder("${label}")`);

@@ -1,6 +1,7 @@
 <script lang="ts">
+  import type { OnClose } from '@/types/callbacks';
   import { XCircle } from 'lucide-svelte';
-  export let onClose: Function = () => {};
+  export let onClose: OnClose = () => {};
 
   const handleOnClose = () => {
     if (onClose) {

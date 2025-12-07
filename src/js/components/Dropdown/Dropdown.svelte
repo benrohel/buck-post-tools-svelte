@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { OptionSelectCallback } from '@/types/callbacks';
   import { fade } from 'svelte/transition';
   import { clickOutside } from './ClickOutside';
   import { onMount, setContext } from 'svelte';
@@ -9,7 +10,7 @@
   export let placeholder = 'Make Selection';
   export let defaultValue: any;
   export let disabled = false;
-  export let onSelected: Function;
+  export let onSelected: OptionSelectCallback<any>;
 
   let isMenuVisible = writable(false);
   export let selectedValue = writable(null);

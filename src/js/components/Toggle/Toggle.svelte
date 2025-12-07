@@ -1,9 +1,11 @@
 <script lang="ts">
+  import type { ToggleChangeCallback } from '@/types/callbacks';
+
   export let checked: boolean = false;
   export let id: string = '';
   export let label: string = '';
   export let disabled: boolean = false;
-  export let onChange: Function = () => {};
+  export let onChange: ToggleChangeCallback = () => {};
 
   function handleChange(event: Event) {
     const target = event.target as HTMLInputElement;

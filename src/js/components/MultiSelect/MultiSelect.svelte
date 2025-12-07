@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { OnChange } from '@/types/callbacks';
   import { onMount } from 'svelte';
   import { ChevronDown } from 'lucide-svelte';
   import { clickOutside } from '@/lib/utils/index';
@@ -11,13 +12,13 @@
   interface MultiSelectProp {
     options: MultiSelectOption[];
     filter: string;
-    onSelectionChange: Function;
+    onSelectionChange: OnChange<MultiSelectOption[]>;
   }
 
   export let options: MultiSelectOption[] = [];
   export let showCheckbox = false;
   export let filter = '';
-  export let onSelectionChange: Function;
+  export let onSelectionChange: OnChange<MultiSelectOption[]>;
   export let showFilter = false;
   export let title = 'Select an option';
 

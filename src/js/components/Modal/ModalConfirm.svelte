@@ -1,9 +1,10 @@
 <script lang="ts">
+  import type { OnClose, OnChange } from '@/types/callbacks';
   import { XCircle } from 'lucide-svelte';
   export let question: string = '';
-  export let onClose: Function = () => {};
+  export let onClose: OnClose = () => {};
   export let value: boolean = false;
-  export let onConfirm: Function = () => {};
+  export let onConfirm: OnChange<boolean> = () => {};
 
   const handleOnClose = () => {
     if (onClose) {

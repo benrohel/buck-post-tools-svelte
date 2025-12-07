@@ -1,10 +1,11 @@
 <script lang="ts">
+  import type { OnSelect } from '@/types/callbacks';
   import Chip from "../Chip/Chip.svelte";
   import Dropdown from "../Dropdown/Dropdown.svelte";
   import DropdownItem from "../Dropdown/DropdownItem.svelte";
-  import { statuses } from '@/stores/aquarium-store";
+  import { statuses } from '@/stores/aquarium-store';
 
-  export let onSelect: Function = () => {};
+  export let onSelect: OnSelect<any> = () => {};
   export let disabled = true;
   const onStatusSelect = (e: any) => {
     console.log(e);

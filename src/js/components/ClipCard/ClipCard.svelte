@@ -1,4 +1,6 @@
 <script lang="ts">
+  import type { ClipMetadata, VersionInfo } from '@/types/models';
+  import type { ClipSelectCallback, OnChange2 } from '@/types/callbacks';
   import { onMount, getContext } from 'svelte';
   import { openFile } from '@/lib/utils/utils';
   import { fly } from 'svelte/transition';
@@ -10,13 +12,13 @@
   import { fs, path } from '@/lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { appId } from '@/lib/utils/cep';
-  export let clip: any;
+  export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
-  export let onSelect: Function;
-  export let onReplace: Function;
-  export let onImport: Function;
-  export let onChange: Function;
+  export let onSelect: ClipSelectCallback;
+  export let onReplace: ClipSelectCallback;
+  export let onImport: ClipSelectCallback;
+  export let onChange: OnChange2<ClipMetadata, VersionInfo>;
 
   let selectedVersion: any = {};
   let publishedVersion = '';
