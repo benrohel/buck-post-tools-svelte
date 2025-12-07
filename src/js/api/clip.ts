@@ -7,7 +7,11 @@ import { appId } from '@/lib/utils/cep';
 import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
 import { GetSystemFileVersionsWithShotName } from '@/api/files/files';
 // Note: xml2json is a plain JS file without type declarations
+// @ts-ignore
 import { xmlToJson } from './xml2json';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('clip');
 
 declare interface Marker {
   colorIndex: number;
@@ -60,7 +64,11 @@ export const setItemTimecodes = async (
     `getItemColumnsMetadata("${clip.nodeId}")`,
     false
   );
-  console.log(JSON.parse(columnsMetadata));
+  log.debug(
+    'Item columns metadata',
+    { nodeId: clip.nodeId },
+    JSON.parse(columnsMetadata)
+  );
   const mediaType =
     jsonMetadata['x:xmpmeta']['rdf:RDF']['rdf:Description'][
       'premierePrivateProjectMetaData:Column.Intrinsic.MediaType'
@@ -139,7 +147,7 @@ export const GetThumbnail = async (
           `exportClipThumbnail("${firstFrameInTicks}","${outputPath}")`,
           false
         ).then((res) => {
-          console.log(res);
+          log.debug('Thumbnail export result', { outputPath, result: res });
           if (res) {
             resolve(res);
           } else {
@@ -153,37 +161,13 @@ export const GetThumbnail = async (
 
 const getAeClips = async () => {
   const selectedClips = JSON.parse(await evalES(`getSelectedClips()`, false));
-  console.log('selectedClips', selectedClips);
-  const systemClips = await Promise.all(selectedClips.map(async (clip: any) => {
-    const fileVersion = await GetSystemFileVersionsWithShotName(
-      clip.filepath,
-      clip.shotName
-    );
-    fileVersion.sort((a, b) => {
-      if (a.version > b.version) {
-        return -1;
-      } else if (a.version < b.version) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
-
-    return {
-      ...clip,
-      versions: fileVersion,
-      selectedVersion: fileVersion[0],
-    };
-  }));
-  return systemClips;
-};
-
-const getPProClips = async () => {
-  const seq = await GetActiveSequence();
-  const pproClips = await GetSequencedClips(seq.id);
-  const systemClips = await Promise.all(pproClips
-    .filter((clip) => clip.selected)
-    .map(async (clip) => {
+  log.debug(
+    'Retrieved AE selected clips',
+    { count: selectedClips.length },
+    selectedClips
+  );
+  const systemClips = await Promise.all(
+    selectedClips.map(async (clip: any) => {
       const fileVersion = await GetSystemFileVersionsWithShotName(
         clip.filepath,
         clip.shotName
@@ -203,7 +187,39 @@ const getPProClips = async () => {
         versions: fileVersion,
         selectedVersion: fileVersion[0],
       };
-    }));
+    })
+  );
+  return systemClips;
+};
+
+const getPProClips = async () => {
+  const seq = await GetActiveSequence();
+  const pproClips = await GetSequencedClips(seq.id);
+  const systemClips = await Promise.all(
+    pproClips
+      .filter((clip) => clip.selected)
+      .map(async (clip) => {
+        const fileVersion = await GetSystemFileVersionsWithShotName(
+          clip.filepath,
+          clip.shotName
+        );
+        fileVersion.sort((a, b) => {
+          if (a.version > b.version) {
+            return -1;
+          } else if (a.version < b.version) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+
+        return {
+          ...clip,
+          versions: fileVersion,
+          selectedVersion: fileVersion[0],
+        };
+      })
+  );
   return systemClips;
 };
 

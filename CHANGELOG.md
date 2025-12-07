@@ -4,20 +4,39 @@ All notable changes to Buck Post Tools CEP will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.1] - 2025-12-04
+
+### Fixed
+
+- Windows Filepaths
+
+## Improved
+
+- Folder Select for local directories
+
+### Added
+
+- File Browser
+- Bookmarks
+- Tools with Scripts and Project Common Ae files
+
 ## [1.0.2] - 2025-04-21
 
 ### Fixed
+
 - Fixed windows support and compatibility
 - Fixed output module issues
 - Fixed package.json configuration
 
 ### Changed
+
 - Moved assets and changed bundling of ffmpeg
 - Improved Windows and Export presets
 
 ## [1.0.1] - Previous Release
 
 ### Added
+
 - Added tooltips system throughout the application
 - Added property reference picker
 - Added settings for export presets and version warnings
@@ -25,6 +44,7 @@ All notable changes to Buck Post Tools CEP will be documented in this file.
 - Added export path builder with token-based rendering
 
 ### Improved
+
 - Enhanced expression modal UI
 - Improved toggle styling
 - Updated modal styling with darker background
@@ -33,6 +53,7 @@ All notable changes to Buck Post Tools CEP will be documented in this file.
 - Improved clip name truncation and tooltip implementation
 
 ### Fixed
+
 - Fixed Windows dialog functionality
 - Fixed folder token handling
 - Fixed panel display issues with hyphens in names
@@ -41,6 +62,7 @@ All notable changes to Buck Post Tools CEP will be documented in this file.
 ## [1.0.0] - Initial Release
 
 ### Added
+
 - Initial release of Buck Post Tools CEP
 - Support for After Effects and Premiere Pro
 - Ingest functionality with version control

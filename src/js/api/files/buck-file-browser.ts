@@ -1,6 +1,9 @@
 const { fdir } = require('fdir');
 import { path, fs } from '@/lib/cep/node';
 import { type PathItem } from '@/api/exporter';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('buck-file-browser');
 interface HSFile {
   path: string;
   modified: Date;
@@ -243,7 +246,7 @@ export type HierarchyFilters = {
 
 
 export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions: boolean = false) => {
-  console.log('filters', filters);
+  log.debug('Filtering tree by depth', { filterCount: Object.keys(filters).length, onlyLatestVersions }, filters);
   function filterNode(node: PathItem, depth = 0): PathItem | null {
     // Apply filter for current depth if it exists
     const filter = filters[depth];

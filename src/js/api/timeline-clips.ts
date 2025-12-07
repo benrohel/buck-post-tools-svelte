@@ -3,6 +3,9 @@ import {
   GetSystemFileVersionsWithShotName,
   GetFileVersion,
 } from "@/api/files/files";
+import { logModule } from '@/lib/logger';
+
+const log = logModule('timeline-clips');
 
 export const getClips = async () => {
   let sequenceClips: any[] = [];
@@ -30,6 +33,9 @@ export const getClips = async () => {
     };
   }));
   sequenceClips = systemClips;
-  console.log("sequenceClips", sequenceClips);
+  log.debug("Retrieved sequence clips", {
+    sequenceId: seq.id,
+    count: sequenceClips.length
+  }, sequenceClips);
   return Promise.resolve(sequenceClips);
 };

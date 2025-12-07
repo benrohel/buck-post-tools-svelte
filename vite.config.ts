@@ -74,6 +74,16 @@ export default defineConfig({
     watch: {
       include: 'src/jsx/**',
     },
+    minify: isPackage ? 'terser' : false,
+    terserOptions: isPackage
+      ? {
+          compress: {
+            // Remove console.log, console.debug, console.info in production
+            drop_console: ['log', 'debug', 'info'],
+            drop_debugger: true,
+          },
+        }
+      : undefined,
 
     rollupOptions: {
       input,

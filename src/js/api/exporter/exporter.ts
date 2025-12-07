@@ -1,5 +1,8 @@
 import { fs, path } from '@/lib/cep/node';
 import { evalES } from '@/lib/utils/bolt';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('exporter');
 export interface CompRenderData {
   compName: string;
   nodeId: number;
@@ -104,8 +107,10 @@ export const addToRenderQueue = async (
   options: IAddToRenderQueueOptions
 ) => {
   // Build the render paths for each output module
-  console.log('Comp Data', comp);
-  console.log('Options', options);
+  log.debug('Adding composition to render queue', {
+    compName: comp.compName,
+    outputModuleCount: options.outputModules.length
+  }, { comp, options });
 
   const outputOptions = options.outputModules.map((outputModule) => {
     const renderPath = buildRenderPath(

@@ -8,6 +8,9 @@ import {
 } from '@/api/buck5/buck5-api';
 import type * as BUCK5 from '@/api/buck5';
 import { storedProject } from '@/stores/local-storage';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('aquarium-store');
 
 export const projects = writable<BUCK5.Item[]>([]);
 
@@ -25,14 +28,14 @@ export const activeProject = writable<BUCK5.Item | null>(null);
 export const loggedIn = asyncReadable<boolean>(false, async () => {
   const response = await Authenticated();
 
-  console.log(response);
+  log.debug('Authentication check', { authenticated: !!response });
   return response ? true : false;
 });
 
 export const edits = derived(currentProject, async ($currentProject) => {
   if (!$currentProject) return [];
   let ed = await GetEdits($currentProject._key);
-  console.log('edits', ed);
+  log.debug('Fetched edits', { projectKey: $currentProject._key, count: ed?.length });
   return ed;
 });
 
@@ -41,7 +44,7 @@ export const currentEdit = writable<BUCK5.Item | null>(null);
 export const editClips = derived(currentEdit, async ($currentEdit) => {
   if (!$currentEdit) return [];
   let edClips = await GetClips($currentEdit._key);
-  console.log('edClips', edClips);
+  log.debug('Fetched edit clips', { editKey: $currentEdit._key, count: edClips?.length });
   return edClips;
 });
 export const shots = writable<BUCK5.Item[]>([]);

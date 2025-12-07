@@ -2,6 +2,9 @@ import upath from 'upath';
 import { evalES } from '@/lib/utils/bolt';
 import { ClipType, setItemTimecodes } from './clip';
 import Papa from 'papaparse';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('sequence');
 
 export declare interface Sequence {
   name: string;
@@ -111,12 +114,22 @@ export const GetMarkersThumbnails = async (
   }
 
   if (markers) {
-    console.log(markers);
-    console.log('color indices', colorIndices);
+    log.debug('Exporting sequence markers', {
+      sequenceName: seq.name,
+      totalMarkers: markers.length,
+      colorIndices,
+      filteredMarkers: markers.filter((m) => colorIndices.includes(m.colorIndex)).length
+    });
+
     markers
       .filter((m) => colorIndices.includes(m.colorIndex))
       .forEach((marker) => {
-        console.log(marker);
+        log.debug('Processing marker', {
+          name: marker.name,
+          colorIndex: marker.colorIndex,
+          startSeconds: marker.startSeconds
+        });
+
         const frameNumber = Math.round(marker.startSeconds * seq.framerate);
         const outputPath = upath.join(
           outputFolder,
@@ -128,7 +141,7 @@ export const GetMarkersThumbnails = async (
           `exportClipThumbnail("${marker.startTicks}","${outputPath}")`,
           false
         ).then((res) => {
-          console.log(res);
+          log.debug('Marker thumbnail exported', { outputPath, result: res });
         });
       });
   }
@@ -214,7 +227,9 @@ const laSequenceCsv = async (shots: Array<ClipType>): Promise<string> => {
       const csv = Papa.unparse(data.shots);
       resolve(csv);
     } catch (err) {
-      console.error(err);
+      log.error('Failed to build sequence CSV', err as Error, {
+        shotCount: shots.length
+      });
       reject('Could not build csv');
     }
   });
@@ -235,9 +250,9 @@ export const AddGaps = (gap: number, trackName: string) => {
     gap: gap,
     trackName: trackName,
   };
-  evalES(`addGap(${JSON.stringify(options)})`, false).then((res: any) =>
-    console.log(res)
-  );
+  evalES(`addGap(${JSON.stringify(options)})`, false).then((res: any) => {
+    log.debug('Added gaps to sequence', { gap, trackName, result: res });
+  });
 };
 
 export const CopySequenceSettings = (
@@ -248,9 +263,12 @@ export const CopySequenceSettings = (
     from: fromSequenceId,
     to: toSequencesId,
   };
-  evalES(`copySequenceSettings(${JSON.stringify(options)})`, false).then(() =>
-    console.log('Done copy settings')
-  );
+  evalES(`copySequenceSettings(${JSON.stringify(options)})`, false).then(() => {
+    log.debug('Copied sequence settings', {
+      fromSequence: fromSequenceId,
+      toSequenceCount: toSequencesId.length
+    });
+  });
 };
 
 declare interface ClipSourceType {
