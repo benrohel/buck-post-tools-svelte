@@ -1,5 +1,5 @@
 import { writable, Writable } from 'svelte/store';
-import { PROJECT_ROOT } from "../api/files/files"
+import { PROJECT_ROOT } from '@/api/files/files';
 export interface Bookmark {
   name: string;
   path: string;

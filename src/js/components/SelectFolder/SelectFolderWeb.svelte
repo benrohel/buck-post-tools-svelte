@@ -1,7 +1,7 @@
 <script lang="ts">
   import { FolderSearch } from 'lucide-svelte';
-  import { fs, path } from '../../lib/cep/node';
-  import { evalES } from '../../lib/utils/bolt';
+  import { fs, path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
   export let defaultFolder = '';
   export let label = 'Select Folder';
   export let value = defaultFolder;

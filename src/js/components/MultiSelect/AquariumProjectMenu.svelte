@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Projects } from '../../api/buck5/buck5-api';
+  import { Projects } from '@/api/buck5/buck5-api';
   import { onMount } from 'svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { path } from '../../lib/cep/node';
-  import { evalES } from '../../lib/utils/bolt';
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import { sessionProject } from '../../stores/local-storage';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import { path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import { sessionProject } from '@/stores/local-storage';
 
   let projects: any[] = [];
   $: projectItems = projects.map((p: any) => ({
