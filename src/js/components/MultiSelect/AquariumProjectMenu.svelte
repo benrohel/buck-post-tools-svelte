@@ -6,18 +6,22 @@
   import { evalES } from '@/lib/utils/bolt';
   import { PROJECT_ROOT } from '@/api/files/files';
   import { sessionProject } from '@/stores/local-storage';
+  import type * as BUCK5 from '@/api/buck5';
+  import type { Option } from '@/types/models';
 
-  let projects: any[] = [];
-  $: projectItems = projects.map((p: any) => ({
+  let projects: BUCK5.Item[] = [];
+  $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
     value: p._key,
     label: p.data.name,
   }));
   let projectName = '';
-  $: selectedProject = { value: '', label: '' };
+  let selectedProject: Option<string> = { value: '', label: '' };
 
-  const setSelectedProject = (event: any) => {
-    selectedProject = event;
-    sessionProject.set(event.value);
+  const setSelectedProject = (event: Option<string> | null) => {
+    if (event) {
+      selectedProject = event;
+      sessionProject.set(event.value);
+    }
   };
 
   const getProjectNameFromPath = async () => {
@@ -33,7 +37,7 @@
 
   const setDefaultProject = async () => {
     projectName = await getProjectNameFromPath();
-    if (projects.find((p: any) => p.data.name === projectName)) {
+    if (projects.find((p: BUCK5.Item) => p.data.name === projectName)) {
       selectedProject = { value: projectName, label: projectName };
     } else {
       selectedProject = projectItems[0];

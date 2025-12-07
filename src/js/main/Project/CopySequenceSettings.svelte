@@ -8,7 +8,7 @@
   import type { Sequence } from '@/api/sequence';
   import { notifications } from '@/stores/notifications-store';
   let fromSequence: Sequence | null = null;
-  let toSequences: any[] = [];
+  let toSequences: Sequence[] = [];
 
   $: isReady = () => {
     return fromSequence != null && toSequences.length > 0;

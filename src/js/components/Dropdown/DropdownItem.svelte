@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { on } from "events";
-  import { getContext, createEventDispatcher, onMount } from "svelte";
+  import { on } from 'events';
+  import { getContext, createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
   export let value;
-  export let id = 0;
-  export let selected = false;
+  let id = 0;
+  let selected = false;
 
   const selectValue = () => {
-    dispatch("clicked", value);
+    dispatch('clicked', value);
     $selectedValue = value;
     $visible = false;
   };
 
-  let selectedValue = getContext("selected");
-  let visible = getContext("visible");
+  let selectedValue = getContext('selected');
+  let visible = getContext('visible');
 </script>
 
 <div class="option-container">
   <div class="option" on:click={selectValue} on:keydown={selectValue}>
-    {#if $$slots["icon"]}
+    {#if $$slots['icon']}
       <div class="menu-item-icon">
         <slot name="icon" />
       </div>
@@ -28,7 +28,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   .option {
     width: auto;

@@ -113,10 +113,12 @@ export const checkForUpdate = async (extensionVersion: string) => {
   const versionFiles = fs.readdirSync(versionsFolder)
     .filter((f) => f.endsWith('.zxp'))
     .filter((f) => !f.startsWith('.'));
-  const remoteVersions = versionFiles.map((v) => {
-    const version = extractVersion(path.join(versionsFolder, v));
-    return { version, path: path.join(versionsFolder, v) };
-  });
+  const remoteVersions = versionFiles
+    .map((v) => {
+      const version = extractVersion(path.join(versionsFolder, v));
+      return version ? { version, path: path.join(versionsFolder, v) } : null;
+    })
+    .filter((v): v is { version: { major: number; minor: number; micro: number }; path: string } => v !== null);
 
   console.log("remoteVersions", remoteVersions);
   const localVersion = getLocalVersion();

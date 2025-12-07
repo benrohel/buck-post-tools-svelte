@@ -58,6 +58,9 @@ export async function callAnthropicAPI(
     // return responseData.content[0].text;
 
     //  Option 2: For streaming response (if you want to keep stream: true)
+    if (!response.body) {
+      throw new Error('Response body is null');
+    }
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';

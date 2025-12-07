@@ -14,21 +14,26 @@
   import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
   import { fs, path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
+  import type * as BUCK5 from '@/api/buck5';
+  import type { Option } from '@/types/models';
+  import type { Sequence } from '@/api/sequence';
 
-  let projects: any[] = [];
-  $: projectItems = projects.map((p: any) => ({
+  let projects: BUCK5.Item[] = [];
+  $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
     value: p._key,
     label: p.data.name,
   }));
   let projectName = '';
-  $: selectedProject = { value: '', label: '' };
+  let selectedProject: Option<string> = { value: '', label: '' };
 
-  const setSelectedProject = (event: any) => {
+  const setSelectedProject = (event: Option<string> | null) => {
     console.log(event);
-    selectedProject = event;
+    if (event) {
+      selectedProject = event;
+    }
   };
 
-  const exportSequenceXml = async (sequence: any): Promise<string> => {
+  const exportSequenceXml = async (sequence: Sequence): Promise<string> => {
     const filepath = path.join(preferencesDir, `${sequence.name}.xml`);
 
     if (!fs.existsSync(filepath)) {
@@ -36,7 +41,7 @@
     }
     return new Promise((resolve, reject) => {
       const result = evalES(
-        `exportSequenceXml("${filepath}","${sequence.id}")`,
+        `exportSequenceXml("${filepath}","${sequence.nodeId}")`,
         false
       );
       if (result) {
@@ -88,7 +93,7 @@
 
   const setDefaultProject = async () => {
     projectName = await getProjectNameFromPath();
-    if (projects.find((p: any) => p.data.name === projectName)) {
+    if (projects.find((p: BUCK5.Item) => p.data.name === projectName)) {
       selectedProject = { value: projectName, label: projectName };
     } else {
       selectedProject = projectItems[0];

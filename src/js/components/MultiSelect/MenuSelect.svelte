@@ -1,10 +1,12 @@
 <script lang="ts">
   import Select from 'svelte-select';
-  export let items;
-  export let value: any;
+  import type { Option } from '@/types/models';
+
+  export let items: Option<any>[];
+  export let value: Option<any> | null = null;
   export let placeholder = 'Select Tool';
-  export let onChange;
-  export let options = {};
+  export let onChange: (value: Option<any> | null) => void;
+  export let options: Record<string, any> = {};
   $: focus = false;
   $: openable = () => {
     return items.length === 1 ? false : true;

@@ -376,8 +376,8 @@ class XmemlParser {
         console.log(`Storing video clip for master clip ID: ${clip.masterClipId}`);
 
         // Extract audio info from the video clip's media data
-        let audioSampleRate = undefined;
-        let audioChannels = undefined;
+        let audioSampleRate: number | undefined = undefined;
+        let audioChannels: number | undefined = undefined;
 
         if (clipitem.file.media && clipitem.file.media.audio) {
           const audioMedia = clipitem.file.media.audio;

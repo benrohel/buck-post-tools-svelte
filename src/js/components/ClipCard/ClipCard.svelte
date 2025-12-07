@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ClipMetadata, VersionInfo } from '@/types/models';
   import type { ClipSelectCallback, OnChange2 } from '@/types/callbacks';
+  import type { VideoDifference } from '@/types/api';
   import { onMount, getContext } from 'svelte';
   import { openFile } from '@/lib/utils/utils';
   import { fly } from 'svelte/transition';
@@ -20,11 +21,11 @@
   export let onImport: ClipSelectCallback;
   export let onChange: OnChange2<ClipMetadata, VersionInfo>;
 
-  let selectedVersion: any = {};
+  let selectedVersion: VersionInfo = {} as VersionInfo;
   let publishedVersion = '';
   let editVersion = '';
   $: isVideoMatch = true;
-  let videoDifferences: any[] = [];
+  let videoDifferences: VideoDifference[] = [];
   let isMissing = false;
   let showWarnings = $appStore.showVersionWarnings;
 

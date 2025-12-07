@@ -5,7 +5,7 @@ import {
 } from "@/api/files/files";
 
 export const getClips = async () => {
-  let sequenceClips = [];
+  let sequenceClips: any[] = [];
   const seq = await GetActiveSequence();
   const pproClips = await GetSequencedClips(seq.id);
   const systemClips = await Promise.all(pproClips.map(async (clip) => {

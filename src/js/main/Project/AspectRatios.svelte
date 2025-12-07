@@ -56,7 +56,7 @@
     ],
   };
 
-  let filteredPresets: any[] = [];
+  let filteredPresets: Resolution[] = [];
   let selectedPresets: Resolution[] = [];
   let masterSequence: Sequence;
   let presetFilter: string = '';
@@ -140,7 +140,7 @@
     }));
   }
 
-  const handleSelectionChange = (selection: any) => {
+  const handleSelectionChange = (selection: Resolution[]) => {
     console.log(selection);
     selectedPresets = selection;
   };

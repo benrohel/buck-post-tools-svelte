@@ -8,9 +8,9 @@
 
   export let label = '';
   export let placeholder = 'Make Selection';
-  export let defaultValue: any;
+  export let defaultValue: string | number | null = null;
   export let disabled = false;
-  export let onSelected: OptionSelectCallback<any>;
+  export let onSelected: OptionSelectCallback<string | number | null>;
 
   let isMenuVisible = writable(false);
   export let selectedValue = writable(null);

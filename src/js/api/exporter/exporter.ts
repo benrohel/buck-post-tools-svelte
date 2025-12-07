@@ -113,8 +113,8 @@ export const addToRenderQueue = async (
       options.appId,
       options.rootFolder,
       outputModule.outputModuleFilePath,
-      options.selectedTask,
-      options.version
+      options.selectedTask ?? '',
+      options.version ?? 1
     );
     return {
       outputModuleName: outputModule.outputModuleName,

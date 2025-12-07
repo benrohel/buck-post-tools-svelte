@@ -226,7 +226,9 @@ export const collectFilesByExtensions = (
           const match = file.name.match(imageSequenceRegex);
 
           if (match) {
-            const baseName = file.name.match(/^(.*?)\./)[1];
+            const baseMatch = file.name.match(/^(.*?)\./);
+            if (!baseMatch) continue;
+            const baseName = baseMatch[1];
             const existingSequence = result[currentDir].find((item) =>
               path.basename(item.file).startsWith(baseName)
             );
@@ -307,7 +309,9 @@ export const GetFilesLibrary = (dir: string): Array<any> => {
   const productionRegex = /^(.*?)Production/;
   if (!fs.existsSync(dir)) return [];
   const posixRoot = path.posix.normalize(dir);
-  const rootFolder = posixRoot.match(productionRegex)[0];
+  const rootFolderMatch = posixRoot.match(productionRegex);
+  if (!rootFolderMatch) return [];
+  const rootFolder = rootFolderMatch[0];
   const shotsFolder = path.join(rootFolder, 'shots');
   const assetsFolder = path.join(rootFolder, 'Assets');
 
@@ -347,11 +351,11 @@ export const SHARED_FOLDER = () => {
 
 export const PRODUCTION_ROOT = (projectPath: string) => {
   const productionRegex = /^(.*?)Production/;
-  const productionDir = projectPath.match(productionRegex)[0];
+  const productionMatch = projectPath.match(productionRegex);
+  if (!productionMatch) return null;
+  const productionDir = productionMatch[0];
   if (!fs.existsSync(productionDir)) return null;
-  // const posixRoot = path.posix.normalize(productionDir);
-  const rootFolder = productionDir.match(productionRegex)[0];
-  return rootFolder;
+  return productionDir;
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
@@ -381,8 +385,10 @@ export declare interface ProjectSettings {
 export const getProjectSettingsTemplate = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return null;
+  const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
+  if (!metaFolder) return null;
   const projectSettingsPath = path.join(
-    PROJECT_AEFT_META_FOLDER(projectPath),
+    metaFolder,
     'project-settings.json'
   );
   if (!fs.existsSync(projectSettingsPath)) {
@@ -400,8 +406,10 @@ export const setProjectSettingsTemplate = (
 ) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return false;
+  const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
+  if (!metaFolder) return false;
   const projectSettingsPath = path.join(
-    PROJECT_AEFT_META_FOLDER(projectPath),
+    metaFolder,
     'project-settings.json'
   );
   if (!fs.existsSync(path.dirname(projectSettingsPath))) {

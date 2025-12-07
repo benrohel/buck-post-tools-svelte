@@ -8,7 +8,7 @@
   import { fs, path } from '@/lib/cep/node';
   import { setPreferenceByKey, getPreferenceByKey } from '@/api/preferences';
   import type { ExportNamePreset } from '@/api/preferences';
-  //@ts-ignore
+  // @ts-expect-error - @svelte-plugins/tooltips has incomplete type definitions
   import { Tooltip } from '@svelte-plugins/tooltips';
 
   import Select from 'svelte-select';
@@ -120,8 +120,7 @@
 
   $: selectedTask = tasks[0];
   $: modalOpen = false;
-  //@ts-ignore
-  $: tokens = [];
+  let tokens: string[] = [];
   let version = 0;
   let renderSettingsList: string[] = [];
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { FolderSelectCallback } from '@/types/callbacks';
   import { FolderSearch } from 'lucide-svelte';
-  import { fs, path } from '@/lib/cep/node';
+  import { fs, path, os } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
   export let defaultFolder = '';
   export let label = 'Select Folder';
@@ -11,7 +11,11 @@
   const handleSetOutputFolder = async () => {
     let res = await evalES(`selectFolder("${label}")`);
     let folderPath = JSON.parse(res).absoluteURI;
-    folderPath = folderPath.replace('file://', '');
+    if (folderPath.startsWith('~')) {
+      folderPath = folderPath.replace('~', os.homedir());
+    }
+
+    console.log(folderPath);
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;
       onChange(folderPath);

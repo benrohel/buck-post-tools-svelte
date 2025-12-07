@@ -14,8 +14,9 @@
   import { notifications } from '@/stores/notifications-store';
   import { onMount } from 'svelte';
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
-  let suffix = '';
+  import type { Sequence } from '@/api/sequence';
 
+  let suffix = '';
   let rootFolder = '';
 
   $: console.log(rootFolder);
@@ -33,7 +34,7 @@
     suffix = target.value;
   };
 
-  const exportSequenceXml = async (sequence: any) => {
+  const exportSequenceXml = async (sequence: Sequence) => {
     const filepath = path.join(
       rootFolder,
       suffix.length > 0
@@ -58,7 +59,7 @@
   };
 
   const handleSubmitExport = async () => {
-    let toSequences: any[] = [];
+    let toSequences: Sequence[] = [];
 
     toSequences = await GetSelectedSequences();
 

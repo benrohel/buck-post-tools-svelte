@@ -6,7 +6,7 @@ import { createTimecode, getFramerate, getTimecodeInTicks } from './timecode';
 import { appId } from '@/lib/utils/cep';
 import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
 import { GetSystemFileVersionsWithShotName } from '@/api/files/files';
-//@ts-ignore
+// Note: xml2json is a plain JS file without type declarations
 import { xmlToJson } from './xml2json';
 
 declare interface Marker {
@@ -208,7 +208,7 @@ const getPProClips = async () => {
 };
 
 export const getClips = async () => {
-  let loadedClips = [];
+  let loadedClips: any[] = [];
   switch (appId) {
     case 'AEFT':
       loadedClips = await getAeClips();

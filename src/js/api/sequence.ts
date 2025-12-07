@@ -103,7 +103,7 @@ export const GetMarkersThumbnails = async (
   const markers = await GetSequenceMarkers(nodeId);
   if (!outputFolder) {
     await evalES("alert('no output folder')");
-    return;
+    return false;
   }
 
   if (colorIndices.length == 0) {

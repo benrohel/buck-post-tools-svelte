@@ -1,6 +1,6 @@
 // Abstracted built-in Node.js Modules
+// Note: CEP environment provides Node.js modules via require()
 
-//@ts-ignore
 export const crypto = (
   typeof window.cep !== "undefined" ? require("crypto") : {}
 ) as typeof import("crypto");

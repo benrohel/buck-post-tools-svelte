@@ -126,9 +126,9 @@ export const getLocalScripts = (
 
 export const getProjectScripts = async (appId: string, projectPath: string): Promise<Script[]> => {
   try {
-    let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
+    const scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
     console.log("project scripts Folder", scriptsFolder);
-    if (!fs.existsSync(scriptsFolder)) {
+    if (!scriptsFolder || !fs.existsSync(scriptsFolder)) {
       console.log('Project scripts folder not found');
       return [];
     }
@@ -158,9 +158,9 @@ export interface CommonSharedFile {
 }
 export const getProjectCommonFiles = (appId: string, projectPath: string): CommonSharedFile[] => {
   console.log(appId, projectPath);
-  let commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
+  const commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
   console.log("common scripts folder", commonFolder);
-  if (!fs.existsSync(commonFolder)) {
+  if (!commonFolder || !fs.existsSync(commonFolder)) {
     console.log('Project scripts folder not found');
     return [];
   }
