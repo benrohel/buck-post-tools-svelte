@@ -99,6 +99,13 @@
   };
 
   const loadShotLibrary = async () => {
+    if (!$buck5Server) {
+      notifications.error(
+        'You need to be connected to a Buck 5 server to use this feature',
+        3000
+      );
+      return;
+    }
     isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
     const existingMediaFilesData = JSON.parse(
@@ -377,7 +384,7 @@
 
   onMount(() => {
     // Only load if not already loaded
-    if (!$buck5ShotLibraryStore.isLoaded) {
+    if ($buck5Server && !$buck5ShotLibraryStore.isLoaded) {
       loadShotLibrary();
     } else {
       // Data is already loaded, just apply stored filter settings

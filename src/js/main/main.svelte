@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { buck5Server } from '@/stores/server-store';
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
   import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
@@ -157,7 +158,7 @@
       { localAppStore: $localAppStore, env: import.meta.env }
     );
 
-    if ($extensionVersion) {
+    if ($extensionVersion && $buck5Server) {
       checkForUpdate($extensionVersion).then((v) => {
         if (!v) {
           log.debug('No extension update available', {
