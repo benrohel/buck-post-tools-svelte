@@ -30,13 +30,13 @@
 
   $: log.debug('Upload thumbnails updated', { uploadThumbnails });
 
-  function setRootFolder(path: string) {
+  const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
 
     rootFolder = path;
-  }
+  };
 
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -45,7 +45,10 @@
 
   const exportCsv = async (seq: Sequence): Promise<string> => {
     const clips = await GetSequencedClips(seq);
-    log.debug('Retrieved sequence clips', { sequenceName: seq.name, clipCount: clips.length });
+    log.debug('Retrieved sequence clips', {
+      sequenceName: seq.name,
+      clipCount: clips.length,
+    });
 
     let csv: string = '';
 
@@ -56,7 +59,10 @@
       }
       return new Promise(async (resolve, reject) => {
         const thumbnailPath = await GetThumbnail(c, rootFolder);
-        log.debug('Generated thumbnail', { clipName: c.clipName, thumbnailPath });
+        log.debug('Generated thumbnail', {
+          clipName: c.clipName,
+          thumbnailPath,
+        });
         const updatedClip = c;
         updatedClip.thumbnailUrl = thumbnailPath;
         resolve(updatedClip);

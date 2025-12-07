@@ -34,11 +34,7 @@
   } from '@/stores/app-store';
   import { localAppStore } from '@/stores/local-storage';
   import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
-  import { appId } from '@/lib/utils/cep';
-  import {
-    checkForUpdate,
-    installFromLocalFilepath,
-  } from '@/api/buck-library';
+  import { checkForUpdate, installFromLocalFilepath } from '@/api/buck-library';
   import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import { notifications } from '@/stores/notifications-store';
   import { logModule } from '@/lib/logger';
@@ -49,7 +45,7 @@
   let modalConfirmOpen = false;
   let latestVersion: { version: string; path: string } | null = null;
 
-  $: appName = appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
+  $: appName = $appStore.appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
 
   let items = [
     {
@@ -107,7 +103,11 @@
 
   let authenticated = false;
   // Reactive statement to log store changes
-  $: log.debug('Local app store updated', { hasStore: !!$localAppStore }, $localAppStore);
+  $: log.debug(
+    'Local app store updated',
+    { hasStore: !!$localAppStore },
+    $localAppStore
+  );
 
   if (!$localAppStore) {
     appStore.set(defaultAppStore);
@@ -125,32 +125,44 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000,
+      3000
     );
     modalConfirmOpen = false;
   };
 
   onMount(async () => {
     if (window.cep) {
+      // Initialize appId from csi FIRST, before any other CEP operations
+      appStore.set({
+        ...$appStore,
+        appId: csi.getApplicationID(),
+      });
+
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
       // await connectToDaemon();
       appVersion.set(await evalES(`appVersion()`));
-      appItems = items.filter((item) => item.apps.includes(appId));
+      appItems = items.filter((item) => item.apps.includes($appStore.appId));
       if (client) {
         // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
 
-    log.debug('Component mounted', {
-      hasLocalStore: !!$localAppStore,
-      environment: import.meta.env.MODE
-    }, { localAppStore: $localAppStore, env: import.meta.env });
+    log.debug(
+      'Component mounted',
+      {
+        hasLocalStore: !!$localAppStore,
+        environment: import.meta.env.MODE,
+      },
+      { localAppStore: $localAppStore, env: import.meta.env }
+    );
 
     if ($extensionVersion) {
       checkForUpdate($extensionVersion).then((v) => {
         if (!v) {
-          log.debug('No extension update available', { currentVersion: $extensionVersion });
+          log.debug('No extension update available', {
+            currentVersion: $extensionVersion,
+          });
           return;
         }
         latestVersion = {
@@ -158,10 +170,14 @@
           path: v.path,
         };
         modalConfirmOpen = true;
-        log.debug('Extension update available', {
-          currentVersion: $extensionVersion,
-          latestVersion: latestVersion.version
-        }, v);
+        log.debug(
+          'Extension update available',
+          {
+            currentVersion: $extensionVersion,
+            latestVersion: latestVersion.version,
+          },
+          v
+        );
       });
     }
   });

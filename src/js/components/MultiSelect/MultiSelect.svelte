@@ -27,10 +27,14 @@
 
   $: filteredOptions = getFilteredOptions();
   // Reactive logging for option changes
-  $: log.debug('Options updated', {
-    optionCount: options?.length || 0,
-    filteredCount: filteredOptions?.length || 0
-  }, { options, filteredOptions });
+  $: log.debug(
+    'Options updated',
+    {
+      optionCount: options?.length || 0,
+      filteredCount: filteredOptions?.length || 0,
+    },
+    { options, filteredOptions }
+  );
 
   let expanded = false;
   let multiselect: HTMLDivElement;
@@ -38,7 +42,7 @@
   let checkboxesDiv: HTMLDivElement;
   $: showingChekBox = showCheckbox;
 
-  function toggleSelect(option: MultiSelectOption) {
+  const toggleSelect = (option: MultiSelectOption) => {
     options = options.map((o) => {
       if (o.value === option.value) {
         return { ...o, selected: !o.selected };
@@ -47,21 +51,21 @@
       }
     });
     onSelectionChange(options);
-  }
+  };
 
-  function getFilteredOptions() {
+  const getFilteredOptions = () => {
     if (!options || options.length === 0) return [];
     return options.filter((option) => {
       const label = option.label.toLowerCase();
       const filterValue = filter.toLowerCase();
       return label.includes(filterValue);
     });
-  }
+  };
 
-  function showCheckboxes() {
+  const showCheckboxes = () => {
     log.debug('Toggle checkboxes', {
       currentExpanded: expanded,
-      hasCheckboxDiv: !!checkboxesDiv
+      hasCheckboxDiv: !!checkboxesDiv,
     });
 
     if (!expanded) {
@@ -73,10 +77,13 @@
       expanded = false;
       log.debug('Dropdown closed');
     }
-  }
+  };
 
   $: selectBoxWidth = () => {
-    log.debug('Calculate select box width', { hasSelectBox: !!selectBox, width: selectBox?.clientWidth });
+    log.debug('Calculate select box width', {
+      hasSelectBox: !!selectBox,
+      width: selectBox?.clientWidth,
+    });
     if (!selectBox) return 300;
     return selectBox.clientWidth;
   };

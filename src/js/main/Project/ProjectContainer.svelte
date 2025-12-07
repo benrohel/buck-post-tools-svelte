@@ -5,9 +5,11 @@
   import AspectRatios from './AspectRatios.svelte';
   import ColorManagement from './ColorManagement.svelte';
   import ShotExplorer from '../Explorer/ShotExplorer.svelte';
-  import { appId } from '@/lib/utils/cep';
   import { appStore } from '@/stores/app-store';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import { csi } from '@/lib/utils/bolt';
+
+  const appId = csi.getApplicationID();
 
   const toolList = [
     {

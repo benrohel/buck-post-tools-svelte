@@ -7,13 +7,13 @@
   export let disabled: boolean = false;
   export let onChange: ToggleChangeCallback = () => {};
 
-  function handleChange(event: Event) {
+  const handleChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     checked = target.checked;
     if (onChange) {
       onChange(checked);
     }
-  }
+  };
 </script>
 
 <div class="toggle-container">

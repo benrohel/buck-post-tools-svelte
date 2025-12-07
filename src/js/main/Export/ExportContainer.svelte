@@ -6,9 +6,9 @@
   import ExportSequenceCSV from './ExportSequenceCSV.svelte';
   import ExportCompositions from './ExportCompositions.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
-  import { appId } from '@/lib/utils/cep';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
+  import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
 
   const log = logModule('export-container');
@@ -58,9 +58,10 @@
     log.debug('Export mode changed', { mode: selectedExportMode.value, label: selectedExportMode.label });
   };
 
-  $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
-  let selectedExportMode: SelectToolItem =
-    appId === 'PPRO' ? exportModes[0] : exportModes[4];
+  $: filteredModes = exportModes.filter((m) => m.apps.includes($appStore.appId));
+
+  let selectedExportMode: SelectToolItem;
+  $: selectedExportMode = $appStore.appId === 'PPRO' ? exportModes[0] : exportModes[4];
 </script>
 
 <MenuSelect

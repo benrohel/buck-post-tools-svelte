@@ -24,13 +24,13 @@
 
   $: log.debug('Root folder updated', { rootFolder });
 
-  function setRootFolder(path: string) {
+  const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
 
     rootFolder = path;
-  }
+  };
 
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -44,7 +44,10 @@
         ? `${sequence.name}_${suffix}.xml`
         : sequence.name + '.xml'
     );
-    log.debug('Exporting sequence XML', { sequenceName: sequence.name, filepath });
+    log.debug('Exporting sequence XML', {
+      sequenceName: sequence.name,
+      filepath,
+    });
     if (!fs.existsSync(filepath)) {
       fs.mkdirSync(path.dirname(filepath), { recursive: true });
     }

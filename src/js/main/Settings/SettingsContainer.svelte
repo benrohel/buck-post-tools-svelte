@@ -7,7 +7,6 @@
   import { notifications } from '@/stores/notifications-store';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
-  import { appId } from '@/lib/utils/cep';
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   let aiServices = [
     { label: 'Claude AI', value: 'Claude AI' },
@@ -76,7 +75,7 @@
   >
     <h2>Settings</h2>
   </div>
-  {#if appId === 'AEFT'}
+  {#if $appStore.appId === 'AEFT'}
     <div class="flex-row-between setting-row">
       <label for="show-tooltips">Load Output Module Templates</label>
       <button
@@ -174,7 +173,7 @@
           )}
       />
     </div>
-    {#if appId === 'AEFT'}
+    {#if $appStore.appId === 'AEFT'}
       <div class="flex-row-between setting-row">
         <label for="remember-last-export-preset"
           >Remember last export preset</label

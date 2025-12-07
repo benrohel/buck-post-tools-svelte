@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import ShotExplorer from './ShotExplorer.svelte';
   import Bookmarks from './Bookmarks.svelte';
-  import { appId } from '@/lib/utils/cep';
   import { appStore } from '@/stores/app-store';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
 
@@ -22,11 +21,13 @@
   ];
 
   let selectedMode = toolList[0];
-  let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
+
+  $: filteredToolList = toolList.filter((tool) => tool.apps.includes($appStore.appId));
+
   const handleOnMenuChange = (value: any) => (selectedMode = value);
 
   onMount(() => {
-    if ($appStore.defaultToBuck5ShotLibrary && appId === 'PPRO') {
+    if ($appStore.defaultToBuck5ShotLibrary && $appStore.appId === 'PPRO') {
       selectedMode = toolList[4];
     } else {
       selectedMode = toolList[0];

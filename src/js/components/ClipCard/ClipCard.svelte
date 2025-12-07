@@ -12,7 +12,6 @@
   import { appStore } from '@/stores/app-store';
   import { fs, path } from '@/lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { appId } from '@/lib/utils/cep';
   import { logModule } from '@/lib/logger';
 
   const log = logModule('clip-card');

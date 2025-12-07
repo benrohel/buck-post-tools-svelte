@@ -80,7 +80,7 @@
     buildFileTree();
   };
 
-  function buildFileTree() {
+  const buildFileTree = () => {
     // Reset tree
     treeRoot = {
       name: 'root',
@@ -133,9 +133,9 @@
 
     // Initialize with root directory view
     navigateToPath([]);
-  }
+  };
 
-  function navigateToPath(pathSegments) {
+  const navigateToPath = (pathSegments) => {
     currentPath = pathSegments;
 
     // Update breadcrumbs
@@ -174,15 +174,15 @@
 
     // Combine and sort (directories first, then files)
     currentFiles = [...directories, ...files];
-  }
+  };
 
-  function handleBreadcrumbClick(path) {
+  const handleBreadcrumbClick = (path) => {
     navigateToPath(path);
-  }
+  };
 
-  function handleDirectoryClick(path) {
+  const handleDirectoryClick = (path) => {
     navigateToPath(path);
-  }
+  };
 
   const handleVersionChange = (file: FileEntry, version: string) => {
     dispatch('versionChange', { file, version });

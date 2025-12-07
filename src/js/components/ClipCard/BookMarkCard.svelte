@@ -39,11 +39,11 @@
       const projectDir = await evalES(`getProjectDir()`);
       const macPath = path.posix.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()
       );
       const windowsPath = path.win32.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()
       );
 
       return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
@@ -52,7 +52,7 @@
     }
   };
 
-  async function handleImportFolder() {
+  const handleImportFolder = async () => {
     const sourceFolder = await actualPath();
     log.debug('Copy source folder path', { path: sourceFolder });
     copyToClipboard(sourceFolder);
@@ -82,18 +82,18 @@
     // } else {
     //   await evalES(`alert("You must choose a file")`, true);
     // }
-  }
+  };
 
-  async function handleRevealFolder() {
+  const handleRevealFolder = async () => {
     const path = await actualPath();
     openFile(path);
-  }
+  };
 
-  function handleRemove() {
+  const handleRemove = () => {
     onRemove();
-  }
+  };
 
-  async function loadFileBrowser() {
+  const loadFileBrowser = async () => {
     isLoadingTree = true;
     try {
       const rootPath = await actualPath();
@@ -105,28 +105,31 @@
     } finally {
       isLoadingTree = false;
     }
-  }
+  };
 
-  async function handleLoadFolder(
+  const handleLoadFolder = async (
     event: CustomEvent<{
       folderId: string;
       folderPath: string;
       groupSequences: boolean;
-    }>,
-  ) {
+    }>
+  ) => {
     try {
       const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
       const children = await loadFolderChildren(folderPath, folderId, groupSeq);
       fileTreeItems = updateNodeChildren(fileTreeItems, folderId, children);
     } catch (error) {
-      log.error('Failed to load folder children', error as Error, { folderId, folderPath });
+      log.error('Failed to load folder children', error as Error, {
+        folderId,
+        folderPath,
+      });
       notifications.error('Failed to load folder contents', 3000);
     }
-  }
+  };
 
-  async function handleSequenceToggle(
-    event: CustomEvent<{ groupSequences: boolean }>,
-  ) {
+  const handleSequenceToggle = async (
+    event: CustomEvent<{ groupSequences: boolean }>
+  ) => {
     groupSequences = event.detail.groupSequences;
     // Reload the file tree with new settings
     if (showFileBrowser && fileTreeItems.length > 0) {
@@ -135,23 +138,26 @@
         const rootPath = await actualPath();
         fileTreeItems = await getRootFolder(rootPath, groupSequences);
       } catch (error) {
-        log.error('Failed to reload file browser', error as Error, { rootPath, groupSequences });
+        log.error('Failed to reload file browser', error as Error, {
+          rootPath,
+          groupSequences,
+        });
         notifications.error('Failed to reload folder contents', 3000);
       } finally {
         isLoadingTree = false;
       }
     }
-  }
+  };
 
-  function handleOpenFileFromBrowser(
-    event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
+  const handleOpenFileFromBrowser = (
+    event: CustomEvent<{ fileId: string; filePath: string }>
+  ) => {
     openFile(event.detail.filePath);
-  }
+  };
 
-  async function handleImportFile(
-    event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
+  const handleImportFile = async (
+    event: CustomEvent<{ fileId: string; filePath: string }>
+  ) => {
     const node = findNodeById(fileTreeItems, event.detail.fileId);
     const isSequence = node?.metadata?.isSequence || false;
 
@@ -168,13 +174,13 @@
 
     const result = await evalES(
       `importMediaFile(${JSON.stringify(options)})`,
-      false,
+      false
     );
     if (result) {
       if (isSequence && node?.metadata?.frameCount) {
         notifications.success(
           `Successfully imported sequence (${node.metadata.frameCount} frames)`,
-          2000,
+          2000
         );
       } else {
         notifications.success('Successfully imported file', 2000);
@@ -182,9 +188,9 @@
     } else {
       notifications.error('Failed to import file', 3000);
     }
-  }
+  };
 
-  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
+  const findNodeById = (nodes: PathItem[], id: string): PathItem | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
       if (node.children) {
@@ -193,29 +199,28 @@
       }
     }
     return null;
-  }
+  };
 
-  async function handleImportFiles(
-    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
-  ) {
+  const handleImportFiles = async (
+    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>
+  ) => {
     const result = await evalES(
       `importMediaFiles(${JSON.stringify(event.detail.filePaths)})`,
-      false,
+      false
     );
     if (result) {
       notifications.success(
         `Successfully imported ${event.detail.filePaths.length} files`,
-        2000,
+        2000
       );
     } else {
       notifications.error('Failed to import files', 3000);
     }
-  }
+  };
 
-  function handleRevealFile(
-    event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
-    // TODO: Implement reveal file functionality
+  const handleRevealFile = (
+    event: CustomEvent<{ fileId: string; filePath: string }>
+  ) => {
     log.debug('Reveal file in folder', { filePath: event.detail.filePath });
 
     openFile(path.dirname(event.detail.filePath));
@@ -223,7 +228,7 @@
     // For now, just log it
     // TODO: Use CEP API to reveal file
     // Example: cep.fs.revealInFileBrowser(event.detail.filePath);
-  }
+  };
 </script>
 
 <div class="bookmark-container">

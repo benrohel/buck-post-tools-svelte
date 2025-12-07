@@ -10,27 +10,27 @@
   let newPath = '';
   $: folderType = 'relative';
 
-  function setPath(path: string) {
+  const setPath = (path: string) => {
     newPath = path;
     newName = path.split('/').pop() ?? '';
-  }
+  };
 
-  function addBookmark() {
+  const addBookmark = () => {
     $bookmarks = [
       ...$bookmarks,
       { name: newName, path: newPath, isRelative: folderType === 'relative' },
     ];
     newName = '';
     newPath = '';
-  }
+  };
 
-  function removeBookmark(index: number) {
+  const removeBookmark = (index: number) => {
     $bookmarks = $bookmarks.filter((_, i) => i !== index);
-  }
+  };
 
-  function handleOnButtonGroupChange(item: any) {
+  const handleOnButtonGroupChange = (item: any) => {
     folderType = item.value;
-  }
+  };
 </script>
 
 <div style="display:flex; flex-direction:column; gap:8px">

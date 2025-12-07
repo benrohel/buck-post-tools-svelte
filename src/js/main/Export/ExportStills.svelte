@@ -32,12 +32,12 @@
   let refTrack = 'shots';
   let done = false;
 
-  function setOutputFolder(path: string) {
+  const setOutputFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       stillOutputFolder.set(path);
     }
     outputFolder = path;
-  }
+  };
 
   const handleOpenFolder = () => {
     openFile(outputFolder);
@@ -45,9 +45,13 @@
 
   const handleMarkerChange = (m: any) => {
     markerColors = m;
-    log.debug('Marker colors updated', {
-      selectedCount: markerColors.filter(m => m.selected).length
-    }, markerColors);
+    log.debug(
+      'Marker colors updated',
+      {
+        selectedCount: markerColors.filter((m) => m.selected).length,
+      },
+      markerColors
+    );
   };
 
   const handleExportMode = (s: any) => {
@@ -63,7 +67,10 @@
         const sequenceClips = await GetSequencedClips(seq, refTrack);
         sequenceClips.forEach((clip) => {
           GetThumbnail(clip, outputFolder).then((res) => {
-            log.debug('Generated clip thumbnail', { clipName: clip.clipName, path: res });
+            log.debug('Generated clip thumbnail', {
+              clipName: clip.clipName,
+              path: res,
+            });
           });
         });
         done = true;
@@ -77,7 +84,7 @@
       ).then(() => {
         log.debug('Marker thumbnails export complete', {
           outputFolder,
-          selectedMarkerCount: markerColors.filter(m => m.selected).length
+          selectedMarkerCount: markerColors.filter((m) => m.selected).length,
         });
       });
       done = true;

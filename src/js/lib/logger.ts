@@ -9,7 +9,8 @@
  * - Automatic enrichment with user/project context
  */
 
-import { appId } from '@/lib/utils/cep';
+import { appStore } from '@/stores/app-store';
+import { get } from 'svelte/store';
 
 export enum LogLevel {
   DEBUG = 0,
@@ -116,7 +117,7 @@ class Logger {
   private formatPrefix(level: string, context?: LogContext): string {
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0]; // HH:MM:SS
     const module = context?.module || 'app';
-    const app = appId || 'unknown';
+    const app = get(appStore).appId || 'unknown';
 
     return `[${timestamp}] [${app}] [${level}] [${module}]`;
   }
@@ -132,7 +133,6 @@ class Logger {
   }): void {
     // Future: Send to monitoring service
     // For now, just ensure it's in the console for users to report
-
     // Could also write to a log file in Adobe's temp folder:
     // const logPath = path.join(os.tmpdir(), 'buck-post-tools-errors.log');
     // fs.appendFileSync(logPath, JSON.stringify(data) + '\n');

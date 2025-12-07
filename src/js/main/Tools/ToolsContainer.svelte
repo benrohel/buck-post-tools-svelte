@@ -40,16 +40,6 @@
   $: commonFiles = [] as CommonSharedFile[];
   $: projectScripts = [] as Script[];
 
-  // $: buckToolArray = () => {
-  //   return Object.keys(tools)
-  //     .filter((t) => {
-  //       return tools[t].apps.includes(appId);
-  //     })
-  //     .map((k) => {
-  //       return { value: tools[k], label: k };
-  //     });
-  // };
-
   interface SelectToolItem {
     value: string;
     label: string;
@@ -61,15 +51,20 @@
     localScripts = await getLocalScripts(
       appId,
       $appVersion,
-      $appStore.userScriptsFolder,
+      $appStore.userScriptsFolder
     );
     buckScripts = getBuckScripts(appId);
     const projectPath = (await evalES(`getProjectFile()`, false)) as string;
     log.debug('Project path resolved', { projectPath });
     projectScripts = await getProjectScripts(appId, projectPath);
-    log.debug('Project scripts loaded', {
-      scriptCount: projectScripts.length
-    }, projectScripts);
+    log.debug(
+      'Project scripts loaded',
+      {
+        scriptCount: projectScripts.length,
+      },
+      projectScripts
+    );
+
     commonFiles = await getProjectCommonFiles(appId, projectPath);
   });
 </script>

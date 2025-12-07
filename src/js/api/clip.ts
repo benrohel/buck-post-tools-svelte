@@ -3,14 +3,15 @@ import { fs, path } from '@/lib/cep/node';
 import upath from 'upath';
 import Timecode, { TIMECODE } from 'smpte-timecode';
 import { createTimecode, getFramerate, getTimecodeInTicks } from './timecode';
-import { appId } from '@/lib/utils/cep';
 import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
+import { csi } from '@/lib/utils/bolt';
 import { GetSystemFileVersionsWithShotName } from '@/api/files/files';
 // Note: xml2json is a plain JS file without type declarations
 // @ts-ignore
 import { xmlToJson } from './xml2json';
 import { logModule } from '@/lib/logger';
 
+const appId = csi.getApplicationID();
 const log = logModule('clip');
 
 declare interface Marker {

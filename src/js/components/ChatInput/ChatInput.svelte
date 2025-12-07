@@ -12,28 +12,29 @@
   let keepHistory: boolean = false;
   export let inputValue: string = '';
   const dispatch = createEventDispatcher();
+
   // Auto-resize the textarea as content grows
-  function adjustTextareaHeight() {
+  const adjustTextareaHeight = () => {
     if (textarea) {
       textarea.style.height = 'auto';
       textarea.style.height = textarea.scrollHeight + 'px';
     }
-  }
+  };
 
   $: log.debug('Keep history setting changed', { keepHistory });
-  function handleInput() {
+  const handleInput = () => {
     adjustTextareaHeight();
-  }
+  };
 
-  function handleKeydown(event: KeyboardEvent) {
+  const handleKeydown = (event: KeyboardEvent) => {
     // Submit on Enter (without Shift)
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       submitMessage();
     }
-  }
+  };
 
-  function submitMessage() {
+  const submitMessage = () => {
     if (inputValue.trim()) {
       // Dispatch event with message content
       dispatch('submit', inputValue);
@@ -44,7 +45,7 @@
         textarea.style.height = 'auto';
       }
     }
-  }
+  };
 
   onMount(() => {
     adjustTextareaHeight();

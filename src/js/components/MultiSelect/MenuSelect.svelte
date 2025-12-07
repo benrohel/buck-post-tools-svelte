@@ -7,6 +7,7 @@
   export let placeholder = 'Select Tool';
   export let onChange: (value: Option<any> | null) => void;
   export let options: Record<string, any> = {};
+
   $: focus = false;
   $: openable = () => {
     return items.length === 1 ? false : true;

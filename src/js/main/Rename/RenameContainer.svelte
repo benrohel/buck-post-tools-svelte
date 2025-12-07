@@ -8,10 +8,10 @@
   import VersionUp from './VersionUp.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import QuickRenameTools from './QuickRenameTools.svelte';
-  import { appId } from '@/lib/utils/cep';
+  import { appStore } from '@/stores/app-store';
   import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
 
-  import { type RenameContext, renameContextKey } from './RenameContext';
+  import { type RenameContext, renameContextKey} from './RenameContext';
 
   const renameContext = getContext('rename') as RenameContext;
 
@@ -69,7 +69,7 @@
           { value: 'project', label: 'Project' },
           {
             value: 'timeline',
-            label: appId === 'AEFT' ? 'Composition' : 'Sequence',
+            label: $appStore.appId === 'AEFT' ? 'Composition' : 'Sequence',
           },
         ]}
         onSelectionChange={handleScopeChange}

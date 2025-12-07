@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { evalES } from '@/lib/utils/bolt';
   import Button from '@/components/Button/Button.svelte';
-  import { appId } from '@/lib/utils/cep';
+  import { appStore } from '@/stores/app-store';
   import { AddGaps } from '@/api/sequence';
   import { getContext } from 'svelte';
   import { RenameContext } from './RenameContext';
@@ -72,7 +72,7 @@
   <div class="flex-row-end action-row">
     <button class="active" on:click={handleRenameAction}>Rename</button>
   </div>
-  {#if appId === 'PPRO'}
+  {#if $appStore.appId === 'PPRO'}
     <hr />
     <div style="display:flex; flex-direction:column; ">
       <div class="row" style="width:100%">

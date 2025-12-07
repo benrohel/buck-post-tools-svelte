@@ -8,7 +8,7 @@
   import Select from 'svelte-select';
   import { getProjectTemplate } from '@/api/buck-library';
   import { buck5Server } from '@/stores/server-store';
-  import { appId } from '@/lib/utils/cep';
+  import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
 
   const log = logModule('project-starter');
@@ -35,9 +35,9 @@
   ];
 
   $: getTemplates = () => {
-    if (appId) {
+    if ($appStore.appId) {
       return templateList.filter((t) => {
-        return t.apps.includes(appId);
+        return t.apps.includes($appStore.appId);
       });
     }
     return [templateList[0]];
@@ -57,9 +57,9 @@
   let rootFolder = '';
 
   $: log.debug('Template path', {
-    appId,
+    appId: $appStore.appId,
     template: template.value,
-    path: getProjectTemplate(appId, template.value)
+    path: getProjectTemplate($appStore.appId, template.value),
   });
 
   $: log.debug('Framerate updated', { framerate });
@@ -78,9 +78,9 @@
       framerate: framerate.value,
     };
 
-    const templateFile = getProjectTemplate(appId, template.value);
+    const templateFile = getProjectTemplate($appStore.appId, template.value);
 
-    if (appId === 'PPRO') {
+    if ($appStore.appId === 'PPRO') {
       const sqp = await getPresetFile(
         option.width,
         option.height,
@@ -101,7 +101,7 @@
         );
         fs.unlinkSync(sqp);
       }
-    } else if (appId === 'AEFT') {
+    } else if ($appStore.appId === 'AEFT') {
       const aeOptions = {
         presetPath: templateFile,
         width: parseInt(option.width),
@@ -111,7 +111,7 @@
         name: sequenceName,
         projectFile: path.posix.join(
           rootFolder,
-          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
+          `${projectName}.${$appStore.appId === 'AEFT' ? 'aep' : 'pproj'}`
         ),
       };
       await evalES(
@@ -142,11 +142,11 @@
   $: log.debug('Project settings updated', {
     framerate,
     resolution,
-    sequenceName
+    sequenceName,
   });
 
   onMount(async () => {
-    if (appId === 'AEFT') {
+    if ($appStore.appId === 'AEFT') {
       template = templateList[0];
     } else {
       template = templateList[1];
@@ -187,7 +187,7 @@
       />
     </div>
 
-    {#if template.value === 'Edit' || appId === 'PPRO'}
+    {#if template.value === 'Edit' || $appStore.appId === 'PPRO'}
       <div class="flex-row-start">
         <p class="select-label">Resolutions:</p>
         <Select
@@ -221,7 +221,7 @@
         />
       </div>
     {/if}
-    {#if template.value === 'Shot' && appId === 'AEFT'}
+    {#if template.value === 'Shot' && $appStore.appId === 'AEFT'}
       <div class="flex-row-start">
         <label for="duration">Duration (in frames): </label>
         <input
@@ -236,7 +236,7 @@
 
     <div class="flex-row-start">
       <label for="sequenceName"
-        >{appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
+        >{$appStore.appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
       </label>
       <input
         type="text"

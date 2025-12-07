@@ -3,7 +3,8 @@
   import Versioner from './Versioner.svelte';
   import ShotLibrary from './ShotLibrary.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
-  import { appId } from '@/lib/utils/cep';
+  import { appStore } from '@/stores/app-store';
+
   const ingestModes = [
     {
       value: 'versions',
@@ -20,9 +21,11 @@
   ];
 
   let selectedMode = ingestModes[0];
-  let filteredIngestModes = ingestModes.filter((tool) =>
-    tool.apps.includes(appId),
+
+  $: filteredIngestModes = ingestModes.filter((tool) =>
+    tool.apps.includes($appStore.appId),
   );
+
   const handleOnMenuChange = (value: any) => (selectedMode = value);
 </script>
 

@@ -39,7 +39,11 @@
   $: pathStructure = $buck5ShotLibraryStore.pathStructure;
   $: existingMediaFiles = $buck5ShotLibraryStore.existingMediaFiles;
 
-  $: log.debug('Sequence names updated', { count: sequenceNames.length }, sequenceNames);
+  $: log.debug(
+    'Sequence names updated',
+    { count: sequenceNames.length },
+    sequenceNames
+  );
 
   let selectedSequenceName: any = '';
   let selectedShotName: any = '';
@@ -156,7 +160,7 @@
   };
 
   // Helper function to apply saved filter settings from appStore
-  function applyStoredFilterSettings() {
+  const applyStoredFilterSettings = () => {
     if ($appStore.latestBuck5LibrarySettings) {
       const settings = $appStore.latestBuck5LibrarySettings;
 
@@ -211,18 +215,18 @@
     if (!selectedExtensionName && extensionNames.length > 0) {
       selectedExtensionName = extensionNames[0];
     }
-  }
+  };
 
   // Function to filter files by extension
-  function filterByExtension(
+  const filterByExtension = (
     items: PathItem[],
     extensionFilter: string
-  ): PathItem[] {
+  ): PathItem[] => {
     if (!extensionFilter || extensionFilter === '') {
       return items; // No filter applied, return all items
     }
 
-    function filterNodeRecursively(node: PathItem): PathItem | null {
+    const filterNodeRecursively = (node: PathItem): PathItem | null => {
       if (node.type === 'file') {
         // For files, check if the extension matches
         const fileName = node.name.toLowerCase();
@@ -247,14 +251,14 @@
         }
       }
       return null;
-    }
+    };
 
     return items
       .map((item) => filterNodeRecursively(item))
       .filter((item) => item !== null) as PathItem[];
-  }
+  };
 
-  function clearFilters() {
+  const clearFilters = () => {
     // Reset all filters to default "All" options
     selectedSequenceName = sequenceNames.length > 0 ? sequenceNames[0] : '';
     selectedShotName = shotNames.length > 0 ? shotNames[0] : '';
@@ -272,18 +276,18 @@
       },
     }));
     localAppStore.set($appStore);
-  }
+  };
 
   // Handler for file browser events
-  function handleOpenFile(
+  const handleOpenFile = (
     event: CustomEvent<{ fileId: string; filePath: string }>
-  ) {
+  ) => {
     openFile(event.detail.filePath);
-  }
+  };
 
-  function handleImportFile(
+  const handleImportFile = (
     event: CustomEvent<{ fileId: string; filePath: string }>
-  ) {
+  ) => {
     const importOptions = {
       filepath: event.detail.filePath,
       isSequence: false,
@@ -292,11 +296,11 @@
     evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then((res) => {
       res ? true : false;
     });
-  }
+  };
 
-  function handleImportFiles(
+  const handleImportFiles = (
     event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>
-  ) {
+  ) => {
     for (let i = 0; i < event.detail.filePaths.length; i++) {
       const importOptions = {
         filepath: event.detail.filePaths[i],
@@ -308,13 +312,13 @@
         }
       );
     }
-  }
+  };
 
-  function handleSelectionChange(
+  const handleSelectionChange = (
     event: CustomEvent<{ selectedIds: Set<string> }>
-  ) {
+  ) => {
     selectedItemIds = event.detail.selectedIds;
-  }
+  };
 
   const importAllVisible = async () => {
     if (fileBrowserRef) {
@@ -356,7 +360,7 @@
   };
 
   // Helper to get all files from tree recursively
-  function getAllFilesFromTree(nodes: PathItem[]): string[] {
+  const getAllFilesFromTree = (nodes: PathItem[]): string[] => {
     let filePaths: string[] = [];
 
     for (const node of nodes) {
@@ -369,7 +373,7 @@
     }
 
     return filePaths;
-  }
+  };
 
   onMount(() => {
     // Only load if not already loaded
@@ -392,12 +396,6 @@
           <Toggle bind:checked={onlyShowLatestVersions} />
           <span>latest versions</span>
         </div>
-        <!-- <div class="flex-row-start">
-          <span>Buck 3</span>
-          <Toggle bind:checked={isBuck5} />
-          <span>Buck 5</span>
-        </div> -->
-
         <div class="flex-row-end">
           {#if $buck5ShotLibraryStore.lastUpdated}
             <span class="last-updated-text">

@@ -66,14 +66,14 @@
   let presetFilter: string = '';
 
   $: filteredPresets = videoResolutions.resolutions.filter((f) =>
-    f.label.includes(presetFilter),
+    f.label.includes(presetFilter)
   );
 
   const getMasterSequence = async () => {
     let selectedSequences = true;
     const aeResult = await evalES(
       `getSelectedSequencesForNode(${selectedSequences})`,
-      false,
+      false
     );
     const aeJson = JSON.parse(aeResult);
     masterSequence = aeJson.sequences[0];
@@ -112,7 +112,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate,
+        option.framerate
       );
 
       if (sqp) {
@@ -124,9 +124,12 @@
 
         const seqId = await evalES(
           `createNewSequenceFromSQP(${JSON.stringify(sequenceOptions)})`,
-          false,
+          false
         );
-        log.debug('Created new sequence', { seqId, resolution: resolution.value });
+        log.debug('Created new sequence', {
+          seqId,
+          resolution: resolution.value,
+        });
         const insertOption = {
           toInsert: masterSequence.nodeId,
           inSequence: seqId,
@@ -137,34 +140,38 @@
     }
   };
 
-  function clearSelectedPreset() {
+  const clearSelectedPreset = () => {
     filteredPresets = filteredPresets.map((item) => ({
       ...item,
       selected: false,
     }));
-  }
+  };
 
   const handleSelectionChange = (selection: Resolution[]) => {
-    log.debug('Resolution selection changed', { count: selection.length }, selection);
+    log.debug(
+      'Resolution selection changed',
+      { count: selection.length },
+      selection
+    );
     selectedPresets = selection;
   };
 
-  function handlePresetFilter(e: Event) {
+  const handlePresetFilter = (e: Event) => {
     clearSelectedPreset();
     presetFilter = (e.target as HTMLInputElement).value;
-  }
+  };
 
-  function getSelectedPresets(): Array<Resolution> {
+  const getSelectedPresets = (): Array<Resolution> => {
     return filteredPresets.filter((f) => f.selected);
-  }
+  };
 
-  function getItemWidth(item: Resolution): string {
+  const getItemWidth = (item: Resolution): string => {
     const w = parseInt(item.value.split('x')[0]);
     const h = parseInt(item.value.split('x')[1]);
     const ar = w / h;
     const pixelWidth = 20 * ar;
     return `${pixelWidth}px`;
-  }
+  };
 </script>
 
 <div class="settings">
@@ -197,7 +204,7 @@
           <li style="margin-left:2px">{item.label}</li>
           <div
             style="width: {getItemWidth(
-              item,
+              item
             )}; height: 20px; border: 1px solid grey; border-radius: 2px;margin-right: 2px;"
           />
         </div>

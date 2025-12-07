@@ -2,7 +2,6 @@
   import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
   import { evalES } from '@/lib/utils/bolt';
   import { notifications } from '@/stores/notifications-store';
-  import { appId } from '@/lib/utils/cep';
   import { getContext } from 'svelte';
   import { RenameContext } from './RenameContext';
 

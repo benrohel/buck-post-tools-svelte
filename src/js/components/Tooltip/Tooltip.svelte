@@ -102,7 +102,7 @@
     }, 0);
   }
 
-  function mouseOver(event: MouseEvent) {
+  const mouseOver = (event: MouseEvent) => {
     if (!mounted) return;
 
     clearTimeout(showTimeout);
@@ -116,19 +116,19 @@
         calculatePosition();
       }
     }, delay);
-  }
+  };
 
-  function mouseMove(event: MouseEvent) {
+  const mouseMove = (event: MouseEvent) => {
     if (followCursor && isHovered) {
       x = event.pageX + 10;
       y = event.pageY + 10;
     }
-  }
+  };
 
-  function mouseLeave() {
+  const mouseLeave = () => {
     clearTimeout(showTimeout);
     isHovered = false;
-  }
+  };
 </script>
 
 <div
