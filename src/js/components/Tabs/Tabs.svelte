@@ -1,6 +1,10 @@
 <script lang="ts">
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { type AppStore, appStore } from '@/stores/app-store';
+  import { logModule } from '@/lib/logger';
+  import { onMount } from 'svelte';
+
+  const log = logModule('tabs');
 
   interface TabItem {
     value: number;
@@ -13,7 +17,22 @@
   export let items: TabItem[] = [];
   export let activeTabValue: number = 1;
 
-  const handleClick = (tabValue: number) => () => (activeTabValue = tabValue);
+  const handleClick = (tabValue: number) => () => {
+    log.debug('Tab clicked', { from: activeTabValue, to: tabValue });
+    activeTabValue = tabValue;
+  };
+
+  onMount(() => {
+    log.debug('Tabs mounted', {
+      activeTabValue,
+      itemsCount: items.length,
+      items: items.map((i) => ({
+        value: i.value,
+        label: i.label,
+        hasComponent: !!i.component,
+      })),
+    });
+  });
 </script>
 
 <ul>

@@ -39,11 +39,14 @@ export const compFromFootage = (item: FootageItem): CompItem => {
 };
 
 export const getProjectDir = () => {
-  app.project.file;
-  if (app.project.file !== null) {
-    //@ts-ignore
-    return app.project.file.parent.absoluteURI;
-  } else {
+  try {
+    if (app.project.file !== null) {
+      //@ts-ignore
+      // Use fsName to get the native file system path
+      return app.project.file.parent.fsName;
+    }
+    return '';
+  } catch (e) {
     return '';
   }
 };

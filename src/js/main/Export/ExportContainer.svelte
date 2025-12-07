@@ -54,14 +54,45 @@
   ];
 
   const handleOnChange = (value: SelectToolItem) => {
+    log.debug('Export mode changing', {
+      from: selectedExportMode?.value,
+      to: value.value,
+    });
     selectedExportMode = value;
-    log.debug('Export mode changed', { mode: selectedExportMode.value, label: selectedExportMode.label });
+    log.debug('Export mode changed', {
+      mode: selectedExportMode.value,
+      label: selectedExportMode.label,
+    });
   };
 
-  $: filteredModes = exportModes.filter((m) => m.apps.includes($appStore.appId));
+  let filteredModes = exportModes.filter((m) =>
+    m.apps.includes($appStore.appId)
+  );
 
-  let selectedExportMode: SelectToolItem;
-  $: selectedExportMode = $appStore.appId === 'PPRO' ? exportModes[0] : exportModes[4];
+  // Initialize as undefined - will be set by reactive block
+  let selectedExportMode: SelectToolItem | undefined = undefined;
+
+  onMount(() => {
+    log.debug('Export Container mounted', {
+      appId: $appStore.appId,
+      selectedMode: selectedExportMode?.value,
+      filteredModesCount: filteredModes.length,
+      hasComponent: !!selectedExportMode?.component,
+      componentName: selectedExportMode?.component?.name,
+    });
+    if ($appStore.appId) {
+      const defaultMode =
+        $appStore.appId === 'PPRO' ? exportModes[0] : exportModes[4];
+
+      // Only update if we don't have a valid selection or app changed
+      if (
+        !selectedExportMode ||
+        !selectedExportMode.apps.includes($appStore.appId)
+      ) {
+        selectedExportMode = defaultMode;
+      }
+    }
+  });
 </script>
 
 <MenuSelect
@@ -70,4 +101,15 @@
   onChange={handleOnChange}
 />
 
-<svelte:component this={selectedExportMode.component} />
+{#if selectedExportMode && selectedExportMode.component}
+  <div>
+    <svelte:component this={selectedExportMode.component} />
+  </div>
+{:else}
+  <div>No component selected or component is undefined</div>
+  {JSON.stringify({
+    hasMode: !!selectedExportMode,
+    modeValue: selectedExportMode?.value,
+    hasComponent: !!selectedExportMode?.component,
+  })}
+{/if}
