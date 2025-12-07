@@ -48,11 +48,7 @@
 
   let dummyComp: CompRenderData = {} as CompRenderData;
 
-  $: log.debug(
-    'Token dropdown ref updated',
-    { hasDropdown: !!tokenDropdownRef },
-    tokenDropdownRef
-  );
+  // Removed excessive reactive logging to prevent UI freeze
 
   // Available tokens for path construction
   const aeAvailableTokens = [
@@ -83,11 +79,6 @@
   $: isReady = rootFolder || projectFolder;
 
   let hasTask = false;
-  $: log.debug(
-    'Path structure updated',
-    { itemCount: pathStructure?.length || 0 },
-    pathStructure
-  );
 
   // Default exporters for different file types
   let outputModules: string[] = [];
@@ -104,7 +95,6 @@
 
   let rootFolder = '';
   let projectFolder = '';
-  $: log.debug('Project folder updated', { projectFolder });
 
   // Preset Name
   let presetName = '';
@@ -749,12 +739,9 @@
     return pathPreviewsCache;
   };
 
-  $: log.debug('Path preview updated', {
-    preview: getMemoizedPaths(pathStructure),
-  });
+  // Removed excessive reactive logging to prevent UI freeze
 
   const closeModal = () => {
-    log.debug('Close modal');
     modalOpen = false;
   };
 
@@ -863,21 +850,11 @@
         version
       );
     }
-    log.debug('Path previews computed', { pathPreviews });
   }
 
   $: selectedNode = selectedItemId
     ? findNodeById(pathStructure, selectedItemId)
     : null;
-
-  $: log.debug(
-    'Selected node updated',
-    {
-      hasSelection: !!selectedNode,
-      selectedItemId,
-    },
-    selectedNode
-  );
 </script>
 
 <div class="export-path-builder">
