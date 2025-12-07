@@ -28,10 +28,12 @@
   }
   import toolList from './tools.json';
   import { evalES } from '@/lib/utils/bolt';
+  import { logModule } from '@/lib/logger';
 
+  const log = logModule('tools-container');
   const appId = $appStore.appId;
 
-  console.log(getLocalScripts(appId, $appVersion));
+  log.debug('Loading local scripts', { appId, appVersion: $appVersion });
 
   let localScripts = [] as Script[];
   $: buckScripts = getBuckScripts(appId);
@@ -48,8 +50,6 @@
   //     });
   // };
 
-  // $: console.log(buckToolArray());
-
   interface SelectToolItem {
     value: string;
     label: string;
@@ -65,9 +65,11 @@
     );
     buckScripts = getBuckScripts(appId);
     const projectPath = (await evalES(`getProjectFile()`, false)) as string;
-    console.log('project path', projectPath);
+    log.debug('Project path resolved', { projectPath });
     projectScripts = await getProjectScripts(appId, projectPath);
-    console.log('project scripts', projectScripts);
+    log.debug('Project scripts loaded', {
+      scriptCount: projectScripts.length
+    }, projectScripts);
     commonFiles = await getProjectCommonFiles(appId, projectPath);
   });
 </script>

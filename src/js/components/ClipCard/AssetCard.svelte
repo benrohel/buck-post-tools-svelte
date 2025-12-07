@@ -6,6 +6,10 @@
   import { CommonSharedFile } from '@/api/scripts/tools-scripts';
   import AeLogo from '@/../assets/ae-logo.svg';
   import { notifications } from '@/stores/notifications-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('asset-card');
+
   export let aepFile: CommonSharedFile;
 
   let isMenuOpen = false;
@@ -22,7 +26,7 @@
   };
 
   const handleOpenToolInfo = () => {
-    console.log(aepFile);
+    log.debug('Asset file info requested', aepFile);
   };
 
   const handleImport = () => {

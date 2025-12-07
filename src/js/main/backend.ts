@@ -1,7 +1,9 @@
 import type { ServerStatus } from 'buck-client';
 import { client, getStatus } from 'buck-client';
 import { notifications } from '@/stores/notifications-store';
+import { logModule } from '@/lib/logger';
 
+const log = logModule('backend');
 const maxConnectionAttempts = 20;
 let connectionAttempt = 0;
 let launched = false;
@@ -91,14 +93,17 @@ export async function connectToDaemon(
       connectionAttempt = 0;
       launched = false;
 
-      // onInit?.(connection) || console.log(connection);
+      log.debug('Connected to daemon', connection);
+      onInit?.(connection);
     })
     .catch((err: any) => {
-      console.error(err);
+      log.error('Failed to connect to daemon', err, { developmentBackend, connectionAttempt });
       if (developmentBackend) {
         onError?.('Waiting for daemon is start...');
         setTimeout(() => {
-          connectToDaemon(onInit, onLaunch, onError).catch(console.error);
+          connectToDaemon(onInit, onLaunch, onError).catch((reconnectErr) => {
+            log.error('Reconnection failed', reconnectErr);
+          });
         }, 1000);
       } else {
         onLaunch?.();
@@ -106,16 +111,7 @@ export async function connectToDaemon(
         // We don't want to keep spamming the production daemon.
         if (!launched) {
           launched = true;
-          console.debug(
-            'Production Daemon is not running. Attempting to launch it.'
-          );
-          // invoke('launch_daemon', {}).catch((launch_err) => {
-          //   onError?.(
-          //     'An error occurred during launch. See console for more details.',
-          //   );
-          //   console.error(err);
-          //   console.error(launch_err);
-          // });
+          log.debug('Production Daemon is not running. Attempting to launch it.');
         }
 
         connectionAttempt += 1;
@@ -124,11 +120,13 @@ export async function connectToDaemon(
           onError?.(
             'Production Daemon is not running. See console for more details.'
           );
-          console.error(err);
+          log.error('Max connection attempts reached', err, { maxConnectionAttempts, connectionAttempt });
         } else {
-          console.debug('Reconnecting in 3 seconds...');
+          log.debug('Reconnecting in 3 seconds...', { connectionAttempt, maxConnectionAttempts });
           setTimeout(() => {
-            connectToDaemon(onInit, onLaunch, onError).catch(console.error);
+            connectToDaemon(onInit, onLaunch, onError).catch((reconnectErr) => {
+              log.error('Reconnection failed', reconnectErr);
+            });
           }, 3000);
         }
       }

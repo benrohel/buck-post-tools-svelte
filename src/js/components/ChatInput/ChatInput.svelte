@@ -4,6 +4,9 @@
   import { ArrowUp, FileClock } from 'lucide-svelte';
   import { notifications } from '@/stores/notifications-store';
   import { localAppStore } from '@/stores/local-storage';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('chat-input');
 
   let textarea: HTMLTextAreaElement | null = null;
   let keepHistory: boolean = false;
@@ -17,7 +20,7 @@
     }
   }
 
-  $: console.log('keepHistory', keepHistory);
+  $: log.debug('Keep history setting changed', { keepHistory });
   function handleInput() {
     adjustTextareaHeight();
   }

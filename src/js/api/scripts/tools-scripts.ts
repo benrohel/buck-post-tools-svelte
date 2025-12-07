@@ -2,6 +2,9 @@ import { fs, path, os } from '@/lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
 import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER, PROJECT_COMMON_AE_FOLDER } from '@/api/files/files';
 import { platform } from 'os';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('tools-scripts');
 
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx
 
@@ -21,12 +24,12 @@ export const getBuckScripts = (appId: string): Script[] => {
 
   // scriptsFolder = "/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts"
   if (!fs.existsSync(scriptsFolder)) {
-    console.log('Buck scripts folder not found');
+    log.debug('Buck scripts folder not found', { scriptsFolder, appId });
     return [];
   }
 
   const folderFiles = fs.readdirSync(scriptsFolder);
-  console.log('Buck scripts folder', folderFiles);
+  log.debug('Found Buck scripts folder contents', { scriptsFolder, fileCount: folderFiles.length }, folderFiles);
 
   const scriptFiles = fs
     .readdirSync(scriptsFolder)
@@ -40,7 +43,7 @@ export const getBuckScripts = (appId: string): Script[] => {
         filename: file
       };
     });
-  console.log('Buck scripts files', scriptFiles);
+  log.debug('Loaded Buck scripts', { scriptsFolder, scriptCount: scriptFiles.length }, scriptFiles);
   return scriptFiles;
 };
 
@@ -125,15 +128,16 @@ export const getLocalScripts = (
 };
 
 export const getProjectScripts = async (appId: string, projectPath: string): Promise<Script[]> => {
+  const scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
+
   try {
-    const scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
-    console.log("project scripts Folder", scriptsFolder);
+    log.debug('Looking for project scripts', { scriptsFolder, projectPath, appId });
     if (!scriptsFolder || !fs.existsSync(scriptsFolder)) {
-      console.log('Project scripts folder not found');
+      log.debug('Project scripts folder not found', { scriptsFolder, projectPath });
       return [];
     }
 
-    return fs
+    const scripts = fs
       .readdirSync(scriptsFolder)
       .filter((file) => !file.startsWith('.'))
       .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
@@ -145,8 +149,11 @@ export const getProjectScripts = async (appId: string, projectPath: string): Pro
           filename: file
         };
       });
+
+    log.debug('Loaded project scripts', { scriptsFolder, scriptCount: scripts.length }, scripts);
+    return scripts;
   } catch (e) {
-    console.error('Error getting project scripts', e);
+    log.error('Failed to get project scripts', e as Error, { scriptsFolder, projectPath, appId });
     return [];
   }
 };
@@ -157,15 +164,16 @@ export interface CommonSharedFile {
   path: string;
 }
 export const getProjectCommonFiles = (appId: string, projectPath: string): CommonSharedFile[] => {
-  console.log(appId, projectPath);
+  log.debug('Getting project common files', { appId, projectPath });
   const commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
-  console.log("common scripts folder", commonFolder);
+  log.debug('Common folder path', { commonFolder });
+
   if (!commonFolder || !fs.existsSync(commonFolder)) {
-    console.log('Project scripts folder not found');
+    log.debug('Project common folder not found', { commonFolder, projectPath });
     return [];
   }
 
-  return fs
+  const files = fs
     .readdirSync(commonFolder)
     .filter((file) => !file.startsWith('.'))
     .filter((file) => file.endsWith('.aep'))
@@ -176,4 +184,7 @@ export const getProjectCommonFiles = (appId: string, projectPath: string): Commo
         path: path.join(commonFolder, file),
       };
     });
+
+  log.debug('Loaded project common files', { commonFolder, fileCount: files.length }, files);
+  return files;
 };

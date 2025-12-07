@@ -3,6 +3,9 @@
   import { onMount } from 'svelte';
   import { ChevronDown } from 'lucide-svelte';
   import { clickOutside } from '@/lib/utils/index';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('multiselect');
   interface MultiSelectOption {
     value: string;
     label: string;
@@ -23,12 +26,11 @@
   export let title = 'Select an option';
 
   $: filteredOptions = getFilteredOptions();
-  $: console.log(
-    'MultiSelect options:',
-    options,
-    'filteredOptions:',
-    filteredOptions,
-  );
+  // Reactive logging for option changes
+  $: log.debug('Options updated', {
+    optionCount: options?.length || 0,
+    filteredCount: filteredOptions?.length || 0
+  }, { options, filteredOptions });
 
   let expanded = false;
   let multiselect: HTMLDivElement;
@@ -57,25 +59,24 @@
   }
 
   function showCheckboxes() {
-    console.log(
-      'showCheckboxes called, expanded:',
-      expanded,
-      'checkboxes element:',
-      checkboxesDiv,
-    );
+    log.debug('Toggle checkboxes', {
+      currentExpanded: expanded,
+      hasCheckboxDiv: !!checkboxesDiv
+    });
+
     if (!expanded) {
       if (checkboxesDiv) checkboxesDiv.style.display = 'block';
       expanded = true;
-      console.log('Opening dropdown');
+      log.debug('Dropdown opened');
     } else {
       if (checkboxesDiv) checkboxesDiv.style.display = 'none';
       expanded = false;
-      console.log('Closing dropdown');
+      log.debug('Dropdown closed');
     }
   }
 
   $: selectBoxWidth = () => {
-    console.log(selectBox);
+    log.debug('Calculate select box width', { hasSelectBox: !!selectBox, width: selectBox?.clientWidth });
     if (!selectBox) return 300;
     return selectBox.clientWidth;
   };
@@ -84,7 +85,7 @@
     if (expanded) {
       showCheckboxes();
     }
-    console.log('click outside');
+    log.debug('Click outside multiselect', { wasExpanded: expanded });
   };
 
   onMount(() => {

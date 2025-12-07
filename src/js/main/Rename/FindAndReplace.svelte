@@ -3,6 +3,9 @@
   import { ArrowLeftRight } from 'lucide-svelte';
   import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('find-and-replace');
 
   let find = '';
   let replace = '';
@@ -15,11 +18,11 @@
       to: replace,
     };
 
-    console.log(options);
+    log.debug('Find and replace initiated', options);
 
     await evalES(`findAndReplace(${JSON.stringify(options)})`, false).then(
       (res) => {
-        console.log(res);
+        log.debug('Find and replace complete', { result: res });
       },
     );
   };

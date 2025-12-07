@@ -73,18 +73,6 @@
     gap: 8px;
   }
 
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
-    font-size: 12px;
-    color: $font;
-  }
-
-  .process-count {
-    font-weight: bold;
-  }
-
   .progress-bar-bg {
     width: 100%;
     background-color: #e0e0e0;
@@ -97,21 +85,6 @@
     background-color: $active;
     transition: width 0.3s ease;
   }
-
-  // .animate {
-  //   background-image: linear-gradient(
-  //     -45deg,
-  //     rgba(255, 255, 255, 0.2) 25%,
-  //     transparent 25%,
-  //     transparent 50%,
-  //     rgba(255, 255, 255, 0.2) 50%,
-  //     rgba(255, 255, 255, 0.2) 75%,
-  //     transparent 75%,
-  //     transparent
-  //   );
-  //   background-size: 30px 30px;
-  //   animation: progress-animation 2s linear infinite;
-  // }
 
   .percentage-text {
     text-align: right;
@@ -128,58 +101,5 @@
     100% {
       background-position: 30px 0;
     }
-  }
-  #myProgress {
-    width: 100%;
-    height: 50px;
-    position: relative;
-    margin-top: 5%;
-  }
-
-  span {
-    position: absolute;
-    left: 46%;
-    top: 10%;
-    font-size: 1.2rem;
-  }
-
-  #myBar {
-    height: 30px;
-    background-color: $active;
-    border: 1px solid #333;
-  }
-
-  form {
-    margin-top: 1%;
-    width: 100%;
-    text-align: center;
-  }
-
-  button {
-    cursor: pointer;
-    width: 100px;
-    padding: 9.5px 0;
-  }
-
-  button:active {
-    background-color: hsl(204, 58%, 55%);
-    color: white;
-  }
-
-  @keyframes blink {
-    to {
-      opacity: 0;
-    }
-  }
-
-  #complete-msg-cont {
-    height: 50px;
-    padding: 10px;
-  }
-
-  h3#complete-msg {
-    margin: 0;
-    text-align: center;
-    animation: blink 0.5s ease-in-out 3;
   }
 </style>

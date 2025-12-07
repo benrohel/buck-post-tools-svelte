@@ -41,6 +41,9 @@
   } from '@/api/buck-library';
   import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import { notifications } from '@/stores/notifications-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('main');
 
   let backgroundColor: string = '#232323';
   let modalConfirmOpen = false;
@@ -103,7 +106,9 @@
   let appItems = items;
 
   let authenticated = false;
-  $: console.log('$localAppStore', $localAppStore);
+  // Reactive statement to log store changes
+  $: log.debug('Local app store updated', { hasStore: !!$localAppStore }, $localAppStore);
+
   if (!$localAppStore) {
     appStore.set(defaultAppStore);
     setContext('app-store', defaultAppStore);
@@ -137,13 +142,15 @@
       }
     }
 
-    console.log('$localAppStore', $localAppStore);
-    console.log('env', import.meta.env);
+    log.debug('Component mounted', {
+      hasLocalStore: !!$localAppStore,
+      environment: import.meta.env.MODE
+    }, { localAppStore: $localAppStore, env: import.meta.env });
 
     if ($extensionVersion) {
       checkForUpdate($extensionVersion).then((v) => {
         if (!v) {
-          console.log('No update available');
+          log.debug('No extension update available', { currentVersion: $extensionVersion });
           return;
         }
         latestVersion = {
@@ -151,8 +158,10 @@
           path: v.path,
         };
         modalConfirmOpen = true;
-        console.log($extensionVersion);
-        console.log(v);
+        log.debug('Extension update available', {
+          currentVersion: $extensionVersion,
+          latestVersion: latestVersion.version
+        }, v);
       });
     }
   });

@@ -3,6 +3,10 @@
   import { FolderSearch } from 'lucide-svelte';
   import { fs, path, os } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('select-folder-web');
+
   export let defaultFolder = '';
   export let label = 'Select Folder';
   export let value = defaultFolder;
@@ -15,7 +19,7 @@
       folderPath = folderPath.replace('~', os.homedir());
     }
 
-    console.log(folderPath);
+    log.debug('Folder selected', { folderPath, label });
     if (folderPath && fs.statSync(folderPath).isDirectory()) {
       value = folderPath;
       onChange(folderPath);

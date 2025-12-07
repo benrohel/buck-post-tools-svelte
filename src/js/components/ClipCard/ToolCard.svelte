@@ -5,6 +5,10 @@
   import { fs, os } from '@/lib/cep/node';
   import path from 'path';
   import { SHARED_FOLDER } from '@/api/files/files';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('tool-card');
+
   interface ToolData {
     name: string;
     filename: string;
@@ -31,7 +35,7 @@
   };
 
   const handleOpenToolInfo = () => {
-    console.log(scriptTool);
+    log.debug('Tool info requested', scriptTool);
   };
 
   const handleLaunchTool = () => {
@@ -39,9 +43,9 @@
     if(os.platform()==='win32'){
     filepath = scriptTool.filepath.replace(/\\/g, '\\\\');
     }
-    console.log('filePath', filepath);
+    log.debug('Launching tool', { filepath, toolName: scriptTool.name });
    evalFile(filepath);
-    
+
   };
 
   onMount(() => {

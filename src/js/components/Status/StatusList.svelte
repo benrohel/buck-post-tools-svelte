@@ -4,11 +4,14 @@
   import Dropdown from "../Dropdown/Dropdown.svelte";
   import DropdownItem from "../Dropdown/DropdownItem.svelte";
   import { statuses } from '@/stores/aquarium-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('status-list');
 
   export let onSelect: OnSelect<any> = () => {};
   export let disabled = true;
   const onStatusSelect = (e: any) => {
-    console.log(e);
+    log.debug('Status selected', { status: e.status });
     if (onSelect) {
       onSelect(e);
     }

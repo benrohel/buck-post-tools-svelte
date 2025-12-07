@@ -9,6 +9,9 @@
   import { getProjectTemplate } from '@/api/buck-library';
   import { buck5Server } from '@/stores/server-store';
   import { appId } from '@/lib/utils/cep';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('project-starter');
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },
@@ -41,7 +44,7 @@
   };
 
   $: templates = getTemplates();
-  $: console.log(resolution);
+  $: log.debug('Resolution updated', { resolution });
 
   const framerates = ['23.976', '24', '25', '29.97', '30', '59.94'];
 
@@ -53,12 +56,13 @@
   let template = templateList[0];
   let rootFolder = '';
 
-  $: console.log(
-    'file template path:',
-    getProjectTemplate(appId, template.value)
-  );
+  $: log.debug('Template path', {
+    appId,
+    template: template.value,
+    path: getProjectTemplate(appId, template.value)
+  });
 
-  $: console.log(framerate);
+  $: log.debug('Framerate updated', { framerate });
 
   const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
@@ -135,7 +139,11 @@
   $: templateFocus = false;
   $: resolutionFocus = false;
   $: framerateFocus = false;
-  $: console.log(framerate, resolution, sequenceName);
+  $: log.debug('Project settings updated', {
+    framerate,
+    resolution,
+    sequenceName
+  });
 
   onMount(async () => {
     if (appId === 'AEFT') {

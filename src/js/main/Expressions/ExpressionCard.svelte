@@ -7,6 +7,9 @@
   import { fly } from 'svelte/transition';
   import markdownToTxt from 'markdown-to-txt';
   import { Star } from 'lucide-svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('expression-card');
 
   export let expression: ExpressionSnippet;
   export let id = 0;
@@ -60,7 +63,10 @@
       tb = expression.values.Thumbnail[0].url;
 
       const imgEL = document.getElementById(`${expression.id}`);
-      console.log('expression id', expression.values.Name, imgEL);
+      log.debug('Initializing expression preview', {
+        expressionName: expression.values.Name,
+        hasElement: !!imgEL
+      });
       if (imgEL) {
         freeze = new Freezeframe(imgEL, {
           trigger: 'hover',

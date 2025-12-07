@@ -6,6 +6,10 @@
   import { AddGaps } from '@/api/sequence';
   import { getContext } from 'svelte';
   import { RenameContext } from './RenameContext';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('sequential-rename');
+
   let prefix = 'SH';
   let start = '10';
   let increment = '10';
@@ -15,7 +19,7 @@
 
   $: getOutputName = () => {
     const pad = padding.length;
-    console.log('pad', pad);
+    log.debug('Calculating output name', { prefix, start, padding: pad });
     const paddedStr = start.toString().padStart(pad, '0');
     return `${prefix}${paddedStr}`;
   };

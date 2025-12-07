@@ -22,7 +22,9 @@
   import { GetFilesLibrary } from '@/api/files/files';
   import FileTable from './FileTable.svelte';
   import TreeNode from './TreeNode.svelte';
+  import { logModule } from '@/lib/logger';
 
+  const log = logModule('shot-library');
   const appId = getContext('appId');
 
   interface ClipEntry {
@@ -36,7 +38,7 @@
   });
   $: filterName = '';
 
-  $: console.log(clips);
+  $: log.debug('Clips store updated', { clips });
 
   const getPProClips = async () => {
     sequenceClips = [];
@@ -105,7 +107,7 @@
   };
 
   const handleClipSelect = (task: any) => {
-    console.log(task);
+    log.debug('Clip selected', { task });
   };
 
   const loadFiles = async () => {
@@ -153,7 +155,7 @@
 
   const refreshShots = async () => {
     const shots = await Shots(storedProject);
-    console.log('client-shots', shots);
+    log.debug('Retrieved client shots', { count: shots?.length || 0 }, shots);
   };
 </script>
 

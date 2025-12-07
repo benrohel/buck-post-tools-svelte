@@ -13,6 +13,10 @@
   import { fs, path } from '@/lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { appId } from '@/lib/utils/cep';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('clip-card');
+
   export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
@@ -53,7 +57,10 @@
   };
 
   const handleReplaceClip = () => {
-    console.log('replace clip');
+    log.debug('Replace clip', {
+      clipName: clip.shotName,
+      version: selectedVersion.version
+    });
     editVersion = selectedVersion.version;
     onReplace(clip, selectedVersion);
   };
@@ -79,15 +86,22 @@
   };
 
   const handleCheckNewVersion = async () => {
-    console.log('Checking new version');
+    log.debug('Checking new version', { clipName: clip.shotName });
     if (!clip.selectedVersion?.filepath) return;
     const result = await checkVideoFileUpdate(
       clip.filepath,
       clip.selectedVersion.filepath,
     );
-    console.log(result);
+    log.debug('Version check result', {
+      clipName: clip.shotName,
+      hasDifferences: result.length > 0,
+      differenceCount: result.length
+    }, result);
     if (result.length > 0) {
-      console.log(`Clip ${clip.shotName} is different: ${result}`);
+      log.debug('Clip has differences', {
+        clipName: clip.shotName,
+        differences: result
+      });
       videoDifferences = result;
       isVideoMatch = false; // Set to false if there are differences
     } else {
@@ -119,11 +133,6 @@
   };
 
   $: initCard = async () => {
-    if (appId === 'PPRO') {
-      // const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
-      // console.log(metadata);
-    }
-
     if (!fs.existsSync(clip.filepath)) {
       isMissing = true;
     }

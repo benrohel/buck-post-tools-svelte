@@ -36,6 +36,9 @@
   import { notifications } from '@/stores/notifications-store';
   import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import Toggle from '@/components/Toggle/Toggle.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-path-builder');
 
   //
   let isEditing = false;
@@ -46,7 +49,7 @@
 
   let dummyComp: CompRenderData = {} as CompRenderData;
 
-  $: console.log(tokenDropdownRef);
+  $: log.debug('Token dropdown ref updated', { hasDropdown: !!tokenDropdownRef }, tokenDropdownRef);
 
   // Available tokens for path construction
   const aeAvailableTokens = [
@@ -77,7 +80,7 @@
   $: isReady = rootFolder || projectFolder;
 
   let hasTask = false;
-  $: console.log(pathStructure);
+  $: log.debug('Path structure updated', { itemCount: pathStructure?.length || 0 }, pathStructure);
 
   // Default exporters for different file types
   let outputModules: string[] = [];
@@ -94,7 +97,7 @@
 
   let rootFolder = '';
   let projectFolder = '';
-  $: console.log('project folder', projectFolder);
+  $: log.debug('Project folder updated', { projectFolder });
 
   // Preset Name
   let presetName = '';
@@ -200,7 +203,11 @@
     );
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
-    console.log('selectedExportPreset', selectedExportPreset);
+    log.debug('Export preset changed', {
+      presetName: selectedExportPreset.name,
+      pathCount: selectedExportPreset.path?.length || 0,
+      useProjectFolder
+    }, selectedExportPreset);
     hasTask = selectedExportPreset.previewPath.includes('{task}');
     if ($appStore.rememberLastExportPreset) {
       storedExportSettings.set(selectedExportPreset.name);
@@ -273,7 +280,10 @@
     const updatedExportPresets = exportPresets.map((preset) =>
       preset.name === selectedExportPreset.name ? updatedExportPreset : preset
     );
-    console.log('updatedExportPresets', updatedExportPresets);
+    log.debug('Saving exporter presets', {
+      presetCount: updatedExportPresets.length,
+      currentPreset: selectedExportPreset.name
+    }, updatedExportPresets);
     setExporterPresets(appId, updatedExportPresets).then((result) => {
       if (result) {
         exportPresets = updatedExportPresets;
@@ -303,7 +313,7 @@
   //Function to check if  outputModule template exists.
   function checkOutputModuleTemplate(): string[] {
     const fileNodes: PathItem[] = findNodesByType(pathStructure, 'file');
-    console.log('fileNodes', fileNodes);
+    log.debug('Checking output module templates', { fileNodeCount: fileNodes.length }, fileNodes);
     let missing: string[] = [];
     fileNodes.forEach((node) => {
       if (!outputModules.find((o) => o === node.outputModule)) {
@@ -393,7 +403,7 @@
 
   // Function to edit an item by ID
   function editItem(itemId: string) {
-    console.log('editItem', itemId);
+    log.debug('Edit item', { itemId });
 
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
@@ -718,10 +728,10 @@
     return pathPreviewsCache;
   }
 
-  $: console.log(getMemoizedPaths(pathStructure));
+  $: log.debug('Path preview updated', { preview: getMemoizedPaths(pathStructure) });
 
   function closeModal() {
-    console.log('close modal outsie');
+    log.debug('Close modal');
     modalOpen = false;
   }
 
@@ -738,7 +748,10 @@
       outputModuleFilePath: path.resolve(renderRootFolder, node.path),
     }));
 
-    console.log('fileNodes', fileNodes);
+    log.debug('Adding comps to render queue', {
+      fileNodeCount: fileNodes.length,
+      renderRootFolder
+    }, fileNodes);
     const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
       .comps as CompRenderData[];
 
@@ -751,7 +764,11 @@
         version: version,
         selectedTask: taskName ?? '',
       };
-      console.log('options', options);
+      log.debug('Render queue options', {
+        compName: comp.name,
+        version,
+        taskName
+      }, options);
       await addToRenderQueue(comp, options);
     }
     // Save settings if enabled
@@ -815,14 +832,17 @@
         version
       );
     }
-    console.log('pathPreviews', pathPreviews);
+    log.debug('Path previews computed', { pathPreviews });
   }
 
   $: selectedNode = selectedItemId
     ? findNodeById(pathStructure, selectedItemId)
     : null;
 
-  $: console.log('selectedNode', selectedNode);
+  $: log.debug('Selected node updated', {
+    hasSelection: !!selectedNode,
+    selectedItemId
+  }, selectedNode);
 </script>
 
 <div class="export-path-builder">

@@ -13,6 +13,9 @@
 
   import Select from 'svelte-select';
   import Toggle from '@/components/Toggle/Toggle.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-compositions');
 
   const tokenList = [
     {
@@ -162,12 +165,12 @@
 
   const handlePresetChange = (e: any) => {
     activePreset = e.detail;
-    console.log('activePreset', activePreset);
+    log.debug('Preset changed', { presetName: activePreset.name, template: activePreset.template });
   };
 
   const handleTaskChange = (e: any) => {
     selectedTask = e.detail;
-    console.log('task', selectedTask);
+    log.debug('Task changed', { task: selectedTask.value });
   };
 
   const handleRenderSettingChange = (e: any) => {
@@ -224,7 +227,7 @@
 
   const addToRenderQueue = async (comp: CompRenderData) => {
     const renderPath = buildRenderPath(comp);
-    console.log('renderPath', renderPath);
+    log.debug('Adding comp to render queue', { compName: comp.compName, renderPath });
     const options = {
       compId: comp.nodeId,
       filepath: renderPath,
@@ -251,7 +254,7 @@
   };
 
   const closeModal = () => {
-    console.log('close modal outsie');
+    log.debug('Close modal');
     modalOpen = false;
   };
   onMount(async () => {

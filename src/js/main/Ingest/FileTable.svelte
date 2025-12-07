@@ -2,6 +2,10 @@
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
   import { path } from '@/lib/cep/node';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('file-table');
+
   interface FileEntry {
     name: string;
     filepath: string;
@@ -73,8 +77,8 @@
     files = Object.values(groupedFiles);
   };
 
-  $: console.log('filteredFiles', filteredFiles);
-  $: console.log('files', files);
+  $: log.debug('Filtered files updated', { count: filteredFiles.length }, filteredFiles);
+  $: log.debug('Files updated', { count: files.length }, files);
   const handleVersionChange = (file: FileEntry, version: string) => {
     dispatch('versionChange', { file, version });
   };

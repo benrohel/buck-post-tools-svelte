@@ -3,7 +3,10 @@
   import {
     exportPresets,
     selectedExportPreset,
-  } from '@/stores/local-storage";
+  } from '@/stores/local-storage';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('input-with-tokens');
 
   const tokenList = [
     {
@@ -81,8 +84,8 @@
       return;
     }
   };
-  $: console.log($exportPresets);
-  $: console.log($selectedExportPreset);
+  $: log.debug('Export presets updated', { exportPresets: $exportPresets });
+  $: log.debug('Selected export preset updated', { selectedPreset: $selectedExportPreset });
 </script>
 
 <div class="autocomplete">

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { openLinkInBrowser } from '@/lib/utils/bolt';
   import { onMount } from 'svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('resources-container');
 
   let scriptResources = [
     {
@@ -45,7 +48,7 @@
   ];
 
   const openLink = (value: string) => {
-    console.log(value);
+    log.debug('Opening resource link', { url: value });
     openLinkInBrowser(value);
   };
   onMount(() => {});

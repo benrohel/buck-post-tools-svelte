@@ -9,6 +9,9 @@
   import { appId } from '@/lib/utils/cep';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-container');
 
   interface SelectToolItem {
     value: string;
@@ -52,7 +55,7 @@
 
   const handleOnChange = (value: SelectToolItem) => {
     selectedExportMode = value;
-    console.log('selectedExportMode', selectedExportMode);
+    log.debug('Export mode changed', { mode: selectedExportMode.value, label: selectedExportMode.label });
   };
 
   $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));

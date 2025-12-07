@@ -14,6 +14,10 @@
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import { appStore } from '@/stores/app-store';
   import { stillOutputFolder } from '@/stores/local-storage';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-stills');
+
   const stillExportModes = [
     {
       label: 'shots',
@@ -41,7 +45,9 @@
 
   const handleMarkerChange = (m: any) => {
     markerColors = m;
-    console.log(markerColors);
+    log.debug('Marker colors updated', {
+      selectedCount: markerColors.filter(m => m.selected).length
+    }, markerColors);
   };
 
   const handleExportMode = (s: any) => {
@@ -57,7 +63,7 @@
         const sequenceClips = await GetSequencedClips(seq, refTrack);
         sequenceClips.forEach((clip) => {
           GetThumbnail(clip, outputFolder).then((res) => {
-            console.log(res);
+            log.debug('Generated clip thumbnail', { clipName: clip.clipName, path: res });
           });
         });
         done = true;
@@ -69,7 +75,10 @@
         outputFolder,
         markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
       ).then(() => {
-        console.log('done');
+        log.debug('Marker thumbnails export complete', {
+          outputFolder,
+          selectedMarkerCount: markerColors.filter(m => m.selected).length
+        });
       });
       done = true;
       notifications.success('Stills Export Done', 2000);

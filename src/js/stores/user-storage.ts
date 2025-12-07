@@ -1,4 +1,7 @@
 import { writable, type Writable } from 'svelte/store';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('user-storage');
 
 export function createLocalStore<T>(key: string, initialValue: T): Writable<T> {
   // Safely load from localStorage
@@ -10,7 +13,7 @@ export function createLocalStore<T>(key: string, initialValue: T): Writable<T> {
       }
       return JSON.parse(storedValue);
     } catch (error) {
-      console.error(`Error loading ${key} from localStorage:`, error);
+      log.error(`Failed to load ${key} from localStorage`, error as Error, { key });
       return initialValue;
     }
   };
@@ -23,7 +26,7 @@ export function createLocalStore<T>(key: string, initialValue: T): Writable<T> {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error saving ${key} to localStorage:`, error);
+      log.error(`Failed to save ${key} to localStorage`, error as Error, { key });
     }
   });
 

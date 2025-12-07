@@ -21,6 +21,9 @@
     updateNodeChildren,
   } from '@/api/files/file-explorer';
   import { type PathItem } from '@/api/exporter';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('bookmark-card');
 
   export let bookmark: Bookmark;
   export let onRemove: () => void;
@@ -51,12 +54,12 @@
 
   async function handleImportFolder() {
     const sourceFolder = await actualPath();
-    console.log('sourceFolder', sourceFolder);
+    log.debug('Copy source folder path', { path: sourceFolder });
     copyToClipboard(sourceFolder);
     notifications.info(`Path copied to clipboard: ${sourceFolder}`, 2000);
 
     // let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
-    // console.log("folderPath", folderPath);
+    // log.debug('Selected folder', { path: folderPath });
 
     // if (folderPath && fs.existsSync(folderPath)) {
     //   const options = {
@@ -97,7 +100,7 @@
       fileTreeItems = await getRootFolder(rootPath, groupSequences);
       showFileBrowser = !showFileBrowser;
     } catch (error) {
-      console.error('Error loading file browser:', error);
+      log.error('Failed to load file browser', error as Error, { rootPath });
       notifications.error('Failed to load folder contents', 3000);
     } finally {
       isLoadingTree = false;
@@ -116,7 +119,7 @@
       const children = await loadFolderChildren(folderPath, folderId, groupSeq);
       fileTreeItems = updateNodeChildren(fileTreeItems, folderId, children);
     } catch (error) {
-      console.error('Error loading folder children:', error);
+      log.error('Failed to load folder children', error as Error, { folderId, folderPath });
       notifications.error('Failed to load folder contents', 3000);
     }
   }
@@ -132,7 +135,7 @@
         const rootPath = await actualPath();
         fileTreeItems = await getRootFolder(rootPath, groupSequences);
       } catch (error) {
-        console.error('Error reloading file browser:', error);
+        log.error('Failed to reload file browser', error as Error, { rootPath, groupSequences });
         notifications.error('Failed to reload folder contents', 3000);
       } finally {
         isLoadingTree = false;
@@ -213,7 +216,7 @@
     event: CustomEvent<{ fileId: string; filePath: string }>,
   ) {
     // TODO: Implement reveal file functionality
-    console.log('Reveal file:', event.detail.filePath);
+    log.debug('Reveal file in folder', { filePath: event.detail.filePath });
 
     openFile(path.dirname(event.detail.filePath));
     // You can use the CEP API to reveal the file in the OS file explorer

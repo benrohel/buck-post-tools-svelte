@@ -8,6 +8,10 @@
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { appStore } from '@/stores/app-store';
   import ResourcesContainer from './Settings/ResourcesContainer.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('footer');
+
   export let authenticated: boolean = false;
   $: showSettings = false;
   $: showResources = false;
@@ -17,11 +21,11 @@
   };
 
   const onClose = () => {
-    console.log('Settings modal closed');
+    log.debug('Settings modal closed');
     showSettings = false;
   };
   const onResourcesClose = () => {
-    console.log('Resources modal closed');
+    log.debug('Resources modal closed');
     showResources = false;
   };
 </script>

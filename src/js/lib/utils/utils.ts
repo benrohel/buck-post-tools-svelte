@@ -1,5 +1,8 @@
 import { child_process, os, path } from '@/lib/cep/node';
+import { logModule } from '@/lib/logger';
+
 const { exec } = child_process;
+const log = logModule('utils');
 
 export const openUrl = (url: string) => {
   let openCmd = `open "${url}"`;
@@ -10,14 +13,14 @@ export const openUrl = (url: string) => {
 
   exec(openCmd, (error, stdout, stderr) => {
     if (error) {
-      console.log(`error: ${error.message}`);
+      log.error('Failed to open URL', error, { url, command: openCmd });
       return;
     }
     if (stderr) {
-      console.log(`stderr: ${stderr}`);
+      log.warn('URL open command stderr', { stderr, url, command: openCmd });
       return;
     }
-    console.log(`stdout: ${stdout}`);
+    log.debug('URL opened successfully', { stdout, url, command: openCmd });
   });
 };
 

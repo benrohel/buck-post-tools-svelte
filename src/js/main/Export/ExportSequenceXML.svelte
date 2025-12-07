@@ -15,11 +15,14 @@
   import { onMount } from 'svelte';
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import type { Sequence } from '@/api/sequence';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-sequence-xml');
 
   let suffix = '';
   let rootFolder = '';
 
-  $: console.log(rootFolder);
+  $: log.debug('Root folder updated', { rootFolder });
 
   function setRootFolder(path: string) {
     if ($appStore.rememberLastExportPath) {
@@ -41,7 +44,7 @@
         ? `${sequence.name}_${suffix}.xml`
         : sequence.name + '.xml'
     );
-    console.log(filepath);
+    log.debug('Exporting sequence XML', { sequenceName: sequence.name, filepath });
     if (!fs.existsSync(filepath)) {
       fs.mkdirSync(path.dirname(filepath), { recursive: true });
     }
@@ -64,7 +67,7 @@
     toSequences = await GetSelectedSequences();
 
     if (toSequences.length === 0) {
-      console.log('Please select a sequence');
+      log.warn('No sequences selected for export');
       return;
     }
 

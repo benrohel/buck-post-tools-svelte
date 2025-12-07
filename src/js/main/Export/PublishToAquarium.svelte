@@ -17,6 +17,9 @@
   import type * as BUCK5 from '@/api/buck5';
   import type { Option } from '@/types/models';
   import type { Sequence } from '@/api/sequence';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('publish-to-aquarium');
 
   let projects: BUCK5.Item[] = [];
   $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
@@ -27,7 +30,7 @@
   let selectedProject: Option<string> = { value: '', label: '' };
 
   const setSelectedProject = (event: Option<string> | null) => {
-    console.log(event);
+    log.debug('Project selected', { project: event });
     if (event) {
       selectedProject = event;
     }
@@ -54,7 +57,7 @@
 
   const handleSubmitExport = async () => {
     if (!selectedProject) {
-      console.log('Please select a project');
+      log.warn('No project selected for export');
       return;
     }
     const sequence = await GetActiveSequence();
@@ -63,7 +66,10 @@
 
     const xml = await exportSequenceXml(sequence);
     const json = await parser.convertXmlToJSON(xml);
-    console.log(json);
+    log.debug('Parsed sequence XML to JSON', {
+      sequenceName: sequence.name,
+      assetCount: json?.length || 0
+    }, json);
 
     const existingAssets = await ListAssetsFromLibrary(library._key);
 
@@ -71,18 +77,15 @@
     //   assets.find((asset: any) => asset.data.name === item.name),
     // );
 
-    // const publishJobs = json.map((item: any) =>
-    //   PostFootageAsset(library._key, item),
-    // );
-    // Promise.all(publishJobs).then((res) => {
-    //   console.log('Footage Assets Published to Aquarium', res);
-    // });
+    // TODO: Implement footage asset publishing
+    // const publishJobs = json.map((item: any) => PostFootageAsset(library._key, item));
+    // await Promise.all(publishJobs);
   };
 
   const getProjectNameFromPath = async () => {
     const projectFile = await evalES('getProjectFile()', false);
     if (!projectFile) {
-      console.log('No project file found');
+      log.debug('No project file found');
       return;
     }
 

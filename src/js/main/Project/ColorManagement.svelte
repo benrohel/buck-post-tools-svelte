@@ -20,6 +20,10 @@
     RefreshCw,
   } from 'lucide-svelte';
   import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('color-management');
+
   let gap = 2;
 
   let confirmupdateColorTemplate = false;
@@ -77,14 +81,14 @@
         projectFile,
         projectColorSettings
       );
-      console.log('template', template);
+      log.debug('Template settings updated', { template });
       await handleGetProjectSettings();
       showConfirmDialog = false;
     }
   };
 
   const handleConfirm = async (value: boolean) => {
-    console.log('handleConfirm', value);
+    log.debug('Confirm dialog response', { confirmed: value });
     if (value) {
       await handleSetTemplateSettings();
       await handleGetProjectSettings();

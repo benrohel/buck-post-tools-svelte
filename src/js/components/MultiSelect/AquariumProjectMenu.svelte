@@ -8,6 +8,9 @@
   import { sessionProject } from '@/stores/local-storage';
   import type * as BUCK5 from '@/api/buck5';
   import type { Option } from '@/types/models';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('aquarium-project-menu');
 
   let projects: BUCK5.Item[] = [];
   $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
@@ -27,7 +30,7 @@
   const getProjectNameFromPath = async () => {
     const projectFile = await evalES('getProjectFile()', false);
     if (!projectFile) {
-      console.log('No project file found');
+      log.warn('No project file found');
       return;
     }
     const projectPath = await PROJECT_ROOT(projectFile);

@@ -1,5 +1,9 @@
 import markdownToTxt from 'markdown-to-txt';
 import { CODA_TOKEN } from '@/../../secrets';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('coda-web');
+
 interface Header {
   [key: string]: string;
 }
@@ -17,14 +21,14 @@ const codaIdRE = /(?<urlPrefix>.*_d)(?<projectId>.*?)\//;
 
 export const GetCodaIdFromUrl = (url: string): string => {
   try {
-    console.log(url);
+    log.debug('Extracting Coda ID from URL', { url });
     const [match, urlPrefix, projectId] = codaIdRE.exec(url) as Array<string>;
     if (match && projectId) {
       return projectId;
     }
     return '';
   } catch (e) {
-    console.log(e);
+    log.error('Failed to extract Coda ID from URL', e as Error, { url });
     return '';
   }
 };
@@ -45,7 +49,7 @@ export const CodaRequest = async (
   } else if (requestOptions.contentType) {
     headers['Content-Type'] = requestOptions.contentType;
   }
-  console.log('headers', headers);
+  log.debug('Coda API request headers', { headers, method: requestOptions.method, url });
 
   const fetchOptions: RequestInit = {
     method: requestOptions.method,
@@ -60,9 +64,10 @@ export const CodaRequest = async (
     if (!response.ok) {
       // Provide more context on fetch errors
       const errorText = await response.text();
-      console.error(
-        `Coda API request failed: ${response.status} ${response.statusText}`,
-        errorText
+      log.error(
+        'Coda API request failed',
+        new Error(`Request failed with status ${response.status}`),
+        { status: response.status, statusText: response.statusText, errorText, url }
       );
       throw new Error(`Request failed with status ${response.status}`);
     }
@@ -75,7 +80,7 @@ export const CodaRequest = async (
     // Assume JSON response, adjust if other types are expected
     return await response.json();
   } catch (error) {
-    console.error('Error during Coda API request:', error);
+    log.error('Error during Coda API request', error as Error, { url });
     // Re-throw the error to allow calling functions to handle it
     throw error;
   }
@@ -209,7 +214,7 @@ export const GetTracker = async (
   const richRows = await CodaRequest(richoptions);
 
   const items: CodaTask[] = richRows.items.map((item: any) => {
-    console.log(item.values['Status']);
+    log.debug('Processing tracker item', { status: item.values['Status'], id: item.id });
     return {
       id: item.id,
       outputName: markdownToTxt(item.values['Output Name']),

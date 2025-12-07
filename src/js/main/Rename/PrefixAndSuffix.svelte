@@ -3,6 +3,9 @@
   import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
   import { getContext } from 'svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('prefix-and-suffix');
 
   let prefix = '';
   let suffix = '';
@@ -18,7 +21,7 @@
 
     await evalES(`addPrefixOrSuffix(${JSON.stringify(options)})`, false).then(
       (res) => {
-        console.log(res);
+        log.debug('Prefix/suffix operation complete', { result: res, prefix, suffix });
       },
     );
   };

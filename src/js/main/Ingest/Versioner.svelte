@@ -30,7 +30,9 @@
   import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
   import { shots } from '@/stores/aquarium-store';
   import Toggle from '@/components/Toggle/Toggle.svelte';
+  import { logModule } from '@/lib/logger';
 
+  const log = logModule('versioner');
   const ingestModes = [{ label: 'Version Up', value: 'versionup' }];
   let isLoading = false;
   $: isProcessing = false;
@@ -45,7 +47,7 @@
   let currentProject: any = null;
 
   const handleClipSelect = (task: any) => {
-    console.log(task);
+    log.debug('Clip selected', { task });
   };
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
     let importOptions = {
@@ -139,7 +141,7 @@
   const handleShowWarnings = () => {
     $showWarnings = !$showWarnings;
 
-    console.log('showWarnings', $showWarnings);
+    log.debug('Show warnings toggled', { showWarnings: $showWarnings });
   };
 
   const findTrackerClip = async (clip: any) => {
@@ -155,7 +157,7 @@
     isLoading = true;
     if (useAquarium && $sessionProject) {
       await Shots($sessionProject).then((res) => {
-        console.log('shots', res);
+        log.debug('Loaded shots from Aquarium', { count: res?.length || 0 }, res);
         shots.set(res);
       });
     }

@@ -1,6 +1,9 @@
 import { writable, Writable } from 'svelte/store';
 import type * as BUCK5 from '@/api/buck5/index.d';
 import { defaultAppStore, type AppStore } from '@/stores/app-store';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('local-storage');
 
 /**
  * Helper to safely load and parse data from localStorage
@@ -15,7 +18,7 @@ const safeLoad = <T = any>(key: string): T | null => {
     }
     return JSON.parse(item) as T;
   } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error);
+    log.error(`Failed to load ${key} from localStorage`, error as Error, { key });
     return null;
   }
 };
@@ -39,7 +42,7 @@ export function createLocalStore<T>(
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error saving ${key} to localStorage:`, error);
+      log.error(`Failed to save ${key} to localStorage`, error as Error, { key });
     }
   });
 

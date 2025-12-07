@@ -19,13 +19,16 @@
     type Sequence,
   } from '@/api/sequence';
   import { recursiveMkDir } from '@/lib/utils/index';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('export-sequence-csv');
 
   $: uploadThumbnails = false;
   let suffix = '';
 
   let rootFolder = '';
 
-  $: console.log(uploadThumbnails);
+  $: log.debug('Upload thumbnails updated', { uploadThumbnails });
 
   function setRootFolder(path: string) {
     if ($appStore.rememberLastExportPath) {
@@ -42,7 +45,7 @@
 
   const exportCsv = async (seq: Sequence): Promise<string> => {
     const clips = await GetSequencedClips(seq);
-    console.log(clips);
+    log.debug('Retrieved sequence clips', { sequenceName: seq.name, clipCount: clips.length });
 
     let csv: string = '';
 
@@ -53,7 +56,7 @@
       }
       return new Promise(async (resolve, reject) => {
         const thumbnailPath = await GetThumbnail(c, rootFolder);
-        console.log(thumbnailPath);
+        log.debug('Generated thumbnail', { clipName: c.clipName, thumbnailPath });
         const updatedClip = c;
         updatedClip.thumbnailUrl = thumbnailPath;
         resolve(updatedClip);
@@ -79,7 +82,7 @@
   };
 
   const handleSubmitExport = async () => {
-    console.log('export CSV', uploadThumbnails);
+    log.debug('Exporting CSV', { uploadThumbnails, rootFolder });
     const sequences = await GetSelectedSequences();
     const csvPromises = sequences.map((seq) => {
       return exportCsv(seq);

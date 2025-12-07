@@ -8,6 +8,10 @@
   import { v4 as uuidv4 } from 'uuid';
   import MultiSelect from '@/components/MultiSelect/MultiSelect.svelte';
   import { fs } from '@/lib/cep/node';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('aspect-ratios');
+
   interface Resolution {
     value: string;
     label: string;
@@ -122,7 +126,7 @@
           `createNewSequenceFromSQP(${JSON.stringify(sequenceOptions)})`,
           false,
         );
-        console.log(seqId);
+        log.debug('Created new sequence', { seqId, resolution: resolution.value });
         const insertOption = {
           toInsert: masterSequence.nodeId,
           inSequence: seqId,
@@ -141,7 +145,7 @@
   }
 
   const handleSelectionChange = (selection: Resolution[]) => {
-    console.log(selection);
+    log.debug('Resolution selection changed', { count: selection.length }, selection);
     selectedPresets = selection;
   };
 

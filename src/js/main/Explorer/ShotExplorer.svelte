@@ -19,6 +19,9 @@
   import { buck5ShotLibraryStore } from '@/stores/buck5-shot-library-store';
   import Toggle from '@/components/Toggle/Toggle.svelte';
   import FileBrowser from '@/components/FileBrowser/FileBrowser.svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('shot-explorer');
 
   import path from 'path';
   let filteredItems: PathItem[] = [];
@@ -36,7 +39,7 @@
   $: pathStructure = $buck5ShotLibraryStore.pathStructure;
   $: existingMediaFiles = $buck5ShotLibraryStore.existingMediaFiles;
 
-  $: console.log('sequenceNames', sequenceNames);
+  $: log.debug('Sequence names updated', { count: sequenceNames.length }, sequenceNames);
 
   let selectedSequenceName: any = '';
   let selectedShotName: any = '';
@@ -77,8 +80,6 @@
     filteredItemsAfterDepth,
     selectedExtensionName.value
   );
-
-  // $: console.log('filteredItems', JSON.stringify(filteredItems));
 
   const handleOnMenuChange = (value: any) => {
     appStore.update((s: AppStore) => ({

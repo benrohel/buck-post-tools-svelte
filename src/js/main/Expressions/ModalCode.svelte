@@ -32,6 +32,10 @@
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { localAppStore } from '@/stores/local-storage';
   import { notifications } from '@/stores/notifications-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('modal-code');
+
   export let onClose: OnClose = () => {};
   export let onApplyCode: CodeChangeCallback = () => {};
   export let expression: ExpressionSnippet;
@@ -71,12 +75,12 @@
     let formattedCode = expression.values.Expression.replace(reg, '');
     if (variables) {
       variables.forEach((v) => {
-        console.log(`${v.label}, ${v.value}`);
+        log.debug('Variable replacement', { label: v.label, value: v.value });
 
         formattedCode = formattedCode.replace(v.label, v.value);
       });
     }
-    console.log(formattedCode);
+    log.debug('Formatted code expression', { code: formattedCode });
     return formattedCode;
   };
 
@@ -94,7 +98,7 @@
   };
 
   const handleApplyCode = () => {
-    console.log(isScript);
+    log.debug('Apply code', { isScript });
     if (isScript) {
       handleEvalScript();
     } else {
@@ -117,7 +121,7 @@
     }
   };
 
-  $: console.log(codeString);
+  $: log.debug('Code string updated', { codeLength: codeString?.length || 0 });
   const handleEvalScript = async () => {
     const tempFile = path.join(
       __dirname,
@@ -144,7 +148,7 @@
   };
 
   const handleChatRequest = async () => {
-    console.log('gptMessage', gptMessage);
+    log.debug('Chat request', { message: gptMessage, isScript });
     if (!$localAppStore.aiService.apiKey) {
       notifications.error('AI Service API key is not set', 2000);
       return;
@@ -154,7 +158,7 @@
         $localAppStore.aiService.apiKey,
         isScript ? 'scripts' : 'expressions',
       );
-      console.log(res);
+      log.debug('Chat response received', { responseLength: res?.length || 0 });
       if (isScript) {
         codeString = extractCodeFromMarkdown(res);
       } else {
@@ -168,7 +172,7 @@
   };
 
   const handleSaveScript = async () => {
-    console.log('handleSaveScript');
+    log.debug('Save script');
   };
 </script>
 

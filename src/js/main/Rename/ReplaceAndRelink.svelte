@@ -18,6 +18,9 @@
   import { lastFolderSearch } from '@/stores/local-storage';
   import ProgressBar from '@/components/ProgressBar/ProgressBar.svelte';
   import { appStore } from '@/stores/app-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('replace-and-relink');
 
   let find = '';
   let replace = '';
@@ -48,7 +51,11 @@
   };
 
   const handleReplaceClip = async (clip: any, selectedVersion: any) => {
-    console.log('replace clip', clip, selectedVersion);
+    log.debug('Replace clip', {
+      clipName: clip.clipName,
+      nodeId: clip.nodeId,
+      selectedVersion
+    });
     let importOptions = {
       nodeId: clip.nodeId,
       oldPath: clip.filepath,
@@ -60,7 +67,7 @@
       return;
     }
     const res = await evalES(`replaceMedia(${JSON.stringify(importOptions)})`);
-    console.log('replace clip result: ', res);
+    log.debug('Replace clip result', { result: res });
     const updatedClip = JSON.parse(res);
 
     sequenceClips = sequenceClips.map((c: any) => {
@@ -120,7 +127,7 @@
       // Process next clip
       processNextClip(clips, index + 1);
     } catch (error) {
-      console.error(`Error processing clip ${clip.clipName}:`, error);
+      log.error(`Error processing clip ${clip.clipName}`, error as Error, { clipName: clip.clipName });
       notifications.error(`Failed to replace clip ${clip.clipName}`, 2000);
       isProcessing = false;
     }
@@ -137,7 +144,7 @@
   };
 
   const searchFiles = async () => {
-    console.log('searching files');
+    log.debug('Searching files', { rootFolder, find, replace });
     if (!rootFolder || !find || !replace) {
       return;
     }
@@ -157,7 +164,10 @@
     }
 
     sequenceClips = [...currentFiles];
-    console.log('res', sequenceClips);
+    log.debug('Search files complete', {
+      clipCount: sequenceClips.length,
+      hasReplacements: sequenceClips.some(c => c.replacements?.length > 0)
+    }, sequenceClips);
     isLoading = false;
   };
 
@@ -172,7 +182,7 @@
   };
 
   $: () => {
-    console.log('rootFolder', rootFolder);
+    log.debug('Root folder updated', { rootFolder });
     if ($appStore.rememberLastFolderSearch) {
       lastFolderSearch.set(rootFolder);
     }
@@ -180,7 +190,7 @@
 
   onMount(async () => {
     if ($lastFolderSearch !== null && $appStore.rememberLastFolderSearch) {
-      console.log('lastFolderSearch', $lastFolderSearch);
+      log.debug('Restored last folder search', { lastFolderSearch: $lastFolderSearch });
       rootFolder = $lastFolderSearch;
     }
     await getClips();

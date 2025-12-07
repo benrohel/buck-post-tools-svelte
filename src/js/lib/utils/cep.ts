@@ -1,4 +1,7 @@
 import { csi } from "./bolt";
+import { logModule } from '@/lib/logger';
+
+const log = logModule('cep');
 
 /**
  * Register all possible keyboard shortcuts on Mac and Windows for you CEP Panel
@@ -30,7 +33,7 @@ export const keyRegisterOverride = () => {
     }
   }
   const keyRes = csi.registerKeyEventsInterest(JSON.stringify(allKeys));
-  console.log("Key Events Registered Completed: " + keyRes);
+  log.debug('Key events registered', { result: keyRes, keyCount: allKeys.length });
 };
 
 export const appId = csi.getApplicationID();

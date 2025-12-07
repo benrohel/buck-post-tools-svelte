@@ -1,6 +1,9 @@
 
 import { fs, os, path } from '@/lib/cep/node';
 const { fdir } = require('fdir');
+import { logModule } from '@/lib/logger';
+
+const log = logModule('files');
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -116,7 +119,7 @@ export const GetSystemFileVersionsWithShotName = async (
       displayName: 'current'
     }];
   } catch (e) {
-    console.log('Error finding versions:', e);
+    log.error('Failed to find file versions', e as Error, { filepath, searchRoot, baseFilename });
     return [{
       filepath: filepath,
       version: 'current',
