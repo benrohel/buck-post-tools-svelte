@@ -54,7 +54,7 @@ export const getOutputModules = (): string[] => {
           outputModules.push(str);
         }
       });
-      return outputModules;
+      return outputModules.filter((module) => !module.includes('temp - '));
     }
   }
   return [];

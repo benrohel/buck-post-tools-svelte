@@ -12,7 +12,6 @@
     Pencil,
   } from 'lucide-svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
-
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import ModalSettings from '@/components/Modal/ModalSettings.svelte';
@@ -29,6 +28,7 @@
 
   import { os, path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
+  import { getRenderSettingsList, getOutputModules } from '@/lib/utils/aeft';
   import { generateId } from '@/lib/utils/utils';
   import { getExporterPresets, setExporterPresets } from '@/api/preferences';
   import {
@@ -76,7 +76,7 @@
   let version = 1;
   let taskName = '';
   let pathPreviews = '';
-  let hasTask = false;
+  let hasTask = true;
   let outputModules: string[] = [];
   let selectedOutputModuleMenuItem = { label: '', value: '' };
   let rootFolder = '';
@@ -788,6 +788,7 @@
   };
 
   onMount(async () => {
+    console.log(getOutputModules());
     try {
       log.debug('Component mounting', { appId: $appStore.appId });
 
@@ -815,21 +816,28 @@
       dummyComp = comps.comps[0];
       log.debug('Dummy comp loaded', { compName: dummyComp?.name });
 
-      log.debug('Calling getOutputModulesTemplates()...');
-      const renderSettings = JSON.parse(
-        await evalES('getOutputModulesTemplates()')
+      // Load Buck Output Modules if not installed
+      const savedOutputModules = getOutputModules();
+      const buckModules = savedOutputModules.filter((module) =>
+        module.includes('BUCK')
       );
-      outputModules = renderSettings.filter(
-        (p: string) => !p.startsWith('_HIDDEN')
-      );
-      log.debug('Output modules loaded', { count: outputModules.length });
 
-      selectedOutputModule = outputModules[0];
-      outputModulesSelectItems = outputModules.map((module) => ({
-        value: module,
-        label: module,
-      }));
-      selectedOutputModuleMenuItem = outputModulesSelectItems[0];
+      if (buckModules.length < 1) {
+        log.debug('Calling getOutputModulesTemplates()...');
+        const renderSettings = JSON.parse(
+          await evalES('getOutputModulesTemplates()')
+        );
+        outputModules = renderSettings.filter(
+          (p: string) => !p.startsWith('_HIDDEN')
+        );
+        log.debug('Output modules loaded', { count: outputModules.length });
+        selectedOutputModule = outputModules[0];
+        outputModulesSelectItems = outputModules.map((module) => ({
+          value: module,
+          label: module,
+        }));
+        selectedOutputModuleMenuItem = outputModulesSelectItems[0];
+      }
 
       // Get Stored Settings
       if ($appStore.rememberLastExportPath) {
