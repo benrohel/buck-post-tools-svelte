@@ -1,19 +1,41 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { createEventDispatcher } from 'svelte';
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { onMount, createEventDispatcher } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { ArrowUp, FileClock } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 4. STORE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { notifications } from '@/stores/notifications-store';
   import { localAppStore } from '@/stores/local-storage';
-  import { logModule } from '@/lib/logger';
 
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('chat-input');
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
+  export let inputValue: string = '';
+
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   let textarea: HTMLTextAreaElement | null = null;
   let keepHistory: boolean = false;
-  export let inputValue: string = '';
   const dispatch = createEventDispatcher();
 
-  // Auto-resize the textarea as content grows
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const adjustTextareaHeight = () => {
     if (textarea) {
       textarea.style.height = 'auto';
@@ -21,7 +43,6 @@
     }
   };
 
-  $: log.debug('Keep history setting changed', { keepHistory });
   const handleInput = () => {
     adjustTextareaHeight();
   };
@@ -47,7 +68,11 @@
     }
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
+    log.debug('Chat input mounted', { keepHistory });
     adjustTextareaHeight();
   });
 </script>

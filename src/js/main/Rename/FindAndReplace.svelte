@@ -1,16 +1,19 @@
 <script lang="ts">
   import { getContext, onMount } from 'svelte';
+
   import { ArrowLeftRight } from 'lucide-svelte';
+
   import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('find-and-replace');
+
+  const renameContext = getContext('rename') as RenameContext;
 
   let find = '';
   let replace = '';
 
-  const renameContext = getContext('rename') as RenameContext;
   const handleFindAndReplace = async () => {
     const options = {
       scope: renameContext.getScope ?? 'project',
@@ -33,6 +36,9 @@
     find = prevReplace;
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {});
 </script>
 

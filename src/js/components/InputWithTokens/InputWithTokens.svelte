@@ -1,10 +1,23 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { ArrowLeftRight, ListPlus } from 'lucide-svelte';
-  import { exportPresets, selectedExportPreset } from '@/stores/local-storage';
-  import { logModule } from '@/lib/logger';
 
+  // ═══════════════════════════════════════════════════════════
+  // 4. STORE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { exportPresets, selectedExportPreset } from '@/stores/local-storage';
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('input-with-tokens');
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   const tokenList = [
     {
       value: 'compName',
@@ -31,13 +44,19 @@
   let selectedToken = '';
   let version = 0;
 
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
+  $: previewString = getPreviewString();
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const getPreviewString = () => {
     return `${prefix ? prefix + '_' : ''}${tokens.join('_')}${
       suffix ? '_' + suffix : ''
     }${version > 0 ? `_v${String(version).padStart(3, '0')}` : ''}`;
   };
-
-  $: previewString = getPreviewString();
 
   const addToken = (token: string) => {
     tokens = [...tokens, token];
@@ -64,10 +83,6 @@
       return;
     }
   };
-  $: log.debug('Export presets updated', { exportPresets: $exportPresets });
-  $: log.debug('Selected export preset updated', {
-    selectedPreset: $selectedExportPreset,
-  });
 </script>
 
 <div class="autocomplete">

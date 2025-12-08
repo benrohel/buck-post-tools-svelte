@@ -1,6 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+
+  import ToolCard from '@/components/ClipCard/ToolCard.svelte';
+  import AssetCard from '@/components/ClipCard/AssetCard.svelte';
+
   import { appStore, appVersion } from '@/stores/app-store';
+
   import {
     getLocalScripts,
     getBuckScripts,
@@ -9,8 +14,13 @@
     getProjectCommonFiles,
     type CommonSharedFile,
   } from '@/api/scripts/tools-scripts';
-  import ToolCard from '@/components/ClipCard/ToolCard.svelte';
-  import AssetCard from '@/components/ClipCard/AssetCard.svelte';
+  import { evalES } from '@/lib/utils/bolt';
+  import toolList from './tools.json';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('tools-container');
+
+  import type { SelectToolItem } from '@/types/models';
 
   interface ToolData {
     name: string;
@@ -26,28 +36,18 @@
   interface ToolItem {
     [key: string]: ToolData;
   }
-  import toolList from './tools.json';
-  import { evalES } from '@/lib/utils/bolt';
-  import { logModule } from '@/lib/logger';
 
-  const log = logModule('tools-container');
-  const appId = $appStore.appId;
-
-  log.debug('Loading local scripts', { appId, appVersion: $appVersion });
-
+  let appId = '';
   let localScripts = [] as Script[];
+
   $: buckScripts = getBuckScripts(appId);
   $: commonFiles = [] as CommonSharedFile[];
   $: projectScripts = [] as Script[];
 
-  interface SelectToolItem {
-    value: string;
-    label: string;
-    component: any;
-    apps: string[];
-  }
-
   onMount(async () => {
+    appId = $appStore.appId;
+    log.debug('Loading local scripts', { appId, appVersion: $appVersion });
+
     localScripts = await getLocalScripts(
       appId,
       $appVersion,

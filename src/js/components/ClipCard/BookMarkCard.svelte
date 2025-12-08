@@ -1,28 +1,29 @@
 <script lang="ts">
-  import { fs, os, path } from '@/lib/cep/node';
   import {
     ExternalLink,
     FolderOpen,
     CircleX,
     ClipboardCopy,
   } from 'lucide-svelte';
+
+  import FileBrowser from '../FileBrowser/FileBrowser.svelte';
+
   import { Bookmark } from '@/stores/bookmark-store';
-  import { evalES, evalFile } from '@/lib/utils/bolt';
   import { notifications } from '@/stores/notifications-store';
-  import { openFile } from '@/lib/utils/utils';
+
+  import { evalES, evalFile } from '@/lib/utils/bolt';
+  import { fs, os, path } from '@/lib/cep/node';
+  import { openFile, copyToClipboard } from '@/lib/utils/utils';
   import csInterface from '@/lib/cep/csinterface';
   import { PROJECT_ROOT } from '@/api/files/files';
-  import { copyToClipboard } from '@/lib/utils/utils';
-  import FileBrowser from '../FileBrowser/FileBrowser.svelte';
-  import { platform } from 'os';
   import {
     getRootFolder,
     loadFolderChildren,
     updateNodeChildren,
   } from '@/api/files/file-explorer';
-  import { type PathItem } from '@/api/exporter';
-  import { logModule } from '@/lib/logger';
+  import type { PathItem } from '@/api/exporter';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('bookmark-card');
 
   export let bookmark: Bookmark;

@@ -1,23 +1,46 @@
 <script lang="ts">
-  import type { OptionSelectCallback } from '@/types/callbacks';
-  import { fade } from 'svelte/transition';
-  import { clickOutside } from './ClickOutside';
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount, setContext } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { writable } from 'svelte/store';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { ChevronDown } from 'lucide-svelte';
 
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { clickOutside } from './ClickOutside';
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { OptionSelectCallback } from '@/types/callbacks';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let label = '';
   export let placeholder = 'Make Selection';
   export let defaultValue: string | number | null = null;
   export let disabled = false;
   export let onSelected: OptionSelectCallback<string | number | null>;
-
-  let isMenuVisible = writable(false);
   export let selectedValue = writable(null);
 
+  // ═══════════════════════════════════════════════════════════
+  // 10. CONTEXT
+  // ═══════════════════════════════════════════════════════════
+  let isMenuVisible = writable(false);
   setContext('selected', selectedValue);
   setContext('visible', isMenuVisible);
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const toggleMenu = () => {
     $isMenuVisible = !$isMenuVisible;
   };
@@ -32,6 +55,9 @@
     }
   });
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     $isMenuVisible = false;
     if (defaultValue) {

@@ -18,12 +18,12 @@
     frameRange: string;
   }
   export let clips: ClipEntry[] = [];
-  $: files = [] as FileEntry[];
   export let filterName = '';
 
   const dispatch = createEventDispatcher();
-
   let filteredFiles: FileEntry[] = [];
+
+  $: files = [] as FileEntry[];
 
   $: filterFiles = () => {
     if (filterName === '') {
@@ -77,8 +77,6 @@
     files = Object.values(groupedFiles);
   };
 
-  $: log.debug('Filtered files updated', { count: filteredFiles.length }, filteredFiles);
-  $: log.debug('Files updated', { count: files.length }, files);
   const handleVersionChange = (file: FileEntry, version: string) => {
     dispatch('versionChange', { file, version });
   };

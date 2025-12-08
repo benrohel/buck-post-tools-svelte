@@ -492,3 +492,18 @@ export interface KeyValue<V = string> {
   key: string;
   value: V;
 }
+
+/**
+ * Select tool item for tool/mode selection dropdowns
+ * Used in containers like ExportContainer, ToolsContainer, etc.
+ */
+export interface SelectToolItem {
+  /** Unique value identifier */
+  value: string;
+  /** Display label */
+  label: string;
+  /** Svelte component to render */
+  component: any;
+  /** Applicable apps (AEFT, PPRO) */
+  apps: string[];
+}

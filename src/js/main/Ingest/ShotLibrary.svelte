@@ -1,16 +1,6 @@
 <script lang="ts">
-  import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
-  import { openUrl } from '@/lib/utils/utils';
-  import ClipCard from '@/components/ClipCard/ClipCard.svelte';
-  import { Shots } from '@/api/buck5/buck5-api';
-  import { sessionProject, storedProject } from '@/stores/local-storage';
-  import { path } from '@/lib/cep/node';
-  import {
-    GetSystemFileVersionsWithShotName,
-    GetFileVersion,
-  } from '@/api/files/files';
-  import { asyncDerived, asyncReadable } from '@square/svelte-store';
-  import { evalES } from '@/lib/utils/bolt';
+  import { onMount, getContext } from 'svelte';
+
   import {
     Download,
     Check,
@@ -18,27 +8,40 @@
     ArrowUpDown,
     ExternalLink,
   } from 'lucide-svelte';
-  import { onMount, getContext } from 'svelte';
-  import { GetFilesLibrary } from '@/api/files/files';
+  import { asyncDerived, asyncReadable } from '@square/svelte-store';
+
+  import ClipCard from '@/components/ClipCard/ClipCard.svelte';
   import FileTable from './FileTable.svelte';
   import TreeNode from './TreeNode.svelte';
-  import { logModule } from '@/lib/logger';
 
+  import { sessionProject, storedProject } from '@/stores/local-storage';
+
+  import { GetActiveSequence, GetSequencedClips } from '@/api/edit';
+  import { openUrl } from '@/lib/utils/utils';
+  import { Shots } from '@/api/buck5/buck5-api';
+  import { path } from '@/lib/cep/node';
+  import {
+    GetSystemFileVersionsWithShotName,
+    GetFileVersion,
+    GetFilesLibrary,
+  } from '@/api/files/files';
+  import { evalES } from '@/lib/utils/bolt';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('shot-library');
-  const appId = getContext('appId');
 
   interface ClipEntry {
     file: string;
     frameRange: string;
   }
 
+  const appId = getContext('appId');
+
   $: sequenceClips = [] as any[];
   const clips = asyncReadable<ClipEntry[]>(null, async () => {
     return loadFiles();
   });
   $: filterName = '';
-
-  $: log.debug('Clips store updated', { clips });
 
   const getPProClips = async () => {
     sequenceClips = [];

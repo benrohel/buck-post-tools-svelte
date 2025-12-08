@@ -1,31 +1,56 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { SquareCode, Eye, ChevronDown, ChevronUp } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import path from 'path';
   import { evalFile } from '@/lib/utils/bolt';
   import { fs, os } from '@/lib/cep/node';
-  import path from 'path';
   import { SHARED_FOLDER } from '@/api/files/files';
-  import { logModule } from '@/lib/logger';
 
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('tool-card');
 
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
   interface ToolData {
     name: string;
     filename: string;
-    filepath:string;
+    filepath: string;
     version?: string;
     description?: string;
     author?: string;
     icon?: string;
   }
 
-
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let scriptTool: ToolData;
-  let isMenuOpen = false;
   export let selected = false;
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
+  let isMenuOpen = false;
   let offline = true;
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleOpenFile = () => {
     // openFile(scripTool.filepath);
   };
@@ -40,14 +65,16 @@
 
   const handleLaunchTool = () => {
     let filepath = scriptTool.filepath;
-    if(os.platform()==='win32'){
-    filepath = scriptTool.filepath.replace(/\\/g, '\\\\');
+    if (os.platform() === 'win32') {
+      filepath = scriptTool.filepath.replace(/\\/g, '\\\\');
     }
     log.debug('Launching tool', { filepath, toolName: scriptTool.name });
-   evalFile(filepath);
-
+    evalFile(filepath);
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     offline = !fs.existsSync(scriptTool.filepath);
   });

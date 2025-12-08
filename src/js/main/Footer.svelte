@@ -1,15 +1,18 @@
 <script lang="ts">
   import { Server, RefreshCw, Settings, LibraryBig } from 'lucide-svelte';
-  import { buck5Server } from '@/stores/server-store';
-  import pkg from '../../../package.json';
-  import buckLogo from '../../../src/assets/BUCK_ICON_WHITE.svg';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+
   import SettingsContainer from './Settings/SettingsContainer.svelte';
   import ModalSettings from '@/components/Modal/ModalSettings.svelte';
-  import { Tooltip } from '@svelte-plugins/tooltips';
-  import { appStore } from '@/stores/app-store';
   import ResourcesContainer from './Settings/ResourcesContainer.svelte';
-  import { logModule } from '@/lib/logger';
 
+  import { buck5Server } from '@/stores/server-store';
+  import { appStore } from '@/stores/app-store';
+
+  import pkg from '../../../package.json';
+  import buckLogo from '../../../src/assets/BUCK_ICON_WHITE.svg';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('footer');
 
   export let authenticated: boolean = false;

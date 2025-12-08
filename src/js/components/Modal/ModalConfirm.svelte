@@ -1,18 +1,32 @@
 <script lang="ts">
-  import type { OnClose, OnChange } from '@/types/callbacks';
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { XCircle } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { OnClose, OnChange } from '@/types/callbacks';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let question: string = '';
   export let onClose: OnClose = () => {};
   export let value: boolean = false;
   export let onConfirm: OnChange<boolean> = () => {};
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleOnClose = () => {
     if (onClose) {
       onClose();
     }
   };
 
-  export function clickOutside(node: any) {
+  export const clickOutside = (node: any) => {
     const handleClick = (event: MouseEvent) => {
       if (
         node &&
@@ -34,7 +48,7 @@
         document.removeEventListener('click', handleClick, true);
       },
     };
-  }
+  };
 </script>
 
 <div id="modal-overlay" on:click={handleOnClose}>

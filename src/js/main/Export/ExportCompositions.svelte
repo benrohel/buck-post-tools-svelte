@@ -1,21 +1,31 @@
 <script lang="ts">
-  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
-  import { evalES } from '@/lib/utils/bolt';
-  import { sequenceOutputFolder } from '@/stores/local-storage';
-  import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
-  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
   import { onMount } from 'svelte';
+
+  import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
+  // @ts-expect-error - @svelte-plugins/tooltips has incomplete type definitions
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import Select from 'svelte-select';
+
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+
+  import { sequenceOutputFolder } from '@/stores/local-storage';
+
+  import { evalES } from '@/lib/utils/bolt';
   import { fs, path } from '@/lib/cep/node';
   import { setPreferenceByKey, getPreferenceByKey } from '@/api/preferences';
   import type { ExportNamePreset } from '@/api/preferences';
-  // @ts-expect-error - @svelte-plugins/tooltips has incomplete type definitions
-  import { Tooltip } from '@svelte-plugins/tooltips';
 
-  import Select from 'svelte-select';
-  import Toggle from '@/components/Toggle/Toggle.svelte';
   import { logModule } from '@/lib/logger';
-
   const log = logModule('export-compositions');
+
+  interface CompRenderData {
+    compName: string;
+    nodeId: number;
+    projectName: string;
+    projectVersion: string;
+  }
 
   const tokenList = [
     {
@@ -120,12 +130,19 @@
   let presetName = '';
   let prefix = '';
   let useProjectFolder = false;
-
-  $: selectedTask = tasks[0];
-  $: modalOpen = false;
   let tokens: string[] = [];
   let version = 0;
   let renderSettingsList: string[] = [];
+  let namePresetFocus = false;
+  let renderPresetFocus = false;
+  let tokenSelectFocus = false;
+  let selectTaskFocus = false;
+
+  $: selectedTask = tasks[0];
+  $: modalOpen = false;
+  $: namePresetFilter = '';
+  $: renderPresetFilter = '';
+  $: tokenFilter = '';
 
   $: getHtmlString = () => {
     let tempString = '';
@@ -203,12 +220,6 @@
     modalOpen = false;
   };
 
-  interface CompRenderData {
-    compName: string;
-    nodeId: number;
-    projectName: string;
-    projectVersion: string;
-  }
   const buildRenderPath = (compData: CompRenderData) => {
     const projectVersionString = compData.projectVersion
       ? 'v' + compData.projectVersion.padStart(3, '0')
@@ -257,6 +268,7 @@
     log.debug('Close modal');
     modalOpen = false;
   };
+
   onMount(async () => {
     const renderSettings = JSON.parse(
       await evalES('getOutputModulesTemplates()')
@@ -269,13 +281,6 @@
     exportNamePresets = await presetList();
     activePreset = exportNamePresets[0];
   });
-  let namePresetFocus = false;
-  $: namePresetFilter = '';
-  let renderPresetFocus = false;
-  $: renderPresetFilter = '';
-  let tokenSelectFocus = false;
-  $: tokenFilter = '';
-  let selectTaskFocus = false;
 </script>
 
 <div>

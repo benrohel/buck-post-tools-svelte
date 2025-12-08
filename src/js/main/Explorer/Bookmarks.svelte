@@ -1,15 +1,16 @@
 <script lang="ts">
+  import { Plus } from 'lucide-svelte';
   import BookMarkCard from '@/components/ClipCard/BookMarkCard.svelte';
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
   import { createBookmarkStore } from '@/stores/bookmark-store';
-  import { Plus } from 'lucide-svelte';
-  const bookmarks = createBookmarkStore('bookmarks');
+  import type { Option } from '@/types/models';
 
+  const bookmarks = createBookmarkStore('bookmarks');
   let newName = '';
   let newPath = '';
-  $: folderType = 'relative';
 
+  $: folderType = 'relative';
   const setPath = (path: string) => {
     newPath = path;
     newName = path.split('/').pop() ?? '';
@@ -28,7 +29,7 @@
     $bookmarks = $bookmarks.filter((_, i) => i !== index);
   };
 
-  const handleOnButtonGroupChange = (item: any) => {
+  const handleOnButtonGroupChange = (item: Option<string>) => {
     folderType = item.value;
   };
 </script>

@@ -59,6 +59,7 @@ export type {
   // Utility types
   Option,
   KeyValue,
+  SelectToolItem,
 } from './models';
 
 // Re-export all types from callbacks

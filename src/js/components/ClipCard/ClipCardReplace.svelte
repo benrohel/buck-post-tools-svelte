@@ -1,32 +1,39 @@
 <script lang="ts">
-  import type { ClipMetadata } from '@/types/models';
-  import type { OnChange2 } from '@/types/callbacks';
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { fs, path } from '@/lib/cep/node';
-  import { onMount } from "svelte";
-  import { fly } from "svelte/transition";
   import { evalES } from '@/lib/utils/bolt';
 
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { ClipMetadata } from '@/types/models';
+  import type { OnChange2 } from '@/types/callbacks';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
   export let onChange: OnChange2<ClipMetadata, string>;
-  export let selectedVersion = "";
+  export let selectedVersion = '';
 
-  const handleSelectVersion = async () => {
-    if (onChange) {
-      onChange(clip, selectedVersion);
-    }
-  };
-  const handleEditClipCLick = () => {
-    const startFrame = clip.start * clip.sequenceFramerate;
-    evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
-  };
-
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
   $: getSyncedColor = () => {
     if (isSynced()) {
-      return "color: #3caea3";
+      return 'color: #3caea3';
     } else {
-      return "color: #f6d55c";
+      return 'color: #f6d55c';
     }
   };
 
@@ -39,13 +46,30 @@
       selectedVersion = clip.replacements[0];
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
+  const handleSelectVersion = async () => {
+    if (onChange) {
+      onChange(clip, selectedVersion);
+    }
+  };
+
+  const handleEditClipCLick = () => {
+    const startFrame = clip.start * clip.sequenceFramerate;
+    evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     initCard();
   });
 </script>
 
 <div
-  class={!selected ? "clip-card" : "clip-card selected"}
+  class={!selected ? 'clip-card' : 'clip-card selected'}
   on:dblclick={handleEditClipCLick}
   transition:fly={{ y: 60, duration: 100, delay: id * 10 }}
 >
@@ -85,7 +109,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
   .selected {
     background-color: $highlight;
   }

@@ -1,15 +1,18 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalES } from '@/lib/utils/bolt';
-  import upath from 'upath';
-  import { getPresetFile } from '@/api/SQPreset';
-  import type { Sequence } from '@/api/sequence';
+
   import { ArrowRight } from 'lucide-svelte';
   import { v4 as uuidv4 } from 'uuid';
-  import MultiSelect from '@/components/MultiSelect/MultiSelect.svelte';
-  import { fs } from '@/lib/cep/node';
-  import { logModule } from '@/lib/logger';
+  import upath from 'upath';
 
+  import MultiSelect from '@/components/MultiSelect/MultiSelect.svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { getPresetFile } from '@/api/SQPreset';
+  import { fs } from '@/lib/cep/node';
+  import type { Sequence } from '@/api/sequence';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('aspect-ratios');
 
   interface Resolution {
@@ -78,12 +81,6 @@
     const aeJson = JSON.parse(aeResult);
     masterSequence = aeJson.sequences[0];
   };
-
-  onMount(async () => {
-    await getMasterSequence();
-    const res = await GetResolutions();
-    filteredPresets = res;
-  });
 
   const GetResolutions = async () => {
     return videoResolutions.resolutions;
@@ -172,6 +169,12 @@
     const pixelWidth = 20 * ar;
     return `${pixelWidth}px`;
   };
+
+  onMount(async () => {
+    await getMasterSequence();
+    const res = await GetResolutions();
+    filteredPresets = res;
+  });
 </script>
 
 <div class="settings">

@@ -1,17 +1,22 @@
 <script lang="ts">
   import { getContext, onMount } from 'svelte';
+
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
   import AspectRatios from './AspectRatios.svelte';
   import ColorManagement from './ColorManagement.svelte';
   import ShotExplorer from '../Explorer/ShotExplorer.svelte';
-  import { appStore } from '@/stores/app-store';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+
+  import { appStore } from '@/stores/app-store';
+
   import { csi } from '@/lib/utils/bolt';
+
+  import type { SelectToolItem } from '@/types/models';
 
   const appId = csi.getApplicationID();
 
-  const toolList = [
+  const toolList: SelectToolItem[] = [
     {
       label: 'Start Project',
       value: 'projectStarter',
@@ -38,9 +43,10 @@
     },
   ];
 
-  let selectedMode = toolList[0];
+  let selectedMode: SelectToolItem = toolList[0];
   let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
-  const handleOnMenuChange = (value: any) => (selectedMode = value);
+
+  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
 
   onMount(() => {
     if ($appStore.defaultToBuck5ShotLibrary && appId === 'PPRO') {

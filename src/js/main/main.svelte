@@ -1,11 +1,7 @@
 <script lang="ts">
-  import { buck5Server } from '@/stores/server-store';
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
-  import '@/index.scss';
-  import Tabs from '@/components/Tabs/Tabs.svelte';
-  import { getAuthAuthenticated, client } from 'buck-client';
+
   import {
     ArrowDownUp,
     PencilRuler,
@@ -18,7 +14,11 @@
     ToolCase,
     BookMarked,
   } from 'lucide-svelte';
-  import { connectToDaemon } from './backend';
+  import { getAuthAuthenticated, client } from 'buck-client';
+
+  import Tabs from '@/components/Tabs/Tabs.svelte';
+  import Toast from '@/components/Toast/Toast.svelte';
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import ProjectContainer from './Project/ProjectContainer.svelte';
   import RenameContext from './Rename/RenameContext.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
@@ -26,7 +26,9 @@
   import ToolsContainer from './Tools/ToolsContainer.svelte';
   import ExplorerContainer from './Explorer/ExplorerContainer.svelte';
   import Footer from './Footer.svelte';
-  import Toast from '@/components/Toast/Toast.svelte';
+  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
+
+  import { buck5Server } from '@/stores/server-store';
   import {
     appStore,
     defaultAppStore,
@@ -34,20 +36,19 @@
     extensionVersion,
   } from '@/stores/app-store';
   import { localAppStore } from '@/stores/local-storage';
-  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
-  import { checkForUpdate, installFromLocalFilepath } from '@/api/buck-library';
-  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import { notifications } from '@/stores/notifications-store';
-  import { logModule } from '@/lib/logger';
 
+  import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
+  import { checkForUpdate, installFromLocalFilepath } from '@/api/buck-library';
+  import { connectToDaemon } from './backend';
+  import '@/index.scss';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('main');
 
   let backgroundColor: string = '#232323';
   let modalConfirmOpen = false;
   let latestVersion: { version: string; path: string } | null = null;
-
-  $: appName = $appStore.appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
-
   let items = [
     {
       label: 'Explorer',
@@ -99,16 +100,10 @@
       apps: ['AEFT'],
     },
   ];
-
   let appItems = items;
-
   let authenticated = false;
-  // Reactive statement to log store changes
-  $: log.debug(
-    'Local app store updated',
-    { hasStore: !!$localAppStore },
-    $localAppStore
-  );
+
+  $: appName = $appStore.appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
 
   if (!$localAppStore) {
     appStore.set(defaultAppStore);

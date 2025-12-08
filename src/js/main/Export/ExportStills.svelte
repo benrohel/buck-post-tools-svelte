@@ -1,21 +1,23 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+
+  import MarkerRow from '@/components/Markers/MarkersSelect.svelte';
+  import type MarkerColor from '@/components/Markers/MarkersSelect.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { notifications } from '@/stores/notifications-store';
+  import { appStore } from '@/stores/app-store';
+  import { stillOutputFolder } from '@/stores/local-storage';
+
   import { GetThumbnail } from '@/api/clip';
   import {
     GetMarkersThumbnails,
     GetSequence,
     GetSequencedClips,
   } from '@/api/sequence';
-
-  import { notifications } from '@/stores/notifications-store';
   import { openFile } from '@/lib/utils/utils';
-  import MarkerRow from '@/components/Markers/MarkersSelect.svelte';
-  import type MarkerColor from '@/components/Markers/MarkersSelect.svelte';
-  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
-  import { appStore } from '@/stores/app-store';
-  import { stillOutputFolder } from '@/stores/local-storage';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('export-stills');
 
   const stillExportModes = [
@@ -31,6 +33,8 @@
   let selectedExportMode = '';
   let refTrack = 'shots';
   let done = false;
+
+  $: focus = false;
 
   const setOutputFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
@@ -91,7 +95,6 @@
       notifications.success('Stills Export Done', 2000);
     }
   };
-  $: focus = false;
 
   onMount(async () => {
     selectedExportMode = stillExportModes[0].value;

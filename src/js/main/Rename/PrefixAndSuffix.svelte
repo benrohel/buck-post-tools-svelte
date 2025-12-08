@@ -1,16 +1,18 @@
 <script lang="ts">
+  import { getContext } from 'svelte';
+
   import { ArrowLeftRight } from 'lucide-svelte';
+
   import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
-  import { getContext } from 'svelte';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('prefix-and-suffix');
+
+  const renameContext = getContext('rename') as RenameContext;
 
   let prefix = '';
   let suffix = '';
-
-  const renameContext = getContext('rename') as RenameContext;
 
   const handlePrefixSuffix = async () => {
     const options = {

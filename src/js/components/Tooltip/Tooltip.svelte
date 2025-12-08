@@ -1,6 +1,12 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let title = '';
   export let position = 'bottom'; // top, right, bottom, left
   export let delay = 0; // delay in ms before showing tooltip
@@ -9,6 +15,9 @@
   export let followCursor = false; // follow cursor or stay fixed to element
   export let show = false;
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   let isHovered = false;
   let tooltipElement: HTMLElement;
   let wrapperElement: HTMLElement;
@@ -17,11 +26,10 @@
   let showTimeout: ReturnType<typeof setTimeout>;
   let mounted = false;
 
-  onMount(() => {
-    mounted = true;
-  });
-
-  function calculatePosition() {
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
+  const calculatePosition = () => {
     if (!wrapperElement || !tooltipElement || !mounted) return;
 
     const rect = wrapperElement.getBoundingClientRect();
@@ -100,7 +108,7 @@
       tooltipElement.style.top = `${y}px`;
       tooltipElement.style.left = `${x}px`;
     }, 0);
-  }
+  };
 
   const mouseOver = (event: MouseEvent) => {
     if (!mounted) return;
@@ -129,6 +137,13 @@
     clearTimeout(showTimeout);
     isHovered = false;
   };
+
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
+  onMount(() => {
+    mounted = true;
+  });
 </script>
 
 <div

@@ -10,15 +10,9 @@
   import PublishToAquarium from './PublishToAquarium.svelte';
   import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
-
   const log = logModule('export-container');
 
-  interface SelectToolItem {
-    value: string;
-    label: string;
-    component: any;
-    apps: string[];
-  }
+  import type { SelectToolItem } from '@/types/models';
 
   const exportModes: SelectToolItem[] = [
     {
@@ -53,6 +47,16 @@
     },
   ];
 
+  let filteredModes = exportModes.filter((m) =>
+    m.apps.includes($appStore.appId)
+  );
+
+  // Initialize as undefined - will be set by reactive block
+  let selectedExportMode: SelectToolItem | undefined = undefined;
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleOnChange = (value: SelectToolItem) => {
     log.debug('Export mode changing', {
       from: selectedExportMode?.value,
@@ -65,13 +69,9 @@
     });
   };
 
-  let filteredModes = exportModes.filter((m) =>
-    m.apps.includes($appStore.appId)
-  );
-
-  // Initialize as undefined - will be set by reactive block
-  let selectedExportMode: SelectToolItem | undefined = undefined;
-
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     log.debug('Export Container mounted', {
       appId: $appStore.appId,

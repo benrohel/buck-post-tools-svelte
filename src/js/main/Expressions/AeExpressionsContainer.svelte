@@ -1,18 +1,21 @@
 <script lang="ts">
-  // import { SaveUserProfile, GetUserProfile } from '@/api/preferences';
-  import ExpressionCard from './ExpressionCard.svelte';
-  import { evalES } from '@/lib/utils/bolt';
   import { onMount } from 'svelte';
-  import { GetExpressions } from '@/api/coda/coda-web';
-  import ModalCode from './ModalCode.svelte';
   import { flip } from 'svelte/animate';
-  import { appStore } from '@/stores/app-store';
-  import { localAppStore } from '@/stores/local-storage';
+
   import { Star, Download, FileCode } from 'lucide-svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { logModule } from '@/lib/logger';
 
+  import ExpressionCard from './ExpressionCard.svelte';
+  import ModalCode from './ModalCode.svelte';
+
+  import { appStore } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { GetExpressions } from '@/api/coda/coda-web';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('ae-expressions-container');
 
   const nullExpression: ExpressionSnippet = {
@@ -26,12 +29,14 @@
     },
   };
   let isLoading = false;
-  $: showCode = false;
-  $: expressionFilter = '';
   let selectedExpressionId = 'xx';
   let selectedExpression: ExpressionSnippet = nullExpression;
   let allExpressions: ExpressionSnippet[] = [];
+
+  $: showCode = false;
+  $: expressionFilter = '';
   $: filterFavorites = false;
+  $: filteredExpressions = getExpressions();
 
   const handleFilterChange = async (v: any) => {
     expressionFilter = v.target.value;
@@ -96,8 +101,6 @@
     }
   };
 
-  $: filteredExpressions = getExpressions();
-
   const openModal = () => {
     if (showCode) {
       showCode = false;
@@ -130,19 +133,18 @@
     evalES(`applyExpressionToSelectedProperty(${JSON.stringify(exp)})`, false);
   };
 
-  const setAllExpressions = () => {
+  const setAllExpressions = (storedFavorites?: string[]) => {
     isLoading = true;
     //https://coda.io/d/AE-Cheatsheet_dTFoJxLBvGS/Expressions_sufOz#_luChY
 
     log.debug('Loading expressions from Coda', {
-      favoriteCount: $appStore.favoriteExpressions?.length || 0
+      favoriteCount: storedFavorites?.length || 0
     });
 
     GetExpressions('TFoJxLBvGS', 'grid-ZqgRS-DMmt').then(
       (r: ExpressionSnippet[]) => {
         if (r) {
-          if ($appStore.favoriteExpressions) {
-            const storedFavorites = $appStore.favoriteExpressions;
+          if (storedFavorites) {
             allExpressions = r.map((exp: ExpressionSnippet) => {
               const fav = storedFavorites.find((item: string) => {
                 return item === exp.id;
@@ -163,7 +165,7 @@
     );
   };
   onMount(() => {
-    setAllExpressions();
+    setAllExpressions($appStore.favoriteExpressions);
   });
 </script>
 

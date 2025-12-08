@@ -1,7 +1,19 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   import { RefreshCcw, Download, CircleX } from 'lucide-svelte';
   import { SyncLoader } from 'svelte-loading-spinners';
-  import { type PathItem } from '@/api/exporter';
+  import path from 'path';
+
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+  import FileBrowser from '@/components/FileBrowser/FileBrowser.svelte';
+
+  import { buck5Server } from '@/stores/server-store';
+  import { appStore, type AppStore } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
+  import { buck5ShotLibraryStore } from '@/stores/buck5-shot-library-store';
+
   import {
     getShotFilesTree,
     collectFolderNamesByLevel,
@@ -10,54 +22,36 @@
   } from '@/api/files/buck5-file-browser';
   import { PROJECT_ROOT } from '@/api/files/files';
   import { evalES } from '@/lib/utils/bolt';
-  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
-  import { onMount } from 'svelte';
   import { openFile } from '@/lib/utils/utils';
-  import { buck5Server } from '@/stores/server-store';
-  import { appStore, type AppStore } from '@/stores/app-store';
-  import { localAppStore } from '@/stores/local-storage';
-  import { buck5ShotLibraryStore } from '@/stores/buck5-shot-library-store';
-  import Toggle from '@/components/Toggle/Toggle.svelte';
-  import FileBrowser from '@/components/FileBrowser/FileBrowser.svelte';
-  import { logModule } from '@/lib/logger';
+  import type { PathItem } from '@/api/exporter';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('shot-explorer');
 
-  import path from 'path';
-  let filteredItems: PathItem[] = [];
-  let isLoading = false;
-  let prefix = '';
-  let isBuck5 = true;
-  let fileBrowserRef: FileBrowser;
-  let selectedItemIds: Set<string> = new Set();
-
-  let onlyShowLatestVersions = true;
-
-  $: shotNames = $buck5ShotLibraryStore.shotNames;
-  $: sequenceNames = $buck5ShotLibraryStore.sequenceNames;
-  $: taskNames = $buck5ShotLibraryStore.taskNames;
-  $: pathStructure = $buck5ShotLibraryStore.pathStructure;
-  $: existingMediaFiles = $buck5ShotLibraryStore.existingMediaFiles;
-
-  $: log.debug(
-    'Sequence names updated',
-    { count: sequenceNames.length },
-    sequenceNames
-  );
-
-  let selectedSequenceName: any = '';
-  let selectedShotName: any = '';
-  let selectedTaskName: any = '';
-  let selectedExtensionName: any = '';
-
-  // Extension filter options
   const extensionNames = [
     { value: '', label: 'All Extensions', selected: true },
     { value: 'mov', label: 'mov', selected: false },
     { value: 'mp4', label: 'mp4', selected: false },
   ];
 
+  let filteredItems: PathItem[] = [];
+  let isLoading = false;
+  let prefix = '';
+  let isBuck5 = true;
+  let fileBrowserRef: FileBrowser;
+  let selectedItemIds: Set<string> = new Set();
+  let onlyShowLatestVersions = true;
+  let selectedSequenceName: any = '';
+  let selectedShotName: any = '';
+  let selectedTaskName: any = '';
+  let selectedExtensionName: any = '';
   let filters: HierarchyFilters;
+
+  $: shotNames = $buck5ShotLibraryStore.shotNames;
+  $: sequenceNames = $buck5ShotLibraryStore.sequenceNames;
+  $: taskNames = $buck5ShotLibraryStore.taskNames;
+  $: pathStructure = $buck5ShotLibraryStore.pathStructure;
+  $: existingMediaFiles = $buck5ShotLibraryStore.existingMediaFiles;
   $: filters = {
     sequence: [selectedSequenceName.value ? selectedSequenceName.value : ''],
     shot: [selectedShotName.value ? selectedShotName.value : ''],
@@ -98,7 +92,7 @@
     localAppStore.set($appStore);
   };
 
-  const loadShotLibrary = async () => {
+  const loadShotLibrary = async (settings?: any) => {
     if (!$buck5Server) {
       notifications.error(
         'You need to be connected to a Buck 5 server to use this feature',
@@ -153,11 +147,10 @@
       isLoaded: true,
     }));
 
-    if ($appStore.latestBuck5LibrarySettings) {
-      selectedSequenceName =
-        $appStore.latestBuck5LibrarySettings.sequenceName ?? '';
-      selectedShotName = $appStore.latestBuck5LibrarySettings.shotName ?? '';
-      selectedTaskName = $appStore.latestBuck5LibrarySettings.taskName ?? '';
+    if (settings) {
+      selectedSequenceName = settings.sequenceName ?? '';
+      selectedShotName = settings.shotName ?? '';
+      selectedTaskName = settings.taskName ?? '';
     } else {
       selectedSequenceName = sequenceNamesData[0];
       selectedShotName = shotNamesData[0];
@@ -167,9 +160,8 @@
   };
 
   // Helper function to apply saved filter settings from appStore
-  const applyStoredFilterSettings = () => {
-    if ($appStore.latestBuck5LibrarySettings) {
-      const settings = $appStore.latestBuck5LibrarySettings;
+  const applyStoredFilterSettings = (settings: any) => {
+    if (settings) {
 
       // Find matching options in the current data
       if (settings.sequenceName && sequenceNames.length > 0) {
@@ -385,10 +377,10 @@
   onMount(() => {
     // Only load if not already loaded
     if ($buck5Server && !$buck5ShotLibraryStore.isLoaded) {
-      loadShotLibrary();
+      loadShotLibrary($appStore.latestBuck5LibrarySettings);
     } else {
       // Data is already loaded, just apply stored filter settings
-      applyStoredFilterSettings();
+      applyStoredFilterSettings($appStore.latestBuck5LibrarySettings);
     }
   });
 </script>
@@ -409,7 +401,7 @@
               Updated: {$buck5ShotLibraryStore.lastUpdated.toLocaleTimeString()}
             </span>
           {/if}
-          <button on:click={loadShotLibrary}>
+          <button on:click={() => loadShotLibrary($appStore.latestBuck5LibrarySettings)}>
             <RefreshCcw size={16} />
           </button>
           <button

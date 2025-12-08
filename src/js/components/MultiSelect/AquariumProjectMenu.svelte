@@ -1,24 +1,28 @@
 <script lang="ts">
-  import { Projects } from '@/api/buck5/buck5-api';
   import { onMount } from 'svelte';
+
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+
+  import { sessionProject } from '@/stores/local-storage';
+
+  import { Projects } from '@/api/buck5/buck5-api';
   import { path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
   import { PROJECT_ROOT } from '@/api/files/files';
-  import { sessionProject } from '@/stores/local-storage';
   import type * as BUCK5 from '@/api/buck5';
   import type { Option } from '@/types/models';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('aquarium-project-menu');
 
   let projects: BUCK5.Item[] = [];
+  let projectName = '';
+  let selectedProject: Option<string> = { value: '', label: '' };
+
   $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
     value: p._key,
     label: p.data.name,
   }));
-  let projectName = '';
-  let selectedProject: Option<string> = { value: '', label: '' };
 
   const setSelectedProject = (event: Option<string> | null) => {
     if (event) {

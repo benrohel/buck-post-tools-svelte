@@ -1,19 +1,22 @@
 <script lang="ts">
-  import type { ClipMetadata, VersionInfo } from '@/types/models';
-  import type { ClipSelectCallback, OnChange2 } from '@/types/callbacks';
-  import type { VideoDifference } from '@/types/api';
   import { onMount, getContext } from 'svelte';
-  import { openFile } from '@/lib/utils/utils';
   import { fly } from 'svelte/transition';
+
   import { Download, ArrowUpDown, Eye } from 'lucide-svelte';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+
+  import { appStore } from '@/stores/app-store';
+
+  import { openFile } from '@/lib/utils/utils';
   import { evalES } from '@/lib/utils/bolt';
   import { GetFileVersion } from '@/api/files/files';
   import { checkVideoFileUpdate } from '@/api/video/video';
-  import { appStore } from '@/stores/app-store';
   import { fs, path } from '@/lib/cep/node';
-  import { Tooltip } from '@svelte-plugins/tooltips';
-  import { logModule } from '@/lib/logger';
+  import type { ClipMetadata, VersionInfo } from '@/types/models';
+  import type { ClipSelectCallback, OnChange2 } from '@/types/callbacks';
+  import type { VideoDifference } from '@/types/api';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('clip-card');
 
   export let clip: ClipMetadata;
@@ -24,15 +27,68 @@
   export let onImport: ClipSelectCallback;
   export let onChange: OnChange2<ClipMetadata, VersionInfo>;
 
+  export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
+
   let selectedVersion: VersionInfo = {} as VersionInfo;
   let publishedVersion = '';
   let editVersion = '';
-  $: isVideoMatch = true;
   let videoDifferences: VideoDifference[] = [];
   let isMissing = false;
   let showWarnings = $appStore.showVersionWarnings;
 
-  export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
+  $: isVideoMatch = true;
+
+  $: getSyncedColor = (): string => {
+    const fileVersion = clip.clipName?.split('_v')[1];
+    if (!fileVersion) {
+      return 'color: #f6d55c';
+    }
+
+    const timelineVersion = parseInt(fileVersion);
+    if (selectedVersion.version == undefined) return 'color: #f6d55c';
+    const intSelectedVersion = parseInt(
+      selectedVersion.version?.match(/\d+/)[0],
+    );
+    const isSynced = intSelectedVersion == timelineVersion;
+    let color = 'color: #f6d55c';
+    if (isSynced) {
+      color = 'color: #3caea3';
+    }
+    if (!isVideoMatch && showWarnings) {
+      color = 'color: #ed553b';
+    }
+    return color;
+  };
+
+  $: initCard = async () => {
+    if (!fs.existsSync(clip.filepath)) {
+      isMissing = true;
+    }
+    if (clip) {
+      selectedVersion = clip.selectedVersion;
+      publishedVersion = clip.trackerClip
+        ? clip.trackerClip.values['Comp Version']
+        : '';
+
+      if (!clip.shotName) {
+        clip.shotName = path.basename(clip.filepath).split(/_v\d+/)[0];
+      }
+    } else {
+      publishedVersion = '';
+    }
+    editVersion = GetFileVersion(clip.filepath) ?? '';
+    if (showWarnings) {
+      handleCheckNewVersion();
+    }
+  };
+
+  $: editIsSelected = () => {
+    if (selectedVersion) {
+      return editVersion == selectedVersion.version;
+    } else {
+      return false;
+    }
+  };
 
   export const FileUrl = (tb: string) => {
     return `${BUCK_DAEMON_URL}${tb}`;
@@ -106,58 +162,6 @@
     } else {
       isVideoMatch = true;
       videoDifferences = [];
-    }
-  };
-
-  $: getSyncedColor = (): string => {
-    const fileVersion = clip.clipName?.split('_v')[1];
-    if (!fileVersion) {
-      return 'color: #f6d55c';
-    }
-
-    const timelineVersion = parseInt(fileVersion);
-    if (selectedVersion.version == undefined) return 'color: #f6d55c';
-    const intSelectedVersion = parseInt(
-      selectedVersion.version?.match(/\d+/)[0],
-    );
-    const isSynced = intSelectedVersion == timelineVersion;
-    let color = 'color: #f6d55c';
-    if (isSynced) {
-      color = 'color: #3caea3';
-    }
-    if (!isVideoMatch && showWarnings) {
-      color = 'color: #ed553b';
-    }
-    return color;
-  };
-
-  $: initCard = async () => {
-    if (!fs.existsSync(clip.filepath)) {
-      isMissing = true;
-    }
-    if (clip) {
-      selectedVersion = clip.selectedVersion;
-      publishedVersion = clip.trackerClip
-        ? clip.trackerClip.values['Comp Version']
-        : '';
-
-      if (!clip.shotName) {
-        clip.shotName = path.basename(clip.filepath).split(/_v\d+/)[0];
-      }
-    } else {
-      publishedVersion = '';
-    }
-    editVersion = GetFileVersion(clip.filepath) ?? '';
-    if (showWarnings) {
-      handleCheckNewVersion();
-    }
-  };
-
-  $: editIsSelected = () => {
-    if (selectedVersion) {
-      return editVersion == selectedVersion.version;
-    } else {
-      return false;
     }
   };
 

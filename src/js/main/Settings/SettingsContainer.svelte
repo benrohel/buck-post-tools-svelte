@@ -1,13 +1,17 @@
 <script lang="ts">
-  import { evalES } from '@/lib/utils/bolt';
-  import { getAeOutputModulesAEP } from '@/api/files/files';
-  import { localAppStore } from '@/stores/local-storage';
+  import { onMount } from 'svelte';
+
   import Toggle from '@/components/Toggle/Toggle.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { localAppStore } from '@/stores/local-storage';
   import { type AppStore, appStore } from '@/stores/app-store';
   import { notifications } from '@/stores/notifications-store';
-  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
-  import { onMount } from 'svelte';
-  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { getAeOutputModulesAEP } from '@/api/files/files';
+
   let aiServices = [
     { label: 'Claude AI', value: 'Claude AI' },
     { label: 'OpenAI', value: 'OpenAI' },
@@ -60,6 +64,9 @@
     await evalES(`importProjectAndSaveOutputModules("${aepFilepath}")`);
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     apiKey = $appStore.aiService.apiKey;
     selectedService = {

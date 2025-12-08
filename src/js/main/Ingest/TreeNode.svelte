@@ -25,7 +25,6 @@
   }
 
   export let clips: ClipEntry[] = [];
-  $: files = [] as FileEntry[];
   export let filterName = '';
 
   const dispatch = createEventDispatcher();
@@ -33,6 +32,8 @@
   let currentPath = [];
   let currentFiles = [];
   let breadcrumbs = [];
+
+  $: files = [] as FileEntry[];
 
   $: filterFiles = () => {
     if (filterName === '') {

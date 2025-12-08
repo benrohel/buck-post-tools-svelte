@@ -1,17 +1,18 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
   import {
     localAppStore,
     lastFolderExport,
     storedExportRootFolder,
   } from '@/stores/local-storage';
   import { appStore } from '@/stores/app-store';
+  import { notifications } from '@/stores/notifications-store';
 
   import { GetSelectedSequences } from '@/api/sequence';
-
   import { fs, path } from '@/lib/cep/node';
-  import { notifications } from '@/stores/notifications-store';
-  import { onMount } from 'svelte';
-  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import { GetThumbnail, type ClipType } from '@/api/clip';
   import {
     exportSequenceCSV,
@@ -19,16 +20,17 @@
     type Sequence,
   } from '@/api/sequence';
   import { recursiveMkDir } from '@/lib/utils/index';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('export-sequence-csv');
 
-  $: uploadThumbnails = false;
+  let uploadThumbnails = false;
   let suffix = '';
-
   let rootFolder = '';
 
-  $: log.debug('Upload thumbnails updated', { uploadThumbnails });
+  $: if (uploadThumbnails !== undefined) {
+    log.debug('Upload thumbnails updated', { uploadThumbnails });
+  }
 
   const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
@@ -104,6 +106,9 @@
     uploadThumbnails = target.checked;
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     if ($localAppStore.rememberLastExportPath) {
       rootFolder = $lastFolderExport;

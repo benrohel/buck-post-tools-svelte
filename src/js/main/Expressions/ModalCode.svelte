@@ -3,11 +3,14 @@
   // exports to match the function signatures that `CodeJar` Component expects
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
+
+  import ChatInput from '@/components/ChatInput/ChatInput.svelte';
+
   import {
     callAnthropicAPI,
     extractCodeFromMarkdown,
   } from '@/api/ai/chat-claude';
-  import ChatInput from '@/components/ChatInput/ChatInput.svelte';
+
   hljs.registerLanguage('javascript', javascript);
 
   // `highlight` takes the input code and returns the highlighted HTML markup

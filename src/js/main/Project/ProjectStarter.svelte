@@ -1,16 +1,20 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { evalES } from '@/lib/utils/bolt';
-  import { getPresetFile } from '@/api/SQPreset';
+
   import { v4 as uuidv4 } from 'uuid';
-  import { fs, path } from '@/lib/cep/node';
-  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import Select from 'svelte-select';
-  import { getProjectTemplate } from '@/api/buck-library';
+
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
   import { buck5Server } from '@/stores/server-store';
   import { appStore } from '@/stores/app-store';
-  import { logModule } from '@/lib/logger';
 
+  import { evalES } from '@/lib/utils/bolt';
+  import { getPresetFile } from '@/api/SQPreset';
+  import { fs, path } from '@/lib/cep/node';
+  import { getProjectTemplate } from '@/api/buck-library';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('project-starter');
 
   const resolutions = [
@@ -33,6 +37,15 @@
     { label: 'Edit', value: 'Edit', apps: ['AEFT', 'PPRO'] },
     { label: 'Conform', value: 'Conform', apps: ['PPRO'] },
   ];
+  const framerates = ['23.976', '24', '25', '29.97', '30', '59.94'];
+
+  let sequenceName = 'Master';
+  let projectName = 'Master';
+  let framerate = { label: '24', value: '24' };
+  let resolution = resolutions[1];
+  let duration = 240;
+  let template = templateList[0];
+  let rootFolder = '';
 
   $: getTemplates = () => {
     if ($appStore.appId) {
@@ -44,25 +57,9 @@
   };
 
   $: templates = getTemplates();
-  $: log.debug('Resolution updated', { resolution });
-
-  const framerates = ['23.976', '24', '25', '29.97', '30', '59.94'];
-
-  let sequenceName = 'Master';
-  let projectName = 'Master';
-  let framerate = { label: '24', value: '24' };
-  let resolution = resolutions[1];
-  let duration = 240;
-  let template = templateList[0];
-  let rootFolder = '';
-
-  $: log.debug('Template path', {
-    appId: $appStore.appId,
-    template: template.value,
-    path: getProjectTemplate($appStore.appId, template.value),
-  });
-
-  $: log.debug('Framerate updated', { framerate });
+  $: templateFocus = false;
+  $: resolutionFocus = false;
+  $: framerateFocus = false;
 
   const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
@@ -135,15 +132,6 @@
     const target = event.target as HTMLInputElement;
     duration = parseInt(target.value);
   };
-
-  $: templateFocus = false;
-  $: resolutionFocus = false;
-  $: framerateFocus = false;
-  $: log.debug('Project settings updated', {
-    framerate,
-    resolution,
-    sequenceName,
-  });
 
   onMount(async () => {
     if ($appStore.appId === 'AEFT') {

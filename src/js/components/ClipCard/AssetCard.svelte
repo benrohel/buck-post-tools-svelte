@@ -1,22 +1,48 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { SquareCode, ChevronDown, ChevronUp } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 4. STORE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { notifications } from '@/stores/notifications-store';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { evalES, evalFile } from '@/lib/utils/bolt';
   import { fs, os } from '@/lib/cep/node';
   import { CommonSharedFile } from '@/api/scripts/tools-scripts';
   import AeLogo from '@/../assets/ae-logo.svg';
-  import { notifications } from '@/stores/notifications-store';
-  import { logModule } from '@/lib/logger';
 
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('asset-card');
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let aepFile: CommonSharedFile;
-
-  let isMenuOpen = false;
   export let selected = false;
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
+  let isMenuOpen = false;
   let offline = true;
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleOpenFile = () => {
     // openFile(scripTool.filepath);
   };
@@ -49,6 +75,9 @@
     });
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     offline = !fs.existsSync(aepFile.path);
   });

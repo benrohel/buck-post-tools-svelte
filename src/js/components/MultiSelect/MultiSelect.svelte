@@ -1,11 +1,30 @@
 <script lang="ts">
-  import type { OnChange } from '@/types/callbacks';
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
-  import { ChevronDown } from 'lucide-svelte';
-  import { clickOutside } from '@/lib/utils/index';
-  import { logModule } from '@/lib/logger';
 
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { ChevronDown } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { clickOutside } from '@/lib/utils/index';
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('multiselect');
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { OnChange } from '@/types/callbacks';
+
   interface MultiSelectOption {
     value: string;
     label: string;
@@ -18,6 +37,9 @@
     onSelectionChange: OnChange<MultiSelectOption[]>;
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let options: MultiSelectOption[] = [];
   export let showCheckbox = false;
   export let filter = '';
@@ -25,23 +47,27 @@
   export let showFilter = false;
   export let title = 'Select an option';
 
-  $: filteredOptions = getFilteredOptions();
-  // Reactive logging for option changes
-  $: log.debug(
-    'Options updated',
-    {
-      optionCount: options?.length || 0,
-      filteredCount: filteredOptions?.length || 0,
-    },
-    { options, filteredOptions }
-  );
-
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   let expanded = false;
   let multiselect: HTMLDivElement;
   let selectBox: HTMLDivElement;
   let checkboxesDiv: HTMLDivElement;
-  $: showingChekBox = showCheckbox;
 
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
+  $: filteredOptions = getFilteredOptions();
+  $: showingChekBox = showCheckbox;
+  $: selectBoxWidth = () => {
+    if (!selectBox) return 300;
+    return selectBox.clientWidth;
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const toggleSelect = (option: MultiSelectOption) => {
     options = options.map((o) => {
       if (o.value === option.value) {
@@ -63,39 +89,29 @@
   };
 
   const showCheckboxes = () => {
-    log.debug('Toggle checkboxes', {
-      currentExpanded: expanded,
-      hasCheckboxDiv: !!checkboxesDiv,
-    });
-
     if (!expanded) {
       if (checkboxesDiv) checkboxesDiv.style.display = 'block';
       expanded = true;
-      log.debug('Dropdown opened');
     } else {
       if (checkboxesDiv) checkboxesDiv.style.display = 'none';
       expanded = false;
-      log.debug('Dropdown closed');
     }
-  };
-
-  $: selectBoxWidth = () => {
-    log.debug('Calculate select box width', {
-      hasSelectBox: !!selectBox,
-      width: selectBox?.clientWidth,
-    });
-    if (!selectBox) return 300;
-    return selectBox.clientWidth;
   };
 
   const handleClickOutside = () => {
     if (expanded) {
       showCheckboxes();
     }
-    log.debug('Click outside multiselect', { wasExpanded: expanded });
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
+    log.debug('MultiSelect mounted', {
+      optionCount: options?.length || 0,
+      title,
+    });
     filteredOptions = getFilteredOptions();
   });
 </script>

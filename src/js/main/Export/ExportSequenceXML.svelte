@@ -1,28 +1,33 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import { FolderInput } from 'lucide-svelte';
+
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
   import {
     localAppStore,
     lastFolderExport,
     storedExportRootFolder,
   } from '@/stores/local-storage';
   import { appStore } from '@/stores/app-store';
-  import { GetActiveSequence } from '@/api/edit';
-  import { GetSelectedSequences } from '@/api/sequence';
-  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
-  import { evalES } from '@/lib/utils/bolt';
-  import { FolderInput } from 'lucide-svelte';
-  import { fs, path } from '@/lib/cep/node';
   import { notifications } from '@/stores/notifications-store';
-  import { onMount } from 'svelte';
-  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
-  import type { Sequence } from '@/api/sequence';
-  import { logModule } from '@/lib/logger';
 
+  import { GetActiveSequence } from '@/api/edit';
+  import { GetSelectedSequences, type Sequence } from '@/api/sequence';
+  import { evalES } from '@/lib/utils/bolt';
+  import { fs, path } from '@/lib/cep/node';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('export-sequence-xml');
 
   let suffix = '';
   let rootFolder = '';
 
-  $: log.debug('Root folder updated', { rootFolder });
+  $: if (rootFolder) {
+    log.debug('Root folder updated', { rootFolder });
+  }
 
   const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {

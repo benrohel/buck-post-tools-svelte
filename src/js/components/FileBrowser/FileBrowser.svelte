@@ -1,4 +1,12 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { createEventDispatcher } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import {
     ChevronDown,
     ChevronRight,
@@ -9,9 +17,16 @@
     Layers,
     ExternalLink,
   } from 'lucide-svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { type PathItem } from '@/api/exporter';
-  import { createEventDispatcher } from 'svelte';
   import { path } from '@/lib/cep/node';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let rootFolder: string = '';
   export let items: PathItem[] = [];
   export let existingFiles: string[] = [];
@@ -23,6 +38,9 @@
   export let showExtensionFilter: boolean = false;
   export let extensionFilter: string = '';
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   const dispatch = createEventDispatcher<{
     loadFolder: {
       folderId: string;
@@ -53,9 +71,14 @@
     { value: 'avi', label: 'AVI' },
   ];
 
-  // Filter items by extension
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
   $: filteredItems = filterByExtension(items, extensionFilter);
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const filterByExtension = (
     itemList: PathItem[],
     extFilter: string
@@ -109,7 +132,6 @@
       .filter((item) => item !== null) as PathItem[];
   };
 
-  // Function to handle item selection with multi-select support (files only)
   const handleItemClick = (itemId: string, event: MouseEvent) => {
     const clickedNode = findNodeById(items, itemId);
 
@@ -167,14 +189,12 @@
     dispatch('selectionChange', { selectedIds: selectedItemIds });
   };
 
-  // Function to clear selection when clicking outside items
   const handleContainerClick = () => {
     selectedItemIds = new Set();
     lastClickedId = null;
     dispatch('selectionChange', { selectedIds: selectedItemIds });
   };
 
-  // Function to flatten the tree for iterative rendering
   const flattenTree = (
     nodes: PathItem[]
   ): Array<{ node: PathItem; depth: number; path: string[] }> => {
@@ -221,7 +241,6 @@
     return result;
   };
 
-  // Helper function to find a node by ID in the tree
   const findNodeById = (nodes: PathItem[], id: string): PathItem | null => {
     // First check at the current level
     const directMatch = nodes.find((node) => node.id === id);
@@ -238,7 +257,6 @@
     return null;
   };
 
-  // Function to build a path for a node
   const buildPath = (node: PathItem, allNodes: PathItem[]): string => {
     if (node.parentId === null) {
       return node.name;
@@ -250,7 +268,6 @@
     return `${buildPath(parentNode, allNodes)}/${node.name}`;
   };
 
-  // Helper function to update a node in the tree by ID
   const updateNodeInTree = (
     nodes: PathItem[],
     nodeId: string,
@@ -270,7 +287,6 @@
     });
   };
 
-  // Function to toggle node expansion with lazy loading
   const toggleExpand = (itemId: string) => {
     const node = findNodeById(items, itemId);
     if (!node || node.type !== 'folder') return;
@@ -345,7 +361,6 @@
     }
   };
 
-  // Helper function to find node of a specific type and return an array of nodes
   const findNodesByType = (nodes: PathItem[], type: string): PathItem[] => {
     let results: PathItem[] = [];
 
@@ -363,7 +378,6 @@
     return results;
   };
 
-  // Export functions that parent components can use
   export const getSelectedItems = (): PathItem[] => {
     const allItems = findNodesByType(items, 'file');
     return allItems.filter((item) => selectedItemIds.has(item.id));

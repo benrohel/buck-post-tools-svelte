@@ -1,14 +1,18 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { evalES } from '@/lib/utils/bolt';
-  import Button from '@/components/Button/Button.svelte';
-  import { appStore } from '@/stores/app-store';
-  import { AddGaps } from '@/api/sequence';
-  import { getContext } from 'svelte';
-  import { RenameContext } from './RenameContext';
-  import { logModule } from '@/lib/logger';
+  import { onMount, getContext } from 'svelte';
 
+  import Button from '@/components/Button/Button.svelte';
+
+  import { appStore } from '@/stores/app-store';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { AddGaps } from '@/api/sequence';
+  import { RenameContext } from './RenameContext';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('sequential-rename');
+
+  const renameContext = getContext('rename') as RenameContext;
 
   let prefix = 'SH';
   let start = '10';
@@ -25,8 +29,6 @@
   };
 
   $: previewString = getOutputName();
-
-  const renameContext = getContext('rename') as RenameContext;
 
   const handleRenameAction = async () => {
     const option = {

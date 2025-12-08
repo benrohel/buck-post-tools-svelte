@@ -1,8 +1,12 @@
 <script lang="ts">
-  import { on } from 'events';
   import { getContext, createEventDispatcher, onMount } from 'svelte';
-  const dispatch = createEventDispatcher();
+
   export let value;
+
+  const selectedValue = getContext('selected');
+  const visible = getContext('visible');
+
+  const dispatch = createEventDispatcher();
   let id = 0;
   let selected = false;
 
@@ -11,9 +15,6 @@
     $selectedValue = value;
     $visible = false;
   };
-
-  let selectedValue = getContext('selected');
-  let visible = getContext('visible');
 </script>
 
 <div class="option-container">

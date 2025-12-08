@@ -1,11 +1,28 @@
 <script lang="ts">
-  import { Tooltip } from '@svelte-plugins/tooltips';
-  import { type AppStore, appStore } from '@/stores/app-store';
-  import { logModule } from '@/lib/logger';
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
 
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { Tooltip } from '@svelte-plugins/tooltips';
+
+  // ═══════════════════════════════════════════════════════════
+  // 4. STORE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { type AppStore, appStore } from '@/stores/app-store';
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
   const log = logModule('tabs');
 
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
   interface TabItem {
     value: number;
     label: string;
@@ -14,14 +31,23 @@
     apps: string[];
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let items: TabItem[] = [];
   export let activeTabValue: number = 1;
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleClick = (tabValue: number) => () => {
     log.debug('Tab clicked', { from: activeTabValue, to: tabValue });
     activeTabValue = tabValue;
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     log.debug('Tabs mounted', {
       activeTabValue,

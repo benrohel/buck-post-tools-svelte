@@ -1,27 +1,31 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalFile, evalES } from '@/lib/utils/bolt';
-  import { fs } from '@/lib/cep/node';
-  import { v4 as uuidv4 } from 'uuid';
-  import { Tooltip } from '@svelte-plugins/tooltips';
-  import { notifications } from '@/stores/notifications-store';
-  import path from 'path';
-  import { buck5Server } from '@/stores/server-store';
-  import {
-    getProjectSettingsTemplate,
-    setProjectSettingsTemplate,
-    type ProjectSettings,
-  } from '@/api/files/files';
-  import { appStore } from '@/stores/app-store';
+
   import {
     ArrowDownToLine,
     ArrowUpToLine,
     Blend,
     RefreshCw,
   } from 'lucide-svelte';
-  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
-  import { logModule } from '@/lib/logger';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+  import { v4 as uuidv4 } from 'uuid';
+  import path from 'path';
 
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
+
+  import { notifications } from '@/stores/notifications-store';
+  import { buck5Server } from '@/stores/server-store';
+  import { appStore } from '@/stores/app-store';
+
+  import { evalFile, evalES } from '@/lib/utils/bolt';
+  import { fs } from '@/lib/cep/node';
+  import {
+    getProjectSettingsTemplate,
+    setProjectSettingsTemplate,
+    type ProjectSettings,
+  } from '@/api/files/files';
+
+  import { logModule } from '@/lib/logger';
   const log = logModule('color-management');
 
   let gap = 2;

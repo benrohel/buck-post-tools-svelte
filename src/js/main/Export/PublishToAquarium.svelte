@@ -1,5 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
+
   import {
     Projects,
     GetFootageLibrary,
@@ -10,24 +14,23 @@
   import { GetActiveSequence } from '@/api/edit';
   import { preferencesDir } from '@/api/preferences';
   import { PROJECT_ROOT } from '@/api/files/files';
-  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
-  import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
   import { fs, path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
   import type * as BUCK5 from '@/api/buck5';
   import type { Option } from '@/types/models';
   import type { Sequence } from '@/api/sequence';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('publish-to-aquarium');
 
   let projects: BUCK5.Item[] = [];
+  let projectName = '';
+  let selectedProject: Option<string> = { value: '', label: '' };
+
   $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
     value: p._key,
     label: p.data.name,
   }));
-  let projectName = '';
-  let selectedProject: Option<string> = { value: '', label: '' };
 
   const setSelectedProject = (event: Option<string> | null) => {
     log.debug('Project selected', { project: event });

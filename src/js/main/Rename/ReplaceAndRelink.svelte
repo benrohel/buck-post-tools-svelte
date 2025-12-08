@@ -1,33 +1,47 @@
 <script lang="ts">
+  import { onMount, getContext } from 'svelte';
+
   import {
     ArrowLeftRight,
     FolderSearch,
     RefreshCw,
     ListRestart,
   } from 'lucide-svelte';
+  import { SyncLoader } from 'svelte-loading-spinners';
+  import { Tooltip } from '@svelte-plugins/tooltips';
+
+  import ClipCardReplace from '@/components/ClipCard/ClipCardReplace.svelte';
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import ProgressBar from '@/components/ProgressBar/ProgressBar.svelte';
+
+  import { notifications } from '@/stores/notifications-store';
+  import { lastFolderSearch } from '@/stores/local-storage';
+  import { appStore } from '@/stores/app-store';
+
   import { evalES } from '@/lib/utils/bolt';
   import { GetRenamedFiles } from '@/api/files/files';
-  import ClipCardReplace from '@/components/ClipCard/ClipCardReplace.svelte';
   import { fs } from '@/lib/cep/node';
-  import { onMount, getContext } from 'svelte';
-  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import { getClips } from '@/api/clip';
-  import { SyncLoader } from 'svelte-loading-spinners';
-  import { notifications } from '@/stores/notifications-store';
-  import { Tooltip } from '@svelte-plugins/tooltips';
-  import { lastFolderSearch } from '@/stores/local-storage';
-  import ProgressBar from '@/components/ProgressBar/ProgressBar.svelte';
-  import { appStore } from '@/stores/app-store';
-  import { logModule } from '@/lib/logger';
 
+  import { logModule } from '@/lib/logger';
   const log = logModule('replace-and-relink');
 
   let find = '';
   let replace = '';
-  $: sequenceClips = [] as any[];
+  let sequenceClips = [] as any[];
   let rootFolder = '';
   let isLoading = false;
   let isProcessing = false;
+  let processedCount = 0;
+  let totalCount = 0;
+
+  $: progressPercentage =
+    totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0;
+
+  $: if (rootFolder && $appStore.rememberLastFolderSearch) {
+    log.debug('Root folder updated', { rootFolder });
+    lastFolderSearch.set(rootFolder);
+  }
 
   const resetList = async () => {
     isLoading = true;
@@ -84,12 +98,6 @@
     });
   };
 
-  // Track progress for the progress bar
-  $: processedCount = 0;
-  $: totalCount = 0;
-  $: progressPercentage =
-    totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0;
-
   const handleReplaceAll = () => {
     // Only process clips that have a selectedVersion
     const clipsToProcess = sequenceClips.filter((clip) => clip.selectedVersion);
@@ -132,6 +140,7 @@
       isProcessing = false;
     }
   };
+
   const handleClipOnChange = async (clip: any, version: any) => {
     const foundClipIndex = sequenceClips.findIndex((c) => {
       return c.nodeId === clip.nodeId;
@@ -181,13 +190,6 @@
     }
   };
 
-  $: () => {
-    log.debug('Root folder updated', { rootFolder });
-    if ($appStore.rememberLastFolderSearch) {
-      lastFolderSearch.set(rootFolder);
-    }
-  };
-
   onMount(async () => {
     if ($lastFolderSearch !== null && $appStore.rememberLastFolderSearch) {
       log.debug('Restored last folder search', { lastFolderSearch: $lastFolderSearch });
@@ -197,81 +199,65 @@
   });
 </script>
 
-<div style="display:flex; flex-direction:row">
-  <div class="row">
-    <input type="text" placeholder="Find" bind:value={find} />
-    <button on:click={handleFindAndReplace} tabindex="-1">
-      <ArrowLeftRight size="16" />
-    </button>
-    <input type="text" placeholder="Replace" bind:value={replace} />
-  </div>
+<div class="row">
+  <input type="text" placeholder="Find" bind:value={find} />
+  <input type="text" placeholder="Replace" bind:value={replace} />
 </div>
 
-<div id="search-folder">
-  <FolderSelctWeb onChange={handleSetOutputFolder} value={rootFolder} />
-  <Tooltip
-    action={$appStore.showTooltips ? 'hover' : 'none'}
-    content="Search clips in Folder"
-    position="left"
-    delay={1000}
-  >
-    <button on:click={searchFiles} style="justify-self:flex-end">
+<div>
+  <FolderSelctWeb onChange={handleSetOutputFolder} bind:value={rootFolder} />
+</div>
+
+<div class="flex-row-end">
+  <Tooltip action="hover" content="Refresh Clips" position="bottom" delay={1000}>
+    <button on:click={resetList}>
       <RefreshCw size="16" />
     </button>
   </Tooltip>
-</div>
-<div
-  style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; margin-bottom: 4px; gap:20px"
->
+  <Tooltip action="hover" content="Search Rename" position="bottom" delay={1000}>
+    <button on:click={searchFiles}>
+      <FolderSearch size="16" />
+    </button>
+  </Tooltip>
   <Tooltip
-    action={$appStore.showTooltips ? 'hover' : 'none'}
-    content="Reload Clips Selection"
-    position="right"
+    action="hover"
+    content="Replace project clip names"
+    position="bottom"
     delay={1000}
   >
-    <button on:click={resetList} style="justify-self:flex-start">
+    <button on:click={handleFindAndReplace}>
+      <ArrowLeftRight size="16" />
+    </button>
+  </Tooltip>
+  <Tooltip action="hover" content="Replace All" position="bottom" delay={1000}>
+    <button on:click={handleReplaceAll}>
       <ListRestart size="16" />
     </button>
   </Tooltip>
-  {#if isProcessing}
-    <div style="width: 60%">
-      <ProgressBar
-        current={processedCount}
-        total={totalCount}
-        percentage={progressPercentage}
-        showLabel={true}
-        showPercentage={false}
-      />
-    </div>
-  {/if}
-  {#if isLoading}
-    <SyncLoader color="#adadad" size="20" />
-  {/if}
-  <Tooltip
-    action={$appStore.showTooltips ? 'hover' : 'none'}
-    content="<b>Relink Clips</b><p>File System will cache the clips first. This could be slow.</p>"
-    position="left"
-    delay={1000}
-  >
-    <button title="Relink Clips" class="active" on:click={handleReplaceAll}>
-      Relink Clips
-    </button>
-  </Tooltip>
 </div>
-<div style=" height: calc(100vh - 180px); overflow:scroll">
-  <div style="overflow: scroll">
-    {#if sequenceClips && sequenceClips.length > 0}
-      {#each sequenceClips as clip, id}
-        <ClipCardReplace
-          {clip}
-          selected={false}
-          {id}
-          onChange={handleClipOnChange}
-          selectedVersion={clip.selectedVersion}
-        />
-      {/each}
-    {/if}
+
+{#if isProcessing}
+  <ProgressBar value={progressPercentage} max={100} />
+  <div class="progress-text">
+    Processing {processedCount} of {totalCount} clips...
   </div>
+{/if}
+
+{#if isLoading}
+  <div class="loading">
+    <SyncLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+  </div>
+{/if}
+
+<div class="clip-list">
+  {#each sequenceClips as clip, i}
+    <ClipCardReplace
+      {clip}
+      id={i}
+      onReplace={handleReplaceClip}
+      onChange={handleClipOnChange}
+    />
+  {/each}
 </div>
 
 <style lang="scss">
@@ -283,46 +269,24 @@
     width: 100%;
   }
 
-  input {
-    width: 100%;
-  }
-
-  #search-folder {
-    gap: 6px;
+  .clip-list {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    font-size: 10px;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    justify-content: space-between;
-    margin-bottom: 4px;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 8px;
   }
 
-  // .tooltip {
-  //   position: relative;
-  //   display: inline-block;
-  // }
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+  }
 
-  // .tooltip .tooltip-text {
-  //   visibility: hidden;
-  //   width: 120px;
-  //   background-color: #555;
-  //   color: #fff;
-  //   text-align: center;
-  //   border-radius: 6px;
-  //   padding: 5px;
-  //   position: absolute;
-  //   z-index: 1;
-  //   bottom: 125%;
-  //   left: 50%;
-  //   transform: translateX(-50%);
-  //   opacity: 0;
-  //   transition: opacity 0.3s;
-  // }
-
-  // .tooltip:hover .tooltip-text {
-  //   visibility: visible;
-  //   opacity: 1;
-  // }
+  .progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #999;
+  }
 </style>
