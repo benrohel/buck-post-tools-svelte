@@ -362,6 +362,7 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
+  log.debug("files.ts", projectPath)
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
   return path.posix.join(current[0], 'work', 'current', projectFolders[1]);
@@ -430,8 +431,8 @@ export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
   if (!productionFolder) return null;
   const platformRoot =
     os.platform() === 'win32' ? '\\' : '/';
-  const scriptsFolder = path.join(platformRoot+productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
-  
+  const scriptsFolder = path.join(platformRoot + productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
+
   if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
 };
@@ -441,7 +442,7 @@ export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
   if (!projectRoot) return null;
   const platformRoot =
     os.platform() === 'win32' ? '\\' : '/';
-  const commonFolder = path.join(platformRoot+projectRoot, 'Production', 'Common', 'Work', 'AE');
+  const commonFolder = path.join(platformRoot + projectRoot, 'Production', 'Common', 'Work', 'AE');
   if (!fs.existsSync(commonFolder)) return null;
   return commonFolder;
 };

@@ -1,12 +1,10 @@
 <script lang="ts">
   import { getContext, onMount } from 'svelte';
-
   import { ArrowLeftRight } from 'lucide-svelte';
-
   import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
-
   import { logModule } from '@/lib/logger';
+  import { captureKeys } from '@/lib/actions/captureKeys';
   const log = logModule('find-and-replace');
 
   const renameContext = getContext('rename') as RenameContext;
@@ -35,15 +33,16 @@
     replace = find;
     find = prevReplace;
   };
-
-  // ═══════════════════════════════════════════════════════════
-  // 14. LIFECYCLE HOOKS
-  // ═══════════════════════════════════════════════════════════
-  onMount(() => {});
 </script>
 
 <div class="row">
-  <input type="text" placeholder="Find" bind:value={find} />
+  <input
+    type="text"
+    placeholder="Find"
+    use:captureKeys
+    bind:value={find}
+    on:focus={() => console.log('focus')}
+  />
   <button on:click={handleSwapText} tabindex="-1">
     <ArrowLeftRight size="16" />
   </button>
@@ -51,7 +50,12 @@
 </div>
 
 <div class="flex-row-end">
-  <button class="active" on:click={handleFindAndReplace}> Replace Text </button>
+  <button
+    class="active"
+    on:click|preventDefault|stopPropagation={handleFindAndReplace}
+  >
+    Replace Text
+  </button>
 </div>
 
 <style lang="scss">

@@ -7,14 +7,12 @@
   } from 'lucide-svelte';
 
   import FileBrowser from '../FileBrowser/FileBrowser.svelte';
-
   import { Bookmark } from '@/stores/bookmark-store';
   import { notifications } from '@/stores/notifications-store';
 
-  import { evalES, evalFile } from '@/lib/utils/bolt';
-  import { fs, os, path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import { os, path } from '@/lib/cep/node';
   import { openFile, copyToClipboard } from '@/lib/utils/utils';
-  import csInterface from '@/lib/cep/csinterface';
   import { PROJECT_ROOT } from '@/api/files/files';
   import {
     getRootFolder,
@@ -25,7 +23,6 @@
 
   import { logModule } from '@/lib/logger';
   const log = logModule('bookmark-card');
-
   export let bookmark: Bookmark;
   export let onRemove: () => void;
 
@@ -38,13 +35,17 @@
   let actualPath = async () => {
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
+      if (!projectDir) {
+        notifications.error('Failed to get project directory', 3000);
+        return '';
+      }
       const macPath = path.posix.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
       );
       const windowsPath = path.win32.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop()
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
       );
 
       return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
@@ -101,7 +102,7 @@
       fileTreeItems = await getRootFolder(rootPath, groupSequences);
       showFileBrowser = !showFileBrowser;
     } catch (error) {
-      log.error('Failed to load file browser', error as Error, { rootPath });
+      log.error('Failed to load file browser', error as Error);
       notifications.error('Failed to load folder contents', 3000);
     } finally {
       isLoadingTree = false;
@@ -113,10 +114,10 @@
       folderId: string;
       folderPath: string;
       groupSequences: boolean;
-    }>
+    }>,
   ) => {
+    const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
     try {
-      const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
       const children = await loadFolderChildren(folderPath, folderId, groupSeq);
       fileTreeItems = updateNodeChildren(fileTreeItems, folderId, children);
     } catch (error) {
@@ -129,14 +130,14 @@
   };
 
   const handleSequenceToggle = async (
-    event: CustomEvent<{ groupSequences: boolean }>
+    event: CustomEvent<{ groupSequences: boolean }>,
   ) => {
     groupSequences = event.detail.groupSequences;
     // Reload the file tree with new settings
     if (showFileBrowser && fileTreeItems.length > 0) {
       isLoadingTree = true;
+      const rootPath = await actualPath();
       try {
-        const rootPath = await actualPath();
         fileTreeItems = await getRootFolder(rootPath, groupSequences);
       } catch (error) {
         log.error('Failed to reload file browser', error as Error, {
@@ -151,13 +152,13 @@
   };
 
   const handleOpenFileFromBrowser = (
-    event: CustomEvent<{ fileId: string; filePath: string }>
+    event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     openFile(event.detail.filePath);
   };
 
   const handleImportFile = async (
-    event: CustomEvent<{ fileId: string; filePath: string }>
+    event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     const node = findNodeById(fileTreeItems, event.detail.fileId);
     const isSequence = node?.metadata?.isSequence || false;
@@ -175,13 +176,13 @@
 
     const result = await evalES(
       `importMediaFile(${JSON.stringify(options)})`,
-      false
+      false,
     );
     if (result) {
       if (isSequence && node?.metadata?.frameCount) {
         notifications.success(
           `Successfully imported sequence (${node.metadata.frameCount} frames)`,
-          2000
+          2000,
         );
       } else {
         notifications.success('Successfully imported file', 2000);
@@ -203,16 +204,16 @@
   };
 
   const handleImportFiles = async (
-    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>
+    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
   ) => {
     const result = await evalES(
       `importMediaFiles(${JSON.stringify(event.detail.filePaths)})`,
-      false
+      false,
     );
     if (result) {
       notifications.success(
         `Successfully imported ${event.detail.filePaths.length} files`,
-        2000
+        2000,
       );
     } else {
       notifications.error('Failed to import files', 3000);
@@ -220,7 +221,7 @@
   };
 
   const handleRevealFile = (
-    event: CustomEvent<{ fileId: string; filePath: string }>
+    event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     log.debug('Reveal file in folder', { filePath: event.detail.filePath });
 

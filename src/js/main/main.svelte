@@ -114,6 +114,7 @@
   }
 
   const handleUpdateExtension = async () => {
+    if (latestVersion === null) return;
     const installed = await installFromLocalFilepath(latestVersion.path);
     if (!installed) {
       notifications.error('Extension update failed', 3000);
@@ -121,7 +122,7 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000
+      3000,
     );
     modalConfirmOpen = false;
   };
@@ -150,7 +151,7 @@
         hasLocalStore: !!$localAppStore,
         environment: import.meta.env.MODE,
       },
-      { localAppStore: $localAppStore, env: import.meta.env }
+      { localAppStore: $localAppStore, env: import.meta.env },
     );
 
     if ($extensionVersion && $buck5Server) {
@@ -172,7 +173,7 @@
             currentVersion: $extensionVersion,
             latestVersion: latestVersion.version,
           },
-          v
+          v,
         );
       });
     }

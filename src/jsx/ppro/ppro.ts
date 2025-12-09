@@ -1168,3 +1168,16 @@ export const addGap = ({ gap, trackName }: GapOptions) => {
 };
 
 
+export const getProjectDir = () => {
+  try {
+    if (app.project.path !== null) {
+      //@ts-ignore
+      // Use fsName to get the native file system path
+      const file = new File(app.project.path);
+      return file.parent.fsName;
+    }
+    return '';
+  } catch (e) {
+    return '';
+  }
+};
