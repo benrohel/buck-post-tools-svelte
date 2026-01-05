@@ -1,17 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-
   import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
-  // @ts-expect-error - @svelte-plugins/tooltips has incomplete type definitions
-  import { Tooltip } from '@svelte-plugins/tooltips';
   import Select from 'svelte-select';
-
   import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import ModalSettings from '@/components/Modal/ModalSettings.svelte';
-  import Toggle from '@/components/Toggle/Toggle.svelte';
-
   import { sequenceOutputFolder } from '@/stores/local-storage';
-
   import { evalES } from '@/lib/utils/bolt';
   import { fs, path } from '@/lib/cep/node';
   import { setPreferenceByKey, getPreferenceByKey } from '@/api/preferences';
@@ -182,7 +175,10 @@
 
   const handlePresetChange = (e: any) => {
     activePreset = e.detail;
-    log.debug('Preset changed', { presetName: activePreset.name, template: activePreset.template });
+    log.debug('Preset changed', {
+      presetName: activePreset.name,
+      template: activePreset.template,
+    });
   };
 
   const handleTaskChange = (e: any) => {
@@ -238,7 +234,10 @@
 
   const addToRenderQueue = async (comp: CompRenderData) => {
     const renderPath = buildRenderPath(comp);
-    log.debug('Adding comp to render queue', { compName: comp.compName, renderPath });
+    log.debug('Adding comp to render queue', {
+      compName: comp.compName,
+      renderPath,
+    });
     const options = {
       compId: comp.nodeId,
       filepath: renderPath,
