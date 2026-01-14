@@ -20,7 +20,7 @@ export interface AppStore {
   showTooltips: boolean;
   defaultToBuck5ShotLibrary: boolean;
   latestBuck5LibrarySettings: LatestBuck5LibrarySettings;
-  appId: string;
+  appId: 'AEFT' | 'PPRO';
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
   rememberLastExportPreset: boolean;
@@ -40,7 +40,7 @@ export const defaultAppStore: AppStore = {
     taskName: '',
     extensionName: '',
   },
-  appId: '',
+  appId: 'AEFT',
   rememberLastFolderSearch: true,
   rememberLastExportPath: true,
   rememberLastExportPreset: true,

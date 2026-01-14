@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-
+  import { getEnv } from '@/api/env';
   import {
     ArrowDownUp,
     PencilRuler,
@@ -122,12 +122,17 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000,
+      3000
     );
     modalConfirmOpen = false;
   };
 
   onMount(async () => {
+    const rezPackages = getEnv('REZ_PACKAGES_PATH');
+    log.debug('ENV Variables REZ', {
+      rezPackages,
+    });
+
     if (window.cep) {
       // Initialize appId from csi FIRST, before any other CEP operations
       appStore.set({
@@ -151,7 +156,7 @@
         hasLocalStore: !!$localAppStore,
         environment: import.meta.env.MODE,
       },
-      { localAppStore: $localAppStore, env: import.meta.env },
+      { localAppStore: $localAppStore, env: import.meta.env }
     );
 
     if ($extensionVersion && $buck5Server) {
@@ -173,7 +178,7 @@
             currentVersion: $extensionVersion,
             latestVersion: latestVersion.version,
           },
-          v,
+          v
         );
       });
     }

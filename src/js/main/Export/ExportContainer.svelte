@@ -45,6 +45,12 @@
       component: ExportPathBuilder,
       apps: ['AEFT'],
     },
+    {
+      value: 'shots',
+      label: 'Shots',
+      component: ExportPathBuilder,
+      apps: ['PPRO'],
+    },
   ];
 
   let filteredModes = exportModes.filter((m) =>
@@ -54,9 +60,6 @@
   // Initialize as undefined - will be set by reactive block
   let selectedExportMode: SelectToolItem | undefined = undefined;
 
-  // ═══════════════════════════════════════════════════════════
-  // 13. FUNCTIONS
-  // ═══════════════════════════════════════════════════════════
   const handleOnChange = (value: SelectToolItem) => {
     log.debug('Export mode changing', {
       from: selectedExportMode?.value,
@@ -69,9 +72,6 @@
     });
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // 14. LIFECYCLE HOOKS
-  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     log.debug('Export Container mounted', {
       appId: $appStore.appId,

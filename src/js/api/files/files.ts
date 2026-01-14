@@ -1,4 +1,3 @@
-
 import { fs, os, path } from '@/lib/cep/node';
 const { fdir } = require('fdir');
 import { logModule } from '@/lib/logger';
@@ -36,7 +35,11 @@ export const GetSystemFileVersionsWithShotName = async (
   let searchRoot = path.dirname(filepath);
   const maxLevelsUp = 3;
 
-  for (let level = 0; level < maxLevelsUp && searchRoot !== path.dirname(searchRoot); level++) {
+  for (
+    let level = 0;
+    level < maxLevelsUp && searchRoot !== path.dirname(searchRoot);
+    level++
+  ) {
     const parentDir = path.dirname(searchRoot);
     if (!path.basename(searchRoot).includes('_v')) {
       break;
@@ -48,18 +51,21 @@ export const GetSystemFileVersionsWithShotName = async (
     // Use fdir for fast, filtered file traversal
     const entries = await new fdir()
       .withFullPaths()
-      .exclude((dirName: string) =>
-        dirName.includes('temp') ||
-        dirName.startsWith('.') ||
-        dirName.includes('cache') ||
-        dirName.includes('node_modules')
+      .exclude(
+        (dirName: string) =>
+          dirName.includes('temp') ||
+          dirName.startsWith('.') ||
+          dirName.includes('cache') ||
+          dirName.includes('node_modules')
       )
       .filter((filePath: string) => {
         // Quick extension check first
         if (path.extname(filePath) !== ext) return false;
 
         const currentFilename = path.basename(filePath);
-        const currentBaseFilename = currentFilename.replace(versionRegex, '').replace(ext, '');
+        const currentBaseFilename = currentFilename
+          .replace(versionRegex, '')
+          .replace(ext, '');
 
         // Must match base filename
         return currentBaseFilename === baseFilename;
@@ -112,20 +118,30 @@ export const GetSystemFileVersionsWithShotName = async (
       return versionB - versionA;
     });
 
-    return versionsMapped.length > 0 ? versionsMapped : [{
-      filepath: filepath,
-      version: 'current',
-      name: baseFilename,
-      displayName: 'current'
-    }];
+    return versionsMapped.length > 0
+      ? versionsMapped
+      : [
+          {
+            filepath: filepath,
+            version: 'current',
+            name: baseFilename,
+            displayName: 'current',
+          },
+        ];
   } catch (e) {
-    log.error('Failed to find file versions', e as Error, { filepath, searchRoot, baseFilename });
-    return [{
-      filepath: filepath,
-      version: 'current',
-      name: baseFilename,
-      displayName: 'current'
-    }];
+    log.error('Failed to find file versions', e as Error, {
+      filepath,
+      searchRoot,
+      baseFilename,
+    });
+    return [
+      {
+        filepath: filepath,
+        version: 'current',
+        name: baseFilename,
+        displayName: 'current',
+      },
+    ];
   }
 };
 
@@ -362,12 +378,11 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
-  log.debug("files.ts", projectPath)
+  log.debug('files.ts', projectPath);
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
   return path.posix.join(current[0], 'work', 'current', projectFolders[1]);
 };
-
 
 export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
@@ -391,10 +406,7 @@ export const getProjectSettingsTemplate = (projectPath: string) => {
   if (!productionFolder) return null;
   const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
   if (!metaFolder) return null;
-  const projectSettingsPath = path.join(
-    metaFolder,
-    'project-settings.json'
-  );
+  const projectSettingsPath = path.join(metaFolder, 'project-settings.json');
   if (!fs.existsSync(projectSettingsPath)) {
     return null;
   }
@@ -412,10 +424,7 @@ export const setProjectSettingsTemplate = (
   if (!productionFolder) return false;
   const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
   if (!metaFolder) return false;
-  const projectSettingsPath = path.join(
-    metaFolder,
-    'project-settings.json'
-  );
+  const projectSettingsPath = path.join(metaFolder, 'project-settings.json');
   if (!fs.existsSync(path.dirname(projectSettingsPath))) {
     return false;
   }
@@ -429,9 +438,15 @@ export const setProjectSettingsTemplate = (
 export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
   const productionFolder = PROJECT_ROOT(projectPath);
   if (!productionFolder) return null;
-  const platformRoot =
-    os.platform() === 'win32' ? '\\' : '/';
-  const scriptsFolder = path.join(platformRoot + productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
+  const platformRoot = os.platform() === 'win32' ? '\\' : '/';
+  const scriptsFolder = path.join(
+    platformRoot + productionFolder,
+    'Production',
+    'Common',
+    'Meta',
+    'aeft',
+    'scripts'
+  );
 
   if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
@@ -440,9 +455,33 @@ export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
 export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
   const projectRoot = PROJECT_ROOT(projectPath);
   if (!projectRoot) return null;
-  const platformRoot =
-    os.platform() === 'win32' ? '\\' : '/';
-  const commonFolder = path.join(platformRoot + projectRoot, 'Production', 'Common', 'Work', 'AE');
+  const platformRoot = os.platform() === 'win32' ? '\\' : '/';
+  const commonFolder = path.join(
+    platformRoot + projectRoot,
+    'Production',
+    'Common',
+    'Work',
+    'AE'
+  );
   if (!fs.existsSync(commonFolder)) return null;
   return commonFolder;
+};
+
+export const USER_AME_PRESETS = async (appVersion: string) => {
+  const userFolder = os.homedir();
+  const presetsFolder = path.join(
+    userFolder,
+    'Documents',
+    'Adobe',
+    'Adobe Media Encoder',
+    appVersion,
+    'Presets'
+  );
+
+  const eprFiles = fs
+    .readdirSync(presetsFolder)
+    .filter((f) => f.endsWith('.epr'));
+
+  log.debug('USER_AME_PRESETS', { eprFiles });
+  return eprFiles;
 };

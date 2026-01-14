@@ -1,2 +1,5 @@
 export * from './exporter';
-export { defaultExportPresets } from './exporters-default';
+export {
+  aeDefaultExportPresets,
+  pproDefaultExportPresets,
+} from './exporters-default';

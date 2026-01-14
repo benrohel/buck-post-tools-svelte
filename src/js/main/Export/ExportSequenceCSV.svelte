@@ -106,9 +106,6 @@
     uploadThumbnails = target.checked;
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // 14. LIFECYCLE HOOKS
-  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     if ($localAppStore.rememberLastExportPath) {
       rootFolder = $lastFolderExport;

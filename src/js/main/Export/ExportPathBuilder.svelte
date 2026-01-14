@@ -38,6 +38,7 @@
     addToRenderQueue,
     buildRenderPath,
   } from '@/api/exporter';
+  import type { Option } from '@/types/models';
 
   import { logModule } from '@/lib/logger';
   const log = logModule('export-path-builder');
@@ -50,8 +51,6 @@
   let useProjectFolder = false;
 
   let dummyComp: CompRenderData = {} as CompRenderData;
-
-  // Removed excessive reactive logging to prevent UI freeze
 
   // Available tokens for path construction
   const aeAvailableTokens = [
@@ -83,8 +82,9 @@
   let projectFolder = '';
   let presetName = '';
   let exportPresets: Exporter[] = [];
-  let selectedExportPresetMenuItem = { label: '', value: '' };
-  let selectedExportPreset: Exporter | undefined = undefined;
+  let selectedExportPresetMenuItem: { label: string; value: string } | null =
+    null;
+  let selectedExportPreset: Exporter | null = null;
   let selectedItemId: string | null = null;
   let suggestedTokens: { name: string; token: string }[] = [];
   let showSuggestions = false;
@@ -140,10 +140,10 @@
     rootFolder = path;
   };
 
-  const handleOnChangeExportPreset = (value: {
-    value: string;
-    label: string;
-  }) => {
+  const handleOnChangeExportPreset = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
     const missingOm = checkOutputModuleTemplate();
     if (missingOm.length > 0) {
       notifications.warning(
@@ -183,9 +183,8 @@
     value: { value: string; label: string }
   ) => {
     selectedOutputModuleMenuItem = value;
-    selectedOutputModule = outputModules.find(
-      (module) => module === value.value
-    );
+    selectedOutputModule =
+      outputModules.find((module) => module === value.value) ?? '';
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
       outputModule: selectedOutputModule,
@@ -195,12 +194,16 @@
   //Function ti add a new preset
   const addExporter = (name: string): Exporter => {
     // first check if the name already exists
-    if (exportPresets.some((preset) => preset.name === name)) {
+    const exporterExists = exportPresets.some((preset) => preset.name === name);
+    if (exporterExists) {
       notifications.error(
         'Exporter preset with this name already exists',
         2000
       );
-      return;
+      const exporter = exportPresets.find(
+        (prset) => prset.name === name
+      ) as Exporter;
+      return exporter;
     }
 
     const newExporter = {
@@ -236,13 +239,16 @@
 
   // Function to save the current preset
   const saveExporter = () => {
+    if (!selectedExportPreset) {
+      return;
+    }
     const updatedExportPreset = {
       ...selectedExportPreset,
       path: pathStructure,
       relativePath: useProjectFolder,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
+      preset.name === selectedExportPreset!.name ? updatedExportPreset : preset
     );
     log.debug(
       'Saving exporter presets',
@@ -259,10 +265,11 @@
           value: preset.name,
           label: preset.name,
         }));
-        selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name
-        );
-        pathStructure = selectedExportPreset.path;
+        selectedExportPresetMenuItem =
+          exportPresetsSelectItems.find(
+            (preset) => preset.value === selectedExportPreset!.name
+          ) ?? null;
+        pathStructure = selectedExportPreset!.path;
 
         notifications.success('Exporter preset saved successfully', 2000);
       } else {
@@ -270,9 +277,10 @@
       }
     });
     selectedExportPreset = updatedExportPreset;
-    selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-      (preset) => preset.value === selectedExportPreset.name
-    );
+    selectedExportPresetMenuItem =
+      exportPresetsSelectItems.find(
+        (preset) => preset.value === selectedExportPreset!.name
+      ) ?? null;
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
     hasTask = selectedExportPreset.previewPath.includes('{task}');
@@ -289,6 +297,9 @@
     let missing: string[] = [];
     fileNodes.forEach((node) => {
       if (!outputModules.find((o) => o === node.outputModule)) {
+        if (!node.outputModule) {
+          return;
+        }
         missing.push(node.outputModule);
       }
     });
@@ -302,7 +313,7 @@
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
         (om) => om.value === node.outputModule
-      );
+      ) as Option<string>;
     }
   };
 
@@ -439,7 +450,7 @@
 
   // Function to build a path for a node
   const buildPath = (node: PathItem): string => {
-    if (node.parentId === null) {
+    if (node.parentId == null) {
       return node.name;
     }
     const parentNode = findNodeById(pathStructure, node.parentId);
@@ -704,7 +715,7 @@
     const renderRootFolder = useProjectFolder ? projectFolder : rootFolder;
     const fileNodes = findNodesByType(selectedExportPreset.path, 'file');
     const outputModules = fileNodes.map((node) => ({
-      outputModuleName: node.outputModule,
+      outputModuleName: node.outputModule ?? 'Default',
       outputModuleFilePath: path.resolve(renderRootFolder, node.path),
     }));
 
@@ -731,7 +742,7 @@
       log.debug(
         'Render queue options',
         {
-          compName: comp.name,
+          compName: comp.compName,
           version,
           taskName,
         },
@@ -740,7 +751,7 @@
       await addToRenderQueue(comp, options);
     }
     // Save settings if enabled
-    if ($appStore.rememberLastExportPreset) {
+    if ($appStore.rememberLastExportPreset && selectedExportPreset) {
       storedExportSettings.set(selectedExportPreset.name);
     }
     if ($appStore.rememberLastExportPath) {
@@ -749,8 +760,12 @@
   };
 
   const deleteExporter = async () => {
+    if (!selectedExportPreset) {
+      return;
+    }
+    const presetNameToDelete = selectedExportPreset.name;
     const updatedExportPresets = exportPresets.filter(
-      (preset) => preset.name !== selectedExportPreset.name
+      (preset) => preset.name !== presetNameToDelete
     );
     setExporterPresets($appStore.appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -788,7 +803,6 @@
   };
 
   onMount(async () => {
-    console.log(getOutputModules());
     try {
       log.debug('Component mounting', { appId: $appStore.appId });
 
@@ -800,27 +814,33 @@
       log.debug('Calling getProjectDir()...');
       try {
         projectFolder = await evalES('getProjectDir()');
-        // projectFolder = projectFolder.startsWith('~')
-        //   ? path.join(os.homedir(), projectFolder.slice(1))
-        //   : projectFolder;
         log.debug('Folders initialized', { rootFolder, projectFolder });
       } catch (error) {
-        log.error('Failed to get project directory', error);
+        log.error('Failed to get project directory', error as Error);
         projectFolder = rootFolder; // Fallback to root folder
       }
 
       log.debug('Calling getSelectedCompsForRender()...');
-      const comps = JSON.parse(
-        await evalES('getSelectedCompsForRender()')
-      ) as any;
-      dummyComp = comps.comps[0];
-      log.debug('Dummy comp loaded', { compName: dummyComp?.name });
+      if ($appStore.appId == 'AEFT') {
+        const comps = JSON.parse(
+          await evalES('getSelectedCompsForRender()')
+        ) as any;
+        dummyComp = comps.comps[0];
+        log.debug('Dummy comp loaded', { compName: dummyComp?.compName });
+      }
 
       // Load Buck Output Modules if not installed
       const savedOutputModules = getOutputModules();
       const buckModules = savedOutputModules.filter((module) =>
         module.includes('BUCK')
       );
+
+      log.debug(
+        'Buck modules loaded',
+        { count: buckModules.length },
+        buckModules
+      );
+      outputModules = savedOutputModules;
 
       if (buckModules.length < 1) {
         log.debug('Calling getOutputModulesTemplates()...');
@@ -861,7 +881,7 @@
 
       selectedExportPreset = exportPresets.find(
         (preset: Exporter) => preset.name === selectedExportPresetName
-      );
+      ) as Exporter;
 
       if (selectedExportPreset) {
         pathStructure = selectedExportPreset.path;
@@ -870,9 +890,10 @@
           value: preset.name,
           label: preset.name,
         }));
-        selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name
-        );
+        selectedExportPresetMenuItem =
+          exportPresetsSelectItems.find(
+            (preset) => preset.value === selectedExportPreset!.name
+          ) ?? null;
         log.debug('Component mounted successfully', {
           preset: selectedExportPreset.name,
           pathCount: pathStructure.length,
@@ -881,7 +902,7 @@
         log.warn('Selected preset not found', { selectedExportPresetName });
       }
     } catch (error) {
-      log.error('Error mounting component', error);
+      log.error('Error mounting component', error as Error);
       notifications.error('Failed to load export path builder', 3000);
     }
   });

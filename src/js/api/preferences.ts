@@ -1,7 +1,10 @@
 import { fs, path, os } from '@/lib/cep/node';
 import pkg from '../../../package.json';
 import { Exporter } from './exporter';
-import { defaultExportPresets } from './exporter/exporters-default';
+import {
+  aeDefaultExportPresets,
+  pproDefaultExportPresets,
+} from './exporter/exporters-default';
 import { logModule } from '@/lib/logger';
 
 const log = logModule('preferences');
@@ -27,9 +30,6 @@ const preferencesRoot =
     : 'Library/Application Support';
 export const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
 const preferencesPath = path.join(preferencesDir, 'preferences.json');
-
-
-
 
 /**
  * Reads the user's preferences from disk.
@@ -107,6 +107,9 @@ export const getExporterPresets = async (
     `exportPresets-${appId.toLowerCase()}.json`
   );
 
+  const defaultExportPresets =
+    appId === 'AEFT' ? aeDefaultExportPresets : pproDefaultExportPresets;
+
   try {
     if (!fs.existsSync(exportPresetsPath)) {
       fs.mkdirSync(path.dirname(exportPresetsPath), { recursive: true });
@@ -119,7 +122,10 @@ export const getExporterPresets = async (
     }
     return JSON.parse(fs.readFileSync(exportPresetsPath, 'utf-8'));
   } catch (e) {
-    log.error('Failed to read export presets', e as Error, { exportPresetsPath, appId });
+    log.error('Failed to read export presets', e as Error, {
+      exportPresetsPath,
+      appId,
+    });
     throw e;
   }
 };
@@ -143,7 +149,10 @@ export const setExporterPresets = async (
     );
     return true;
   } catch (e) {
-    log.error('Failed to write export presets', e as Error, { exportPresetsPath, appId });
+    log.error('Failed to write export presets', e as Error, {
+      exportPresetsPath,
+      appId,
+    });
     throw e;
   }
 };
@@ -173,12 +182,14 @@ export const setShotsHistory = async (shotsProjectHistory: any) => {
     fs.mkdirSync(path.dirname(historyFile), { recursive: true });
   }
   try {
-    fs.writeFileSync(historyFile, JSON.stringify(shotsProjectHistory, null, 2), 'utf-8');
+    fs.writeFileSync(
+      historyFile,
+      JSON.stringify(shotsProjectHistory, null, 2),
+      'utf-8'
+    );
     return true;
   } catch (e) {
     log.error('Failed to write shots history', e as Error, { historyFile });
     throw e;
   }
 };
-
-
