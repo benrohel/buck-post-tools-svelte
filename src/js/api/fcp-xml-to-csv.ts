@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
-import { fs, path, os } from '../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
+import { logModule } from '@/lib/logger';
+
 const { parseStringPromise } = require('xml2js');
+const log = logModule('fcp-xml-to-csv');
 interface ClipData {
   event: number;
   name: string;
@@ -43,14 +46,14 @@ class XmemlParser {
 
   async convertXmlToJSON(inputPath: string): Promise<ClipData[]> {
     try {
-      console.log(`Reading XMEML file: ${inputPath}`);
+      log.debug('Reading XMEML file for JSON conversion', { inputPath });
 
       // Read XMEML file
       const xmlContent = fs.readFileSync(inputPath, 'utf-8');
-      console.log(`File size: ${xmlContent.length} characters`);
+      log.debug('File read successfully', { size: xmlContent.length });
 
       // Parse XML with different settings
-      console.log('Parsing XML...');
+      log.debug('Parsing XML with xml2js');
       const parsedXML = await parseStringPromise(xmlContent, {
         explicitArray: false,
         mergeAttrs: true,
@@ -60,7 +63,7 @@ class XmemlParser {
         trim: true
       });
 
-      console.log('XML parsed successfully');
+      log.debug('XML parsed successfully');
 
       // Store parsed data for reference lookups
       this.parsedSequences = parsedXML;
@@ -73,12 +76,12 @@ class XmemlParser {
       // Process sequences to extract clip data
       this.processSequences(parsedXML);
 
-      console.log(`Total clips found: ${this.clips.length}`);
+      log.debug('Clips extracted from XMEML', { totalClips: this.clips.length });
 
       return this.clips;
 
     } catch (error) {
-      console.error('Error converting XMEML to JSON:', error);
+      log.error('Failed to convert XMEML to JSON', error as Error, { inputPath });
       throw error;
     }
   }
@@ -86,7 +89,7 @@ class XmemlParser {
   writeJSONFile(clips: ClipData[], outputPath: string): void {
     const jsonData = JSON.stringify(clips, null, 2);
     fs.writeFileSync(outputPath, jsonData, 'utf-8');
-    console.log(`JSON written to: ${outputPath}`);
+    log.debug('JSON file written', { outputPath, clipCount: clips.length });
   }
 
   groupClipsByName(clips: ClipData[]): Record<string, ClipData[]> {
@@ -104,7 +107,7 @@ class XmemlParser {
       grouped[name].sort((a, b) => a.startTime - b.startTime);
     });
 
-    console.log(`Grouped ${clips.length} clips into ${Object.keys(grouped).length} unique names`);
+    log.debug('Clips grouped by name', { totalClips: clips.length, uniqueNames: Object.keys(grouped).length });
     return grouped;
   }
 
@@ -112,14 +115,14 @@ class XmemlParser {
 
   async convertToFCPXMLToCSV(inputPath: string, outputPath?: string): Promise<void> {
     try {
-      console.log(`Reading XMEML file: ${inputPath}`);
+      log.debug('Starting XMEML to CSV conversion', { inputPath });
 
       // Read XMEML file
       const xmlContent = fs.readFileSync(inputPath, 'utf-8');
-      console.log(`File size: ${xmlContent.length} characters`);
+      log.debug('File read successfully', { size: xmlContent.length });
 
       // Parse XML with different settings
-      console.log('Parsing XML...');
+      log.debug('Parsing XML with xml2js');
       const parsedXML = await parseStringPromise(xmlContent, {
         explicitArray: false, // Changed this
         mergeAttrs: true,    // Changed this
@@ -129,8 +132,7 @@ class XmemlParser {
         trim: true
       });
 
-      console.log('XML parsed successfully');
-      console.log('Root keys:', Object.keys(parsedXML));
+      log.debug('XML parsed successfully', { rootKeys: Object.keys(parsedXML) });
 
       // Store parsed data for reference lookups
       this.parsedSequences = parsedXML;
@@ -138,7 +140,7 @@ class XmemlParser {
       // Process sequences
       this.processSequences(parsedXML);
 
-      console.log(`Total clips found: ${this.clips.length}`);
+      log.debug('Sequence processing complete', { totalClips: this.clips.length });
 
       // Generate output path if not provided
       if (!outputPath) {
@@ -155,58 +157,60 @@ class XmemlParser {
       console.log(`Processed ${this.clips.length} clips`);
 
     } catch (error) {
-      console.error('Error converting XMEML:', error);
+      log.error('XMEML to CSV conversion failed', error as Error, { inputPath });
       throw error;
     }
   }
 
   private processSequences(parsedXML: any): void {
-    console.log("Full parsed structure:", JSON.stringify(parsedXML, null, 2).substring(0, 1000));
+    log.debug('Processing sequences', {
+      structurePreview: JSON.stringify(parsedXML, null, 2).substring(0, 500)
+    });
 
     const xmeml = parsedXML.xmeml;
     if (!xmeml) {
-      console.log("No xmeml found in parsed XML");
-      console.log("Available keys:", Object.keys(parsedXML));
+      log.debug('No xmeml root found', { availableKeys: Object.keys(parsedXML) });
       return;
     }
 
     // Handle both array and non-array formats
     const sequences = Array.isArray(xmeml.sequence) ? xmeml.sequence : [xmeml.sequence];
     if (!sequences || sequences.length === 0) {
-      console.log("No sequences found in xmeml");
-      console.log("XMEML keys:", Object.keys(xmeml));
+      log.debug('No sequences found in xmeml', { xmemlKeys: Object.keys(xmeml) });
       return;
     }
 
-    console.log(`Found ${sequences.length} sequence(s)`);
+    log.debug('Found sequences', { sequenceCount: sequences.length });
 
     sequences.forEach((sequence: any, index: number) => {
       if (!sequence) return;
 
-      console.log(`Processing sequence ${index + 1}`);
-      console.log("Sequence keys:", Object.keys(sequence));
+      log.debug('Processing sequence', {
+        sequenceIndex: index + 1,
+        sequenceKeys: Object.keys(sequence)
+      });
 
       // Get sequence frame rate
       if (sequence.rate && sequence.rate.timebase) {
         this.frameRate = parseInt(sequence.rate.timebase.toString());
-        console.log(`Sequence frame rate: ${this.frameRate}`);
+        log.debug('Sequence frame rate detected', { frameRate: this.frameRate });
       }
 
       if (sequence.media) {
         this.processMedia(sequence.media);
       } else {
-        console.log("No media found in sequence");
+        log.debug('No media found in sequence', { sequenceIndex: index + 1 });
       }
     });
   }
 
   private processMedia(media: any): void {
-    console.log("Processing media, keys:", Object.keys(media));
+    log.debug('Processing media tracks', { mediaKeys: Object.keys(media) });
 
     // First pass: Process only actual video tracks to store file information
     if (media.video && media.video.track) {
       const videoTracks = Array.isArray(media.video.track) ? media.video.track : [media.video.track];
-      console.log(`Found ${videoTracks.length} video track(s)`);
+      log.debug('Found video tracks', { count: videoTracks.length });
 
       videoTracks.forEach((track: any, trackIndex: number) => {
         // Check if this is actually an audio track by examining attributes
@@ -226,30 +230,30 @@ class XmemlParser {
         // Check if this is actually an audio track by examining attributes
         const isAudioTrack = this.isAudioTrack(track);
         if (isAudioTrack) {
-          console.log(`Track ${trackIndex + 1} identified as audio track`);
+          log.debug('Track identified as audio', { trackIndex: trackIndex + 1 });
           this.processTrack(track, 'Audio', trackIndex + 1);
         }
       });
     } else {
-      console.log("No video tracks found");
-      if (media.video) {
-        console.log("Video keys:", Object.keys(media.video));
-      }
+      log.debug('No video tracks found', {
+        hasVideo: !!media.video,
+        videoKeys: media.video ? Object.keys(media.video) : []
+      });
     }
 
     // Process dedicated audio tracks (if they exist as separate structure)
     if (media.audio && media.audio.track) {
       const audioTracks = Array.isArray(media.audio.track) ? media.audio.track : [media.audio.track];
-      console.log(`Found ${audioTracks.length} dedicated audio track(s)`);
+      log.debug('Found dedicated audio tracks', { count: audioTracks.length });
 
       audioTracks.forEach((track: any, trackIndex: number) => {
         this.processTrack(track, 'Audio', trackIndex + 1);
       });
     } else {
-      console.log("No dedicated audio tracks found");
-      if (media.audio) {
-        console.log("Audio keys:", Object.keys(media.audio));
-      }
+      log.debug('No dedicated audio tracks found', {
+        hasAudio: !!media.audio,
+        audioKeys: media.audio ? Object.keys(media.audio) : []
+      });
     }
   }
 
@@ -279,22 +283,30 @@ class XmemlParser {
 
   private processTrack(track: any, trackType: 'Video' | 'Audio', trackIndex: number): void {
     if (!track) {
-      console.log(`Track ${trackIndex} is null/undefined`);
+      log.debug('Track is null/undefined', { trackType, trackIndex });
       return;
     }
 
-    console.log(`Processing ${trackType} track ${trackIndex}, keys:`, Object.keys(track));
+    log.debug('Processing track', {
+      trackType,
+      trackIndex,
+      trackKeys: Object.keys(track)
+    });
 
     if (!track.clipitem) {
-      console.log(`No clipitems found in ${trackType} track ${trackIndex}`);
+      log.debug('No clipitems in track', { trackType, trackIndex });
       return;
     }
 
     const clipitems = Array.isArray(track.clipitem) ? track.clipitem : [track.clipitem];
-    console.log(`Found ${clipitems.length} clip(s) in ${trackType} track ${trackIndex}`);
+    log.debug('Found clipitems in track', {
+      trackType,
+      trackIndex,
+      clipCount: clipitems.length
+    });
 
     clipitems.forEach((clipitem: any, clipIndex: number) => {
-      console.log(`Processing clip ${clipIndex + 1} in ${trackType} track ${trackIndex}`);
+      log.debug('Processing clipitem', { trackType, trackIndex, clipIndex: clipIndex + 1 });
       this.processClipItem(clipitem, trackType, trackIndex);
     });
   }
@@ -302,12 +314,15 @@ class XmemlParser {
   private processClipItem(clipitem: any, trackType: 'Video' | 'Audio', trackIndex: number): void {
     try {
       if (!clipitem) {
-        console.log("Clipitem is null/undefined");
+        log.debug('Clipitem is null/undefined');
         return;
       }
 
-      console.log(`Processing clipitem with keys:`, Object.keys(clipitem));
-      console.log(`Clipitem ID: ${clipitem.id}, Name: ${clipitem.name}`);
+      log.debug('Processing clipitem details', {
+        clipitemKeys: Object.keys(clipitem),
+        clipId: clipitem.id,
+        clipName: clipitem.name
+      });
 
       const startTime = this.framesToSeconds(parseInt(this.safeToString(clipitem.start) || '0'));
       const endTime = this.framesToSeconds(parseInt(this.safeToString(clipitem.end) || '0'));
@@ -369,15 +384,22 @@ class XmemlParser {
         clip.label = this.safeToString(clipitem.labels.label2) || '';
       }
 
-      console.log(`Successfully processed clip: ${clip.name} (${clip.startTime}s - ${clip.endTime}s)`);
+      log.debug('Clip processed successfully', {
+        clipName: clip.name,
+        startTime: clip.startTime,
+        endTime: clip.endTime,
+        trackType
+      });
 
       // Store video clips for reference by audio clips
       if (trackType === 'Video' && clip.masterClipId && clipitem.file) {
-        console.log(`Storing video clip for master clip ID: ${clip.masterClipId}`);
+        log.debug('Storing video clip for master clip reference', {
+          masterClipId: clip.masterClipId
+        });
 
         // Extract audio info from the video clip's media data
-        let audioSampleRate = undefined;
-        let audioChannels = undefined;
+        let audioSampleRate: number | undefined = undefined;
+        let audioChannels: number | undefined = undefined;
 
         if (clipitem.file.media && clipitem.file.media.audio) {
           const audioMedia = clipitem.file.media.audio;
@@ -400,7 +422,7 @@ class XmemlParser {
           sampleRate: audioSampleRate,
           audioChannels: audioChannels
         });
-        console.log(`Stored video clip data:`, {
+        log.debug('Video clip data stored', {
           sourceFile: clip.sourceFile,
           masterClipId: clip.masterClipId,
           sampleRate: audioSampleRate,
@@ -417,8 +439,13 @@ class XmemlParser {
       this.clips.push(clip);
 
     } catch (error) {
-      console.warn(`Warning: Could not process clip "${clipitem?.id || 'unknown'}" - ${error}`);
-      console.error("Error details:", error);
+      log.warn('Failed to process clip', {
+        clipId: clipitem?.id || 'unknown',
+        error: String(error)
+      });
+      log.error('Clip processing error details', error as Error, {
+        clipId: clipitem?.id
+      });
     }
   }
 
@@ -492,11 +519,14 @@ class XmemlParser {
 
     // Alternative approach: try to find file info from stored video clips by matching master clip IDs
     if (!clip.sourceFile && clip.masterClipId) {
-      console.log(`Looking for stored video clip with master clip ID: ${clip.masterClipId}`);
-      console.log(`Available stored master clip IDs:`, Array.from(this.processedVideoClips.keys()));
+      log.debug('Looking for stored video clip by master clip ID', {
+        masterClipId: clip.masterClipId,
+        availableIds: Array.from(this.processedVideoClips.keys())
+      });
       const storedVideoClip = this.processedVideoClips.get(clip.masterClipId);
       if (storedVideoClip) {
-        console.log(`Found stored video clip for ${clip.masterClipId}:`, {
+        log.debug('Found stored video clip', {
+          masterClipId: clip.masterClipId,
           sourceFile: storedVideoClip.sourceFile,
           sampleRate: storedVideoClip.sampleRate,
           audioChannels: storedVideoClip.audioChannels
@@ -512,10 +542,15 @@ class XmemlParser {
         if (trackType === 'Audio') {
           clip.sampleRate = storedVideoClip.sampleRate;
           clip.audioChannels = storedVideoClip.audioChannels;
-          console.log(`Applied audio info to audio clip: sampleRate=${clip.sampleRate}, channels=${clip.audioChannels}`);
+          log.debug('Applied audio info to audio clip', {
+            sampleRate: clip.sampleRate,
+            channels: clip.audioChannels
+          });
         }
       } else {
-        console.log(`No stored video clip found for ${clip.masterClipId}`);
+        log.debug('No stored video clip found for master clip ID', {
+          masterClipId: clip.masterClipId
+        });
       }
     }
 

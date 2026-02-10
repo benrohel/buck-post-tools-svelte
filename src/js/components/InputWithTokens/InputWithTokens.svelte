@@ -1,88 +1,88 @@
 <script lang="ts">
-  import { ArrowLeftRight, ListPlus } from "lucide-svelte";
-  import {
-    exportPresets,
-    selectedExportPreset,
-  } from "../../stores/local-storage";
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { ArrowLeftRight, ListPlus } from 'lucide-svelte';
 
+  // ═══════════════════════════════════════════════════════════
+  // 4. STORE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { exportPresets, selectedExportPreset } from '@/stores/local-storage';
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
+  const log = logModule('input-with-tokens');
+
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   const tokenList = [
     {
-      value: "compName",
-      label: "Comp Name",
+      value: 'compName',
+      label: 'Comp Name',
     },
     {
-      value: "projectVersion",
-      label: "Project Version",
+      value: 'projectVersion',
+      label: 'Project Version',
     },
     {
-      label: "frameNumber",
-      value: "frameNumber",
+      label: 'frameNumber',
+      value: 'frameNumber',
     },
     {
-      value: "/",
-      label: "folder",
+      value: '/',
+      label: 'folder',
     },
   ];
 
   let showBuildPreset = false;
-  let prefix = "";
-  let suffix = "";
+  let prefix = '';
+  let suffix = '';
   let tokens: string[] = [];
-  let selectedToken = "";
+  let selectedToken = '';
   let version = 0;
 
-  const getPreviewString = () => {
-    return `${prefix ? prefix + "_" : ""}${tokens.join("_")}${
-      suffix ? "_" + suffix : ""
-    }${version > 0 ? `_v${String(version).padStart(3, "0")}` : ""}`;
-  };
-
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
   $: previewString = getPreviewString();
 
-  function addToken(token: string) {
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
+  const getPreviewString = () => {
+    return `${prefix ? prefix + '_' : ''}${tokens.join('_')}${
+      suffix ? '_' + suffix : ''
+    }${version > 0 ? `_v${String(version).padStart(3, '0')}` : ''}`;
+  };
+
+  const addToken = (token: string) => {
     tokens = [...tokens, token];
-  }
+  };
 
-  function removeToken(token: string) {
+  const removeToken = (token: string) => {
     tokens = tokens.filter((t) => t !== token);
-  }
-
-  //   function handleKeyDown(e) {
-  //     if (e.key === "Enter") {
-  //       addToken(inputValue);
-
-  //     } else if (e.key === "ArrowDown") {
-  //       activeSuggestion =
-  //         (activeSuggestion + 1) %
-  //         suggestions.filter((s) => s.startsWith(inputValue)).length;
-  //     } else if (e.key === "ArrowUp") {
-  //       activeSuggestion =
-  //         (activeSuggestion -
-  //           1 +
-  //           suggestions.filter((s) => s.startsWith(inputValue)).length) %
-  //         suggestions.filter((s) => s.startsWith(inputValue)).length;
-  //     }
-  //   }
+  };
 
   const handleAddToken = (e: any) => {
     tokens = [...tokens, e.target.value];
   };
 
-  function handleSuggestionClick(suggestion: string) {
+  const handleSuggestionClick = (suggestion: string) => {
     addToken(suggestion);
-  }
+  };
 
   const savePreset = () => {
     if (!$exportPresets) {
       exportPresets.set(previewString);
       return;
     } else {
-      exportPresets.set($exportPresets + "," + previewString);
+      exportPresets.set($exportPresets + ',' + previewString);
       return;
     }
   };
-  $: console.log($exportPresets);
-  $: console.log($selectedExportPreset);
 </script>
 
 <div class="autocomplete">
@@ -134,7 +134,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../variables.scss" as *;
+  @use '../../variables.scss' as *;
 
   #template-builder {
     display: flex;

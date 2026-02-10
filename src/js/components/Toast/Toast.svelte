@@ -1,7 +1,7 @@
 <script lang="ts">
   import { flip } from 'svelte/animate';
   import { fly } from 'svelte/transition';
-  import { notifications } from '../../stores/notifications-store';
+  import { notifications } from '@/stores/notifications-store';
   export let themes = {
     error: 'ed553b',
     success: '#3cae5c',

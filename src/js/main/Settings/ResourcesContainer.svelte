@@ -1,6 +1,10 @@
 <script lang="ts">
-  import { openLinkInBrowser } from '../../lib/utils/bolt';
   import { onMount } from 'svelte';
+
+  import { openLinkInBrowser } from '@/lib/utils/bolt';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('resources-container');
 
   let scriptResources = [
     {
@@ -44,10 +48,17 @@
     },
   ];
 
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const openLink = (value: string) => {
-    console.log(value);
+    log.debug('Opening resource link', { url: value });
     openLinkInBrowser(value);
   };
+
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {});
 </script>
 

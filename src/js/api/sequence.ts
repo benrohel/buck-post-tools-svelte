@@ -1,7 +1,10 @@
 import upath from 'upath';
-import { evalES } from '../lib/utils/bolt';
+import { evalES } from '@/lib/utils/bolt';
 import { ClipType, setItemTimecodes } from './clip';
 import Papa from 'papaparse';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('sequence');
 
 export declare interface Sequence {
   name: string;
@@ -103,7 +106,7 @@ export const GetMarkersThumbnails = async (
   const markers = await GetSequenceMarkers(nodeId);
   if (!outputFolder) {
     await evalES("alert('no output folder')");
-    return;
+    return false;
   }
 
   if (colorIndices.length == 0) {
@@ -111,12 +114,22 @@ export const GetMarkersThumbnails = async (
   }
 
   if (markers) {
-    console.log(markers);
-    console.log('color indices', colorIndices);
+    log.debug('Exporting sequence markers', {
+      sequenceName: seq.name,
+      totalMarkers: markers.length,
+      colorIndices,
+      filteredMarkers: markers.filter((m) => colorIndices.includes(m.colorIndex)).length
+    });
+
     markers
       .filter((m) => colorIndices.includes(m.colorIndex))
       .forEach((marker) => {
-        console.log(marker);
+        log.debug('Processing marker', {
+          name: marker.name,
+          colorIndex: marker.colorIndex,
+          startSeconds: marker.startSeconds
+        });
+
         const frameNumber = Math.round(marker.startSeconds * seq.framerate);
         const outputPath = upath.join(
           outputFolder,
@@ -128,7 +141,7 @@ export const GetMarkersThumbnails = async (
           `exportClipThumbnail("${marker.startTicks}","${outputPath}")`,
           false
         ).then((res) => {
-          console.log(res);
+          log.debug('Marker thumbnail exported', { outputPath, result: res });
         });
       });
   }
@@ -214,7 +227,9 @@ const laSequenceCsv = async (shots: Array<ClipType>): Promise<string> => {
       const csv = Papa.unparse(data.shots);
       resolve(csv);
     } catch (err) {
-      console.error(err);
+      log.error('Failed to build sequence CSV', err as Error, {
+        shotCount: shots.length
+      });
       reject('Could not build csv');
     }
   });
@@ -235,9 +250,9 @@ export const AddGaps = (gap: number, trackName: string) => {
     gap: gap,
     trackName: trackName,
   };
-  evalES(`addGap(${JSON.stringify(options)})`, false).then((res: any) =>
-    console.log(res)
-  );
+  evalES(`addGap(${JSON.stringify(options)})`, false).then((res: any) => {
+    log.debug('Added gaps to sequence', { gap, trackName, result: res });
+  });
 };
 
 export const CopySequenceSettings = (
@@ -248,9 +263,12 @@ export const CopySequenceSettings = (
     from: fromSequenceId,
     to: toSequencesId,
   };
-  evalES(`copySequenceSettings(${JSON.stringify(options)})`, false).then(() =>
-    console.log('Done copy settings')
-  );
+  evalES(`copySequenceSettings(${JSON.stringify(options)})`, false).then(() => {
+    log.debug('Copied sequence settings', {
+      fromSequence: fromSequenceId,
+      toSequenceCount: toSequencesId.length
+    });
+  });
 };
 
 declare interface ClipSourceType {
@@ -284,117 +302,4 @@ export const BuildSourceSequence = (
   });
 };
 
-// const laSequenceCsv = async (shots: Array<ClipType>): Promise<string> => {
-//   const fields = [
-//     'Shot Name',
-//     'Thumbnail ',
-//     'ThumbnaillUrl',
-//     'Src Timecode',
-//     'Src In',
-//     'Src Out',
-//     'Dst In',
-//     'Dst Out',
-//     'Dst Duration',
-//     'Framerate',
-//     'COMP #',
-//     'EDIT #',
-//     'Status',
-//     'Notes',
-//     'Clip Media',
-//   ];
-//   const opts = { fields };
-//   let tbURLString = '=IMAGE(INDIRECT(ADDRESS(ROW(),COLUMN()+1)))';
-
-//   const shotMap = shots.map((shot: ClipType, index) => {
-//     let version = 'v00';
-//     let versionMatch = shot.filepath.match(/v\d+/);
-
-//     if (versionMatch && versionMatch.length > 0) {
-//       version = versionMatch[0];
-//     }
-//     return {
-//       'Shot Name': shot.shotName,
-//       Thumbnail: tbURLString,
-//       ThumbnaillUrl: shot.thumbnailUrl,
-//       'Src Timecode': shot.mediaStart?.toString(),
-//       'Src In': shot.tcInPoint?.frameCount - shot.mediaStart?.frameCount,
-//       'Src Out': shot.tcOutPoint?.frameCount - shot.mediaStart?.frameCount,
-//       'Dst In': shot.tcStart?.frameCount,
-//       'Dst Out': shot.tcEnd?.frameCount,
-//       'Dst Duration': shot.duration,
-//       Framerate: shot.tcInPoint?.frameRate,
-//       'COMP #': 'v00',
-//       'EDIT #': version,
-//       Status: 'PENDING',
-//       Notes: '',
-//       'Clip Media': shot.filepath,
-//     };
-//   });
-
-//   const data = { shots: shotMap };
-
-//   return new Promise((resolve, reject) => {
-//     try {
-//       // const csv = parse(data.shots, opts);
-//       const csv = Papa.unparse(data.shots);
-//       console.log(csv);
-//       resolve(csv);
-//     } catch (err) {
-//       console.error(err);
-//       reject('Could not build csv');
-//     }
-//   });
-// };
-
-// const nySsequenceCsv = async (shots: Array<ClipType>): Promise<string> => {
-//   const fields = NY_FIELDS;
-//   const opts = { fields };
-
-//   const shotMap = shots.map((shot: ClipType, index) => {
-//     const inFrame = shot.tcInPoint?.valueOf();
-//     const outFrame = shot.tcOutPoint?.valueOf();
-//     const framerange = `${inFrame}-${outFrame}`;
-//     return {
-//       THUMBNAIL: '=IMAGE(INDIRECT(ADDRESS(ROW(),COLUMN()+1)))',
-//       THUMBNAIL_URL: shot.thumbnailUrl,
-//       NAME: shot.shotName,
-//       DESCRIPTION: '',
-//       'FRAME RANGE': framerange,
-//       design: '',
-//       'ARTIST D': '',
-//       'STATUS D': '',
-//       'NOTES D': '',
-//       animation: '',
-//       'ARTIST A': '',
-
-//       'STATUS A': '',
-//       'IMPORTED A': '',
-//       'NOTES A': '',
-//       lighting: '',
-//       'ARTIST L': '',
-//       'STATUS L': '',
-//       'CACHE # L': '',
-//       'IMPORTED L': '',
-//       'NOTES L': '',
-//       comp: '',
-//       'ARTIST C': '',
-//       'STATUS C': '',
-//       'COMP #': '',
-//       'EDIT #': '',
-//       'IMPORTED C': '',
-//       'NOTES C': '',
-//     };
-//   });
-
-//   const data = { shots: shotMap };
-
-//   return new Promise((resolve, reject) => {
-//     try {
-//       const csv = parse(data.shots, opts);
-//       resolve(csv);
-//     } catch (err) {
-//       console.error(err);
-//       reject('Could not build csv');
-//     }
-//   });
-// };
+// Legacy CSV export functions removed - see git history if needed

@@ -1,7 +1,10 @@
-import { fs, os } from '../lib/cep/node';
+import { fs, os } from '@/lib/cep/node';
 import upath from 'upath';
 import { gePremiereFramerate, gePremiereVideoFramerate } from './timecode';
 import pkg from '../../../package.json';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('sqpreset');
 const SHARED_FOLDER = '/Volumes/globalprefs/SHARED/';
 
 declare interface SQPresetOption {
@@ -17,8 +20,7 @@ export const getSqTemplate = ({
 }: SQPresetOption): string => {
   const fr = gePremiereFramerate(framerate);
   const vf = gePremiereVideoFramerate(framerate);
-  console.log(vf);
-  console.log(fr);
+  log.debug('Generating SQ template', { width, height, framerate, fr, vf });
   return `<?xml version="1.0" encoding="UTF-8"?>
   <PremiereData Version="3">
     <SequencePreset ObjectRef="1"/>
@@ -119,10 +121,10 @@ export const getPresetFile = (
       fs.mkdirSync(upath.dirname(presetPath), { recursive: true });
     }
     fs.writeFileSync(presetPath, preset);
-    console.log('Writing preset ', presetPath);
+    log.debug('Preset file written', { presetPath, width, height, framerate });
     return presetPath;
   } catch (e) {
-    console.log(e);
+    log.error('Failed to create preset file', e as Error, { presetPath, width, height, framerate });
     throw new Error(`Preset file not created at path: ${presetPath}`);
   }
 };

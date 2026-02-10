@@ -57,11 +57,6 @@
     opacity: 0.5;
   }
 
-  .chip-label {
-    padding: 2px;
-    justify-self: flex-end;
-  }
-
   #chip-icon {
     display: flex;
     height: auto;

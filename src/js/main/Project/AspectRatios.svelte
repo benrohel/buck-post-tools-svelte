@@ -1,13 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import upath from 'upath';
-  import { getPresetFile } from '../../api/SQPreset';
-  import type { Sequence } from '../../api/sequence';
+
   import { ArrowRight } from 'lucide-svelte';
   import { v4 as uuidv4 } from 'uuid';
-  import MultiSelect from '../../components/MultiSelect/MultiSelect.svelte';
-  import { fs } from '../../lib/cep/node';
+  import upath from 'upath';
+
+  import MultiSelect from '@/components/MultiSelect/MultiSelect.svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { getPresetFile } from '@/api/SQPreset';
+  import { fs } from '@/lib/cep/node';
+  import type { Sequence } from '@/api/sequence';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('aspect-ratios');
+
   interface Resolution {
     value: string;
     label: string;
@@ -56,30 +63,24 @@
     ],
   };
 
-  let filteredPresets: any[] = [];
+  let filteredPresets: Resolution[] = [];
   let selectedPresets: Resolution[] = [];
   let masterSequence: Sequence;
   let presetFilter: string = '';
 
   $: filteredPresets = videoResolutions.resolutions.filter((f) =>
-    f.label.includes(presetFilter),
+    f.label.includes(presetFilter)
   );
 
   const getMasterSequence = async () => {
     let selectedSequences = true;
     const aeResult = await evalES(
       `getSelectedSequencesForNode(${selectedSequences})`,
-      false,
+      false
     );
     const aeJson = JSON.parse(aeResult);
     masterSequence = aeJson.sequences[0];
   };
-
-  onMount(async () => {
-    await getMasterSequence();
-    const res = await GetResolutions();
-    filteredPresets = res;
-  });
 
   const GetResolutions = async () => {
     return videoResolutions.resolutions;
@@ -108,7 +109,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate,
+        option.framerate
       );
 
       if (sqp) {
@@ -120,9 +121,12 @@
 
         const seqId = await evalES(
           `createNewSequenceFromSQP(${JSON.stringify(sequenceOptions)})`,
-          false,
+          false
         );
-        console.log(seqId);
+        log.debug('Created new sequence', {
+          seqId,
+          resolution: resolution.value,
+        });
         const insertOption = {
           toInsert: masterSequence.nodeId,
           inSequence: seqId,
@@ -133,34 +137,44 @@
     }
   };
 
-  function clearSelectedPreset() {
+  const clearSelectedPreset = () => {
     filteredPresets = filteredPresets.map((item) => ({
       ...item,
       selected: false,
     }));
-  }
+  };
 
-  const handleSelectionChange = (selection: any) => {
-    console.log(selection);
+  const handleSelectionChange = (selection: Resolution[]) => {
+    log.debug(
+      'Resolution selection changed',
+      { count: selection.length },
+      selection
+    );
     selectedPresets = selection;
   };
 
-  function handlePresetFilter(e: Event) {
+  const handlePresetFilter = (e: Event) => {
     clearSelectedPreset();
     presetFilter = (e.target as HTMLInputElement).value;
-  }
+  };
 
-  function getSelectedPresets(): Array<Resolution> {
+  const getSelectedPresets = (): Array<Resolution> => {
     return filteredPresets.filter((f) => f.selected);
-  }
+  };
 
-  function getItemWidth(item: Resolution): string {
+  const getItemWidth = (item: Resolution): string => {
     const w = parseInt(item.value.split('x')[0]);
     const h = parseInt(item.value.split('x')[1]);
     const ar = w / h;
     const pixelWidth = 20 * ar;
     return `${pixelWidth}px`;
-  }
+  };
+
+  onMount(async () => {
+    await getMasterSequence();
+    const res = await GetResolutions();
+    filteredPresets = res;
+  });
 </script>
 
 <div class="settings">
@@ -193,7 +207,7 @@
           <li style="margin-left:2px">{item.label}</li>
           <div
             style="width: {getItemWidth(
-              item,
+              item
             )}; height: 20px; border: 1px solid grey; border-radius: 2px;margin-right: 2px;"
           />
         </div>

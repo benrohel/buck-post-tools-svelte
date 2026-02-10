@@ -1,251 +1,112 @@
 import { writable, Writable } from 'svelte/store';
-import type * as BUCK5 from '../api/buck5/index.d';
-import { defaultAppStore, type AppStore } from '../stores/app-store';
-const safeload = (key: string) => {
+import type * as BUCK5 from '@/api/buck5/index.d';
+import { defaultAppStore, type AppStore } from '@/stores/app-store';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('local-storage');
+
+/**
+ * Helper to safely load and parse data from localStorage
+ * @param key - localStorage key
+ * @returns Parsed value or null if not found/invalid
+ */
+const safeLoad = <T = any>(key: string): T | null => {
   try {
-    if (localStorage.getItem(key) === null) {
+    const item = localStorage.getItem(key);
+    if (item === null) {
       return null;
     }
-    return JSON.parse(localStorage.getItem(key) ?? '');
+    return JSON.parse(item) as T;
   } catch (error) {
-    console.error('Error loading data from localStorage:', error);
+    log.error(`Failed to load ${key} from localStorage`, error as Error, {
+      key,
+    });
     return null;
   }
 };
 
-const storedUser = safeload('user');
-
-export const userSession = writable<BUCK5.UserData | null>(
-  //@ts-ignore
-  JSON.parse(storedUser ? localStorage.getItem('user') : null)
-);
-userSession.subscribe((value) => {
-  if (value === null) {
-    return;
-  } else {
-    localStorage.setItem('user', JSON.stringify(value));
-  }
-});
-
-// Session Project
-export const storedProject = safeload('localProject');
-export const sessionProject = writable<string | null>(
-  //@ts-ignore
-  storedProject ? localStorage.getItem('localProject') : ''
-);
-
-sessionProject.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('localProject', value);
-  }
-});
-
-// TrackerType
-export const storedTrackerType = safeload('trackertype');
-export const trackerType = writable<string | null>(
-  //@ts-ignore
-
-  storedTrackerType ? localStorage.getItem('trackertype') : ''
-);
-trackerType.subscribe((value) => {
-  console.log('trackerType', value);
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('trackertype', value);
-  }
-});
-
-// Coda Doc
-const storedDoc = safeload('codadoc');
-export const codaDoc = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(storedDoc ? localStorage.getItem('codadoc') : null)
-);
-codaDoc.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('codadoc', JSON.stringify(value));
-  }
-});
-
-// Coda Table
-const storedCodaTable = safeload('codatable');
-export const codaTable = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(storedCodaTable ? localStorage.getItem('codatable') : null)
-);
-codaTable.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('codatable', JSON.stringify(value));
-  }
-});
-
-// PPRO
-// StillOutput Folder
-const storedStillOutputFolder = safeload('stillfolder');
-export const stillOutputFolder = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(
-    storedStillOutputFolder ? localStorage.getItem('stillfolder') : null
-  )
-);
-stillOutputFolder.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('stillfolder', JSON.stringify(value));
-  }
-});
-
-// Sequence Output Folder
-const storedSSequenceOutputFolder = safeload('sequencefolder');
-export const sequenceOutputFolder = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(
-    storedSSequenceOutputFolder ? localStorage.getItem('sequencefolder') : null
-  )
-);
-sequenceOutputFolder.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('sequencefolder', JSON.stringify(value));
-  }
-});
-
-// Export Presets
-const storedExportPresets = safeload('aeexportpresets');
-export const exportPresets = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(
-    storedExportPresets ? localStorage.getItem('aeexportpresets') : null
-  )
-);
-exportPresets.subscribe((value) => {
-  if (value === '') {
-    return '';
-  } else {
-    localStorage.setItem('aeexportpresets', JSON.stringify(value));
-  }
-});
-
-// Selected Export Preset
-const storedSelectedExportPreset = safeload('selectedExportPresets');
-export const selectedExportPreset = writable<any | null>(
-  //@ts-ignore
-  JSON.parse(
-    storedSelectedExportPreset
-      ? localStorage.getItem('selectedExportPresets')
-      : null
-  )
-);
-selectedExportPreset.subscribe((value) => {
-  if (value === '') {
-    return {};
-  } else {
-    localStorage.setItem('selectedExportPresets', JSON.stringify(value));
-  }
-});
-
-// Replace Search Folder
-export const lastFolderSearch = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(localStorage.getItem('lastfoldersearch') ?? null)
-);
-lastFolderSearch.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('lastfoldersearch', JSON.stringify(value));
-  }
-});
-
-// Replace Search Folder
-export const lastFolderExport = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(localStorage.getItem('lastfolderexport') ?? null)
-);
-lastFolderExport.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('lastfolderexport', JSON.stringify(value));
-  }
-});
-
-// Export Settings
-export const storedExportSettings = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(localStorage.getItem('exportsettings') ?? null)
-);
-storedExportSettings.subscribe((value) => {
-  if (value === null) {
-    return;
-  } else {
-    localStorage.setItem('exportsettings', JSON.stringify(value));
-  }
-});
-
-//  Export Root Folder
-export const storedExportRootFolder = writable<string | null>(
-  //@ts-ignore
-  JSON.parse(localStorage.getItem('exportrootfolder') ?? null)
-);
-storedExportRootFolder.subscribe((value) => {
-  if (value === '') {
-    return;
-  } else {
-    localStorage.setItem('exportrootfolder', JSON.stringify(value));
-  }
-});
-
-// Replace Search Folder
-// export const localAppStore = writable<AppStore>();
-// localAppStore.subscribe((value) => {
-//   if (value === null) {
-//     return;
-//   } else {
-//     localStorage.setItem('localappstore', JSON.stringify(value));
-//   }
-// });
-
+/**
+ * Create a writable store that persists to localStorage
+ * @param key - localStorage key
+ * @param initialValue - Default value if localStorage is empty
+ * @returns Writable store synced with localStorage
+ */
 export function createLocalStore<T>(key: string, initialValue: T): Writable<T> {
-  // Safely load from localStorage
-  const safeLoad = (): T => {
-    try {
-      const storedValue = localStorage.getItem(key);
-      if (storedValue === null) {
-        return initialValue;
-      }
-      return JSON.parse(storedValue);
-    } catch (error) {
-      console.error(`Error loading ${key} from localStorage:`, error);
-      return initialValue;
-    }
-  };
-
-  // Create the store with stored value or initial value
-  const store = writable<T>(safeLoad());
+  // Load initial value from localStorage
+  const storedValue = safeLoad<T>(key);
+  const store = writable<T>(storedValue ?? initialValue);
 
   // Subscribe to changes and update localStorage
   store.subscribe((value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error saving ${key} to localStorage:`, error);
+      log.error(`Failed to save ${key} to localStorage`, error as Error, {
+        key,
+      });
     }
   });
 
   return store;
 }
 
-export const localAppStore: Writable<AppStore> = createLocalStore(
+// ============================================================================
+// Persisted Stores
+// ============================================================================
+
+export const userSession = createLocalStore<BUCK5.UserData | null>(
+  'user',
+  null
+);
+
+export const storedProject = safeLoad<string>('localProject');
+
+export const sessionProject = createLocalStore<string>(
+  'localProject',
+  storedProject ?? ''
+);
+
+export const trackerType = createLocalStore<string>('trackertype', '');
+
+export const codaDoc = createLocalStore<string>('codadoc', '');
+
+export const codaTable = createLocalStore<string>('codatable', '');
+
+export const stillOutputFolder = createLocalStore<string>('stillfolder', '');
+
+export const sequenceOutputFolder = createLocalStore<string>(
+  'sequencefolder',
+  ''
+);
+
+export const exportPresets = createLocalStore<string>('aeexportpresets', '');
+
+export const selectedExportPreset = createLocalStore<any>(
+  'selectedExportPresets',
+  null
+);
+
+export const lastFolderSearch = createLocalStore<string>(
+  'lastfoldersearch',
+  ''
+);
+
+export const lastFolderExport = createLocalStore<string>(
+  'lastfolderexport',
+  ''
+);
+
+export const storedExportSettings = createLocalStore<string>(
+  'exportsettings',
+  ''
+);
+
+export const storedExportRootFolder = createLocalStore<string>(
+  'exportrootfolder',
+  ''
+);
+
+export const localAppStore = createLocalStore<AppStore>(
   'localappstore',
   defaultAppStore
 );

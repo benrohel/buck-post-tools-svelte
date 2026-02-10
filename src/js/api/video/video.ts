@@ -1,4 +1,6 @@
-import { path, child_process, os } from '../../lib/cep/node';
+import { path, child_process, os } from '@/lib/cep/node';
+import { logModule } from '@/lib/logger';
+const log = logModule('video-api');
 interface VideoInfosCheck {
   width: number;
   height: number;
@@ -61,7 +63,7 @@ export const checkVideoFileUpdate = (
     }
   });
   if (errors.length > 0) {
-    console.warn(`Video files are different: ${errors.join(', ')}`);
+    log.warn(`Video files are different: ${errors.join(', ')}`);
     return Promise.resolve(errors);
   }
   return Promise.resolve([]);

@@ -1,6 +1,9 @@
 import type * as BUCK5 from '.';
 import { format } from 'date-fns';
 import axios from 'axios';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('buck5-api');
 const today = () => {
   return format(new Date(), 'yyyy-MM-dd');
 };
@@ -49,7 +52,7 @@ export const Login = async (
 ): Promise<BUCK5.UserData> => {
   options.contentType = 'application/json';
   const userData = (await BuckRequest(options)).user.data as BUCK5.UserData;
-  console.log(userData);
+  log.debug('User logged in', { email: userData.email, name: userData.name }, userData);
   return Promise.resolve(userData);
 };
 
@@ -70,7 +73,7 @@ export const Projects = async (): Promise<BUCK5.Item[]> => {
     request: '/projects',
   };
   const projects = (await BuckRequest(projectsOptions)) as BUCK5.Item[];
-  console.log(projects);
+  log.debug('Fetched projects', { count: projects.length }, projects);
   return Promise.resolve(projects);
 };
 
@@ -134,7 +137,7 @@ export const UpdateTask = async (
   };
 
   const res = await BuckRequest(tasksOptions);
-  console.log('UPDATE BUCK5.Task', res);
+  log.debug('Updated task', { taskKey, updatedFields: Object.keys(data) }, res);
   const task = res as BUCK5.Item;
   return Promise.resolve(task);
 };
@@ -268,7 +271,7 @@ export const GetPlaylistByName = async (
   framerate: number = 24
 ): Promise<BUCK5.Playlist> => {
   const playlists = await Playlists(projectKey);
-  console.log(playlists);
+  log.debug('Fetched playlists', { projectKey, count: playlists.length, searchName: playlistName }, playlists);
   let playlist = playlists.find((p) => p.data.name === playlistName);
   if (!playlist) {
     playlist = await CreatePlaylist(projectKey, playlistName, framerate);
@@ -357,7 +360,7 @@ export const AfterEffectsProperties = async (
     },
   };
   const res = await BuckRequest(options);
-  console.log('ae properties', res);
+  log.debug('Fetched After Effects properties', { projectKey }, res);
   const aeProperties = res[0].data as BUCK5.AeProperties;
   return Promise.resolve(aeProperties);
 };

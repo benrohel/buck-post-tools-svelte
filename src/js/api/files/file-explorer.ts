@@ -1,5 +1,8 @@
-import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../exporter';
+import { path, fs } from '@/lib/cep/node';
+import { type PathItem } from '@/api/exporter';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('file-explorer');
 
 /**
  * Common VFX image sequence extensions
@@ -251,7 +254,7 @@ export async function getDirectoryChildren(
     // Return folders first, then files
     return [...folders, ...fileItems];
   } catch (error) {
-    console.error('Error reading directory:', dirPath, error);
+    log.error('Failed to read directory', error as Error, { dirPath });
     return [];
   }
 }
@@ -289,7 +292,7 @@ export async function getRootFolder(
 
     return [rootItem];
   } catch (error) {
-    console.error('Error getting root folder:', error);
+    log.error('Failed to get root folder', error as Error, { rootPath });
     return [];
   }
 }
@@ -373,7 +376,7 @@ export function getPathMetadata(filePath: string): {
       modified: stats.mtime,
     };
   } catch (error) {
-    console.error('Error getting path metadata:', error);
+    log.error('Failed to get path metadata', error as Error, { filePath });
     return null;
   }
 }

@@ -1,46 +1,58 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import { FolderInput } from 'lucide-svelte';
+
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
   import {
     localAppStore,
     lastFolderExport,
     storedExportRootFolder,
-  } from '../../stores/local-storage';
-  import { appStore } from '../../stores/app-store';
-  import { GetActiveSequence } from '../../api/edit';
-  import { GetSelectedSequences } from '../../api/sequence';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { FolderInput } from 'lucide-svelte';
-  import { fs, path } from '../../lib/cep/node';
-  import { notifications } from '../../stores/notifications-store';
-  import { onMount } from 'svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  let suffix = '';
+  } from '@/stores/local-storage';
+  import { appStore } from '@/stores/app-store';
+  import { notifications } from '@/stores/notifications-store';
 
+  import { GetActiveSequence } from '@/api/edit';
+  import { GetSelectedSequences, type Sequence } from '@/api/sequence';
+  import { evalES } from '@/lib/utils/bolt';
+  import { fs, path } from '@/lib/cep/node';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-sequence-xml');
+
+  let suffix = '';
   let rootFolder = '';
 
-  $: console.log(rootFolder);
+  $: if (rootFolder) {
+    log.debug('Root folder updated', { rootFolder });
+  }
 
-  function setRootFolder(path: string) {
+  const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
 
     rootFolder = path;
-  }
+  };
 
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     suffix = target.value;
   };
 
-  const exportSequenceXml = async (sequence: any) => {
+  const exportSequenceXml = async (sequence: Sequence) => {
     const filepath = path.join(
       rootFolder,
       suffix.length > 0
         ? `${sequence.name}_${suffix}.xml`
         : sequence.name + '.xml'
     );
-    console.log(filepath);
+    log.debug('Exporting sequence XML', {
+      sequenceName: sequence.name,
+      filepath,
+    });
     if (!fs.existsSync(filepath)) {
       fs.mkdirSync(path.dirname(filepath), { recursive: true });
     }
@@ -58,12 +70,12 @@
   };
 
   const handleSubmitExport = async () => {
-    let toSequences: any[] = [];
+    let toSequences: Sequence[] = [];
 
     toSequences = await GetSelectedSequences();
 
     if (toSequences.length === 0) {
-      console.log('Please select a sequence');
+      log.warn('No sequences selected for export');
       return;
     }
 

@@ -1,4 +1,4 @@
-import { evalES } from '../lib/utils/bolt';
+import { evalES } from '@/lib/utils/bolt';
 
 const TOKEN_LIST: string[] = [
   'projectVersion',

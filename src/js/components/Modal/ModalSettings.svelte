@@ -1,14 +1,29 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { XCircle } from 'lucide-svelte';
-  export let onClose: Function = () => {};
 
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { OnClose } from '@/types/callbacks';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
+  export let onClose: OnClose = () => {};
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
   const handleOnClose = () => {
     if (onClose) {
       onClose();
     }
   };
 
-  export function clickOutside(node: any) {
+  export const clickOutside = (node: any) => {
     const handleClick = (event: MouseEvent) => {
       if (
         node &&
@@ -30,7 +45,7 @@
         document.removeEventListener('click', handleClick, true);
       },
     };
-  }
+  };
 </script>
 
 <div id="modal-overlay" on:click={handleOnClose}>

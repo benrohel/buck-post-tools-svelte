@@ -1,19 +1,25 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { GetThumbnail } from '../../api/clip';
+
+  import MarkerRow from '@/components/Markers/MarkersSelect.svelte';
+  import type MarkerColor from '@/components/Markers/MarkersSelect.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { notifications } from '@/stores/notifications-store';
+  import { appStore } from '@/stores/app-store';
+  import { stillOutputFolder } from '@/stores/local-storage';
+
+  import { GetThumbnail } from '@/api/clip';
   import {
     GetMarkersThumbnails,
     GetSequence,
     GetSequencedClips,
-  } from '../../api/sequence';
+  } from '@/api/sequence';
+  import { openFile } from '@/lib/utils/utils';
 
-  import { notifications } from '../../stores/notifications-store';
-  import { openFile } from '../../lib/utils/utils';
-  import MarkerRow from '../../components/Markers/MarkersSelect.svelte';
-  import type MarkerColor from '../../components/Markers/MarkersSelect.svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { appStore } from '../../stores/app-store';
-  import { stillOutputFolder } from '../../stores/local-storage';
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-stills');
+
   const stillExportModes = [
     {
       label: 'shots',
@@ -28,12 +34,14 @@
   let refTrack = 'shots';
   let done = false;
 
-  function setOutputFolder(path: string) {
+  $: focus = false;
+
+  const setOutputFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       stillOutputFolder.set(path);
     }
     outputFolder = path;
-  }
+  };
 
   const handleOpenFolder = () => {
     openFile(outputFolder);
@@ -41,7 +49,13 @@
 
   const handleMarkerChange = (m: any) => {
     markerColors = m;
-    console.log(markerColors);
+    log.debug(
+      'Marker colors updated',
+      {
+        selectedCount: markerColors.filter((m) => m.selected).length,
+      },
+      markerColors
+    );
   };
 
   const handleExportMode = (s: any) => {
@@ -57,7 +71,10 @@
         const sequenceClips = await GetSequencedClips(seq, refTrack);
         sequenceClips.forEach((clip) => {
           GetThumbnail(clip, outputFolder).then((res) => {
-            console.log(res);
+            log.debug('Generated clip thumbnail', {
+              clipName: clip.clipName,
+              path: res,
+            });
           });
         });
         done = true;
@@ -67,15 +84,17 @@
       await GetMarkersThumbnails(
         seq.nodeId,
         outputFolder,
-        markerColors.filter((m) => m.selected).map((m) => m.colorIndex),
+        markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
       ).then(() => {
-        console.log('done');
+        log.debug('Marker thumbnails export complete', {
+          outputFolder,
+          selectedMarkerCount: markerColors.filter((m) => m.selected).length,
+        });
       });
       done = true;
       notifications.success('Stills Export Done', 2000);
     }
   };
-  $: focus = false;
 
   onMount(async () => {
     selectedExportMode = stillExportModes[0].value;

@@ -1,11 +1,19 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import Button from '../../components/Button/Button.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import { AddGaps } from '../../api/sequence';
-  import { getContext } from 'svelte';
+  import { onMount, getContext } from 'svelte';
+
+  import Button from '@/components/Button/Button.svelte';
+
+  import { appStore } from '@/stores/app-store';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { AddGaps } from '@/api/sequence';
   import { RenameContext } from './RenameContext';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('sequential-rename');
+
+  const renameContext = getContext('rename') as RenameContext;
+
   let prefix = 'SH';
   let start = '10';
   let increment = '10';
@@ -15,14 +23,12 @@
 
   $: getOutputName = () => {
     const pad = padding.length;
-    console.log('pad', pad);
+    log.debug('Calculating output name', { prefix, start, padding: pad });
     const paddedStr = start.toString().padStart(pad, '0');
     return `${prefix}${paddedStr}`;
   };
 
   $: previewString = getOutputName();
-
-  const renameContext = getContext('rename') as RenameContext;
 
   const handleRenameAction = async () => {
     const option = {
@@ -68,7 +74,7 @@
   <div class="flex-row-end action-row">
     <button class="active" on:click={handleRenameAction}>Rename</button>
   </div>
-  {#if appId === 'PPRO'}
+  {#if $appStore.appId === 'PPRO'}
     <hr />
     <div style="display:flex; flex-direction:column; ">
       <div class="row" style="width:100%">

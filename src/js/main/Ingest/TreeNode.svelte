@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
-  import { path } from '../../lib/cep/node';
+  import { path } from '@/lib/cep/node';
 
   interface FileEntry {
     name: string;
@@ -25,7 +25,6 @@
   }
 
   export let clips: ClipEntry[] = [];
-  $: files = [] as FileEntry[];
   export let filterName = '';
 
   const dispatch = createEventDispatcher();
@@ -33,6 +32,8 @@
   let currentPath = [];
   let currentFiles = [];
   let breadcrumbs = [];
+
+  $: files = [] as FileEntry[];
 
   $: filterFiles = () => {
     if (filterName === '') {
@@ -80,7 +81,7 @@
     buildFileTree();
   };
 
-  function buildFileTree() {
+  const buildFileTree = () => {
     // Reset tree
     treeRoot = {
       name: 'root',
@@ -133,9 +134,9 @@
 
     // Initialize with root directory view
     navigateToPath([]);
-  }
+  };
 
-  function navigateToPath(pathSegments) {
+  const navigateToPath = (pathSegments) => {
     currentPath = pathSegments;
 
     // Update breadcrumbs
@@ -174,15 +175,15 @@
 
     // Combine and sort (directories first, then files)
     currentFiles = [...directories, ...files];
-  }
+  };
 
-  function handleBreadcrumbClick(path) {
+  const handleBreadcrumbClick = (path) => {
     navigateToPath(path);
-  }
+  };
 
-  function handleDirectoryClick(path) {
+  const handleDirectoryClick = (path) => {
     navigateToPath(path);
-  }
+  };
 
   const handleVersionChange = (file: FileEntry, version: string) => {
     dispatch('versionChange', { file, version });

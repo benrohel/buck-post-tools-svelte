@@ -1,14 +1,21 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { getPresetFile } from '../../api/SQPreset';
+
   import { v4 as uuidv4 } from 'uuid';
-  import { fs, path } from '../../lib/cep/node';
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
   import Select from 'svelte-select';
-  import { getProjectTemplate } from '../../api/buck-library';
-  import { buck5Server } from '../../stores/server-store';
-  import { appId } from '../../lib/utils/cep';
+
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { buck5Server } from '@/stores/server-store';
+  import { appStore } from '@/stores/app-store';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { getPresetFile } from '@/api/SQPreset';
+  import { fs, path } from '@/lib/cep/node';
+  import { getProjectTemplate } from '@/api/buck-library';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('project-starter');
 
   const resolutions = [
     { label: '2880x2880', value: '2880x2880' },
@@ -30,19 +37,6 @@
     { label: 'Edit', value: 'Edit', apps: ['AEFT', 'PPRO'] },
     { label: 'Conform', value: 'Conform', apps: ['PPRO'] },
   ];
-
-  $: getTemplates = () => {
-    if (appId) {
-      return templateList.filter((t) => {
-        return t.apps.includes(appId);
-      });
-    }
-    return [templateList[0]];
-  };
-
-  $: templates = getTemplates();
-  $: console.log(resolution);
-
   const framerates = ['23.976', '24', '25', '29.97', '30', '59.94'];
 
   let sequenceName = 'Master';
@@ -53,12 +47,19 @@
   let template = templateList[0];
   let rootFolder = '';
 
-  $: console.log(
-    'file template path:',
-    getProjectTemplate(appId, template.value)
-  );
+  $: getTemplates = () => {
+    if ($appStore.appId) {
+      return templateList.filter((t) => {
+        return t.apps.includes($appStore.appId);
+      });
+    }
+    return [templateList[0]];
+  };
 
-  $: console.log(framerate);
+  $: templates = getTemplates();
+  $: templateFocus = false;
+  $: resolutionFocus = false;
+  $: framerateFocus = false;
 
   const handleSetOutputFolder = async (folderPath: string) => {
     if (folderPath) {
@@ -74,9 +75,9 @@
       framerate: framerate.value,
     };
 
-    const templateFile = getProjectTemplate(appId, template.value);
+    const templateFile = getProjectTemplate($appStore.appId, template.value);
 
-    if (appId === 'PPRO') {
+    if ($appStore.appId === 'PPRO') {
       const sqp = await getPresetFile(
         option.width,
         option.height,
@@ -97,7 +98,7 @@
         );
         fs.unlinkSync(sqp);
       }
-    } else if (appId === 'AEFT') {
+    } else if ($appStore.appId === 'AEFT') {
       const aeOptions = {
         presetPath: templateFile,
         width: parseInt(option.width),
@@ -107,7 +108,7 @@
         name: sequenceName,
         projectFile: path.posix.join(
           rootFolder,
-          `${projectName}.${appId === 'AEFT' ? 'aep' : 'pproj'}`
+          `${projectName}.${$appStore.appId === 'AEFT' ? 'aep' : 'pproj'}`
         ),
       };
       await evalES(
@@ -132,13 +133,8 @@
     duration = parseInt(target.value);
   };
 
-  $: templateFocus = false;
-  $: resolutionFocus = false;
-  $: framerateFocus = false;
-  $: console.log(framerate, resolution, sequenceName);
-
   onMount(async () => {
-    if (appId === 'AEFT') {
+    if ($appStore.appId === 'AEFT') {
       template = templateList[0];
     } else {
       template = templateList[1];
@@ -179,7 +175,7 @@
       />
     </div>
 
-    {#if template.value === 'Edit' || appId === 'PPRO'}
+    {#if template.value === 'Edit' || $appStore.appId === 'PPRO'}
       <div class="flex-row-start">
         <p class="select-label">Resolutions:</p>
         <Select
@@ -213,7 +209,7 @@
         />
       </div>
     {/if}
-    {#if template.value === 'Shot' && appId === 'AEFT'}
+    {#if template.value === 'Shot' && $appStore.appId === 'AEFT'}
       <div class="flex-row-start">
         <label for="duration">Duration (in frames): </label>
         <input
@@ -228,7 +224,7 @@
 
     <div class="flex-row-start">
       <label for="sequenceName"
-        >{appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
+        >{$appStore.appId === 'AEFT' ? 'Composition ' : 'Sequence '}Name:
       </label>
       <input
         type="text"

@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
   import { getContext } from 'svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
   import { RenameContext } from './RenameContext';
 
   const renameContext = getContext('rename') as RenameContext;

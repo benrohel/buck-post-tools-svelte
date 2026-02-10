@@ -1,8 +1,11 @@
-import { evalES } from '../../lib/utils/bolt';
-import { fs, path, os, child_process } from '../cep/node';
+import { evalES } from '@/lib/utils/bolt';
+import { fs, path, os, child_process } from '@/lib/cep/node';
 import upath from 'upath';
 import { platform } from 'os';
+import { logModule } from '@/lib/logger';
+
 const { exec } = child_process;
+const log = logModule('utils-index');
 
 export const openFile = async (filepath: string) => {
   filepath = resolveHome(filepath);
@@ -21,7 +24,7 @@ export const GetFolder = async (message: string): Promise<string> => {
 };
 
 export const fileExists = (filepath: string) => {
-  console.log(filepath);
+  log.debug('Checking file existence', { filepath });
   try {
     if (fs.existsSync(filepath)) {
       return true;
@@ -29,7 +32,7 @@ export const fileExists = (filepath: string) => {
       return false;
     }
   } catch (err) {
-    console.error(err);
+    log.error('Failed to check file existence', err as Error, { filepath });
     return false;
   }
 };
@@ -99,14 +102,14 @@ export const openUrl = (url: string) => {
 
   exec(openCmd, (error, stdout, stderr) => {
     if (error) {
-      console.log(`error: ${error.message}`);
+      log.error('Failed to open URL', error, { url, command: openCmd });
       return;
     }
     if (stderr) {
-      console.log(`stderr: ${stderr}`);
+      log.warn('URL open command stderr', { stderr, url, command: openCmd });
       return;
     }
-    console.log(`stdout: ${stdout}`);
+    log.debug('URL opened successfully', { stdout, url, command: openCmd });
   });
 };
 

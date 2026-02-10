@@ -1,7 +1,30 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import { ChevronDown } from 'lucide-svelte';
-  import { clickOutside } from '../../lib/utils/index';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { clickOutside } from '@/lib/utils/index';
+
+  // ═══════════════════════════════════════════════════════════
+  // 7. LOGGER SETUP
+  // ═══════════════════════════════════════════════════════════
+  import { logModule } from '@/lib/logger';
+  const log = logModule('multiselect');
+
+  // ═══════════════════════════════════════════════════════════
+  // 8. TYPE DEFINITIONS
+  // ═══════════════════════════════════════════════════════════
+  import type { OnChange } from '@/types/callbacks';
+
   interface MultiSelectOption {
     value: string;
     label: string;
@@ -11,31 +34,41 @@
   interface MultiSelectProp {
     options: MultiSelectOption[];
     filter: string;
-    onSelectionChange: Function;
+    onSelectionChange: OnChange<MultiSelectOption[]>;
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let options: MultiSelectOption[] = [];
   export let showCheckbox = false;
   export let filter = '';
-  export let onSelectionChange: Function;
+  export let onSelectionChange: OnChange<MultiSelectOption[]>;
   export let showFilter = false;
   export let title = 'Select an option';
 
-  $: filteredOptions = getFilteredOptions();
-  $: console.log(
-    'MultiSelect options:',
-    options,
-    'filteredOptions:',
-    filteredOptions,
-  );
-
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   let expanded = false;
   let multiselect: HTMLDivElement;
   let selectBox: HTMLDivElement;
   let checkboxesDiv: HTMLDivElement;
-  $: showingChekBox = showCheckbox;
 
-  function toggleSelect(option: MultiSelectOption) {
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
+  $: filteredOptions = getFilteredOptions();
+  $: showingChekBox = showCheckbox;
+  $: selectBoxWidth = () => {
+    if (!selectBox) return 300;
+    return selectBox.clientWidth;
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
+  const toggleSelect = (option: MultiSelectOption) => {
     options = options.map((o) => {
       if (o.value === option.value) {
         return { ...o, selected: !o.selected };
@@ -44,49 +77,41 @@
       }
     });
     onSelectionChange(options);
-  }
+  };
 
-  function getFilteredOptions() {
+  const getFilteredOptions = () => {
     if (!options || options.length === 0) return [];
     return options.filter((option) => {
       const label = option.label.toLowerCase();
       const filterValue = filter.toLowerCase();
       return label.includes(filterValue);
     });
-  }
+  };
 
-  function showCheckboxes() {
-    console.log(
-      'showCheckboxes called, expanded:',
-      expanded,
-      'checkboxes element:',
-      checkboxesDiv,
-    );
+  const showCheckboxes = () => {
     if (!expanded) {
       if (checkboxesDiv) checkboxesDiv.style.display = 'block';
       expanded = true;
-      console.log('Opening dropdown');
     } else {
       if (checkboxesDiv) checkboxesDiv.style.display = 'none';
       expanded = false;
-      console.log('Closing dropdown');
     }
-  }
-
-  $: selectBoxWidth = () => {
-    console.log(selectBox);
-    if (!selectBox) return 300;
-    return selectBox.clientWidth;
   };
 
   const handleClickOutside = () => {
     if (expanded) {
       showCheckboxes();
     }
-    console.log('click outside');
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
+    log.debug('MultiSelect mounted', {
+      optionCount: options?.length || 0,
+      title,
+    });
     filteredOptions = getFilteredOptions();
   });
 </script>

@@ -1,13 +1,16 @@
 import { writable } from 'svelte/store';
-import { SHARED_FOLDER } from '../api/buck-library';
-import { fs } from '../lib/cep/node';
+import { SHARED_FOLDER } from '@/api/buck-library';
+import { fs } from '@/lib/cep/node';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('server-store');
 
 export const buck5Server = writable(false);
 
 if (fs.existsSync(SHARED_FOLDER())) {
   buck5Server.set(true);
-  console.log('Connected to Buck Server', SHARED_FOLDER() );
+  log.debug('Connected to Buck Server', { sharedFolder: SHARED_FOLDER() });
 } else {
   buck5Server.set(false);
-  console.log('Not connected to Buck Server', SHARED_FOLDER());
+  log.warn('Not connected to Buck Server', { sharedFolder: SHARED_FOLDER() });
 }

@@ -1,6 +1,9 @@
-
-import { fs, os, path } from '../../lib/cep/node';
+import { fs, os, path } from '@/lib/cep/node';
 const { fdir } = require('fdir');
+import { logModule } from '@/lib/logger';
+import { extractVersion } from '@/api/buck-library';
+
+const log = logModule('files');
 
 export function* readAllFiles(dir: string): Generator<string> {
   const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -33,7 +36,11 @@ export const GetSystemFileVersionsWithShotName = async (
   let searchRoot = path.dirname(filepath);
   const maxLevelsUp = 3;
 
-  for (let level = 0; level < maxLevelsUp && searchRoot !== path.dirname(searchRoot); level++) {
+  for (
+    let level = 0;
+    level < maxLevelsUp && searchRoot !== path.dirname(searchRoot);
+    level++
+  ) {
     const parentDir = path.dirname(searchRoot);
     if (!path.basename(searchRoot).includes('_v')) {
       break;
@@ -45,18 +52,21 @@ export const GetSystemFileVersionsWithShotName = async (
     // Use fdir for fast, filtered file traversal
     const entries = await new fdir()
       .withFullPaths()
-      .exclude((dirName: string) =>
-        dirName.includes('temp') ||
-        dirName.startsWith('.') ||
-        dirName.includes('cache') ||
-        dirName.includes('node_modules')
+      .exclude(
+        (dirName: string) =>
+          dirName.includes('temp') ||
+          dirName.startsWith('.') ||
+          dirName.includes('cache') ||
+          dirName.includes('node_modules')
       )
       .filter((filePath: string) => {
         // Quick extension check first
         if (path.extname(filePath) !== ext) return false;
 
         const currentFilename = path.basename(filePath);
-        const currentBaseFilename = currentFilename.replace(versionRegex, '').replace(ext, '');
+        const currentBaseFilename = currentFilename
+          .replace(versionRegex, '')
+          .replace(ext, '');
 
         // Must match base filename
         return currentBaseFilename === baseFilename;
@@ -109,20 +119,30 @@ export const GetSystemFileVersionsWithShotName = async (
       return versionB - versionA;
     });
 
-    return versionsMapped.length > 0 ? versionsMapped : [{
-      filepath: filepath,
-      version: 'current',
-      name: baseFilename,
-      displayName: 'current'
-    }];
+    return versionsMapped.length > 0
+      ? versionsMapped
+      : [
+        {
+          filepath: filepath,
+          version: 'current',
+          name: baseFilename,
+          displayName: 'current',
+        },
+      ];
   } catch (e) {
-    console.log('Error finding versions:', e);
-    return [{
-      filepath: filepath,
-      version: 'current',
-      name: baseFilename,
-      displayName: 'current'
-    }];
+    log.error('Failed to find file versions', e as Error, {
+      filepath,
+      searchRoot,
+      baseFilename,
+    });
+    return [
+      {
+        filepath: filepath,
+        version: 'current',
+        name: baseFilename,
+        displayName: 'current',
+      },
+    ];
   }
 };
 
@@ -226,7 +246,9 @@ export const collectFilesByExtensions = (
           const match = file.name.match(imageSequenceRegex);
 
           if (match) {
-            const baseName = file.name.match(/^(.*?)\./)[1];
+            const baseMatch = file.name.match(/^(.*?)\./);
+            if (!baseMatch) continue;
+            const baseName = baseMatch[1];
             const existingSequence = result[currentDir].find((item) =>
               path.basename(item.file).startsWith(baseName)
             );
@@ -307,7 +329,9 @@ export const GetFilesLibrary = (dir: string): Array<any> => {
   const productionRegex = /^(.*?)Production/;
   if (!fs.existsSync(dir)) return [];
   const posixRoot = path.posix.normalize(dir);
-  const rootFolder = posixRoot.match(productionRegex)[0];
+  const rootFolderMatch = posixRoot.match(productionRegex);
+  if (!rootFolderMatch) return [];
+  const rootFolder = rootFolderMatch[0];
   const shotsFolder = path.join(rootFolder, 'shots');
   const assetsFolder = path.join(rootFolder, 'Assets');
 
@@ -347,19 +371,24 @@ export const SHARED_FOLDER = () => {
 
 export const PRODUCTION_ROOT = (projectPath: string) => {
   const productionRegex = /^(.*?)Production/;
-  const productionDir = projectPath.match(productionRegex)[0];
+  const productionMatch = projectPath.match(productionRegex);
+  if (!productionMatch) return null;
+  const productionDir = productionMatch[0];
   if (!fs.existsSync(productionDir)) return null;
-  // const posixRoot = path.posix.normalize(productionDir);
-  const rootFolder = productionDir.match(productionRegex)[0];
-  return rootFolder;
+  return productionDir;
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
+
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
-  return path.posix.join(current[0], 'work', 'current', projectFolders[1]);
+  const projectRoot = path.posix.join(current[0], 'work', 'current', projectFolders[1]);
+  log.debug('files.ts', 'PROJECT_ROOT', projectRoot);
+  if (fs.existsSync(projectRoot)) {
+    return projectRoot;
+  }
+  return null;
 };
-
 
 export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
@@ -381,10 +410,9 @@ export declare interface ProjectSettings {
 export const getProjectSettingsTemplate = (projectPath: string) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return null;
-  const projectSettingsPath = path.join(
-    PROJECT_AEFT_META_FOLDER(projectPath),
-    'project-settings.json'
-  );
+  const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
+  if (!metaFolder) return null;
+  const projectSettingsPath = path.join(metaFolder, 'project-settings.json');
   if (!fs.existsSync(projectSettingsPath)) {
     return null;
   }
@@ -400,10 +428,9 @@ export const setProjectSettingsTemplate = (
 ) => {
   const productionFolder = PRODUCTION_ROOT(projectPath);
   if (!productionFolder) return false;
-  const projectSettingsPath = path.join(
-    PROJECT_AEFT_META_FOLDER(projectPath),
-    'project-settings.json'
-  );
+  const metaFolder = PROJECT_AEFT_META_FOLDER(projectPath);
+  if (!metaFolder) return false;
+  const projectSettingsPath = path.join(metaFolder, 'project-settings.json');
   if (!fs.existsSync(path.dirname(projectSettingsPath))) {
     return false;
   }
@@ -417,10 +444,16 @@ export const setProjectSettingsTemplate = (
 export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
   const productionFolder = PROJECT_ROOT(projectPath);
   if (!productionFolder) return null;
-  const platformRoot =
-    os.platform() === 'win32' ? '\\' : '/';
-  const scriptsFolder = path.join(platformRoot+productionFolder, 'Production', 'Common', 'Meta', 'aeft', 'scripts');
-  
+  const platformRoot = os.platform() === 'win32' ? '\\' : '/';
+  const scriptsFolder = path.join(
+    platformRoot + productionFolder,
+    'Production',
+    'Common',
+    'Meta',
+    'aeft',
+    'scripts'
+  );
+
   if (!fs.existsSync(scriptsFolder)) return null;
   return scriptsFolder;
 };
@@ -428,9 +461,42 @@ export const PROJECT_SCRIPTS_FOLDER = (projectPath: string) => {
 export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
   const projectRoot = PROJECT_ROOT(projectPath);
   if (!projectRoot) return null;
-  const platformRoot =
-    os.platform() === 'win32' ? '\\' : '/';
-  const commonFolder = path.join(platformRoot+projectRoot, 'Production', 'Common', 'Work', 'AE');
+  const platformRoot = os.platform() === 'win32' ? '\\' : '/';
+  const commonFolder = path.join(
+    platformRoot + projectRoot,
+    'Production',
+    'Common',
+    'Work',
+    'AE'
+  );
   if (!fs.existsSync(commonFolder)) return null;
   return commonFolder;
 };
+
+export interface EPRFile {
+  name: string;
+  path: string;
+}
+
+
+
+export const USER_AME_PRESETS = async (appVersion: string): Promise<EPRFile[]> => {
+  const majorVersion = appVersion.match(/\d+/)?.[0];
+  const userFolder = os.homedir();
+  const presetsFolder = path.join(
+    userFolder,
+    'Documents',
+    'Adobe',
+    'Adobe Media Encoder',
+    `${majorVersion}.0`,
+    'Presets'
+  );
+
+  return fs.readdirSync(presetsFolder).filter((f) => f.endsWith('.epr')).map((f) => ({ name: f, path: path.join(presetsFolder, f) }));
+};
+
+export const BUCK_AME_PRESETS = async (): Promise<EPRFile[]> => {
+  const buckAmeFolder = path.join(SHARED_FOLDER(), 'AME', 'presets');
+  return fs.readdirSync(buckAmeFolder).filter((f) => f.endsWith('.epr')).map((f) => ({ name: f, path: path.join(buckAmeFolder, f) }));
+}
+

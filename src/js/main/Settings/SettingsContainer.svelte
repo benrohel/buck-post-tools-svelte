@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
-  import { getAeOutputModulesAEP } from '../../api/files/files';
-  import { localAppStore } from '../../stores/local-storage';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
-  import { type AppStore, appStore } from '../../stores/app-store';
-  import { notifications } from '../../stores/notifications-store';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
   import { onMount } from 'svelte';
-  import { appId } from '../../lib/utils/cep';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
+
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
+  import { localAppStore } from '@/stores/local-storage';
+  import { type AppStore, appStore } from '@/stores/app-store';
+  import { notifications } from '@/stores/notifications-store';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { getAeOutputModulesAEP } from '@/api/files/files';
+
   let aiServices = [
     { label: 'Claude AI', value: 'Claude AI' },
     { label: 'OpenAI', value: 'OpenAI' },
@@ -61,6 +64,9 @@
     await evalES(`importProjectAndSaveOutputModules("${aepFilepath}")`);
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // 14. LIFECYCLE HOOKS
+  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     apiKey = $appStore.aiService.apiKey;
     selectedService = {
@@ -76,7 +82,7 @@
   >
     <h2>Settings</h2>
   </div>
-  {#if appId === 'AEFT'}
+  {#if $appStore.appId === 'AEFT'}
     <div class="flex-row-between setting-row">
       <label for="show-tooltips">Load Output Module Templates</label>
       <button
@@ -174,7 +180,7 @@
           )}
       />
     </div>
-    {#if appId === 'AEFT'}
+    {#if $appStore.appId === 'AEFT'}
       <div class="flex-row-between setting-row">
         <label for="remember-last-export-preset"
           >Remember last export preset</label

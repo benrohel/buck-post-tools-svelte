@@ -1,6 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { appStore, appVersion } from '../../stores/app-store';
+
+  import ToolCard from '@/components/ClipCard/ToolCard.svelte';
+  import AssetCard from '@/components/ClipCard/AssetCard.svelte';
+
+  import { appStore, appVersion } from '@/stores/app-store';
+
   import {
     getLocalScripts,
     getBuckScripts,
@@ -8,9 +13,14 @@
     type Script,
     getProjectCommonFiles,
     type CommonSharedFile,
-  } from '../../api/scripts/tools-scripts';
-  import ToolCard from '../../components/ClipCard/ToolCard.svelte';
-  import AssetCard from '../../components/ClipCard/AssetCard.svelte';
+  } from '@/api/scripts/tools-scripts';
+  import { evalES } from '@/lib/utils/bolt';
+  import toolList from './tools.json';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('tools-container');
+
+  import type { SelectToolItem } from '@/types/models';
 
   interface ToolData {
     name: string;
@@ -26,48 +36,35 @@
   interface ToolItem {
     [key: string]: ToolData;
   }
-  import toolList from './tools.json';
-  import { evalES } from '../../lib/utils/bolt';
 
-  const appId = $appStore.appId;
-
-  console.log(getLocalScripts(appId, $appVersion));
-
+  let appId = '';
   let localScripts = [] as Script[];
+
   $: buckScripts = getBuckScripts(appId);
   $: commonFiles = [] as CommonSharedFile[];
   $: projectScripts = [] as Script[];
 
-  // $: buckToolArray = () => {
-  //   return Object.keys(tools)
-  //     .filter((t) => {
-  //       return tools[t].apps.includes(appId);
-  //     })
-  //     .map((k) => {
-  //       return { value: tools[k], label: k };
-  //     });
-  // };
-
-  // $: console.log(buckToolArray());
-
-  interface SelectToolItem {
-    value: string;
-    label: string;
-    component: any;
-    apps: string[];
-  }
-
   onMount(async () => {
+    appId = $appStore.appId;
+    log.debug('Loading local scripts', { appId, appVersion: $appVersion });
+
     localScripts = await getLocalScripts(
       appId,
       $appVersion,
-      $appStore.userScriptsFolder,
+      $appStore.userScriptsFolder
     );
     buckScripts = getBuckScripts(appId);
     const projectPath = (await evalES(`getProjectFile()`, false)) as string;
-    console.log('project path', projectPath);
+    log.debug('Project path resolved', { projectPath });
     projectScripts = await getProjectScripts(appId, projectPath);
-    console.log('project scripts', projectScripts);
+    log.debug(
+      'Project scripts loaded',
+      {
+        scriptCount: projectScripts.length,
+      },
+      projectScripts
+    );
+
     commonFiles = await getProjectCommonFiles(appId, projectPath);
   });
 </script>

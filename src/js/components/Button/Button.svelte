@@ -1,7 +1,8 @@
 <script lang="ts">
+  import type { OnClick } from '@/types/callbacks';
   import { fade } from 'svelte/transition';
   export let label: string = '';
-  export let onClick: Function = () => {};
+  export let onClick: OnClick = () => {};
   export let disabled = false;
   export let outline = false;
   export let icon = false;

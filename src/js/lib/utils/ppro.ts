@@ -1,4 +1,4 @@
-import { fs, os, path } from "../cep/node";
+import { fs, os, path } from "@/lib/cep/node";
 import { csi } from "./bolt";
 
 const readDirSafe = (dir: string) =>

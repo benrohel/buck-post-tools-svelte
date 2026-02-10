@@ -1,27 +1,28 @@
 <script lang="ts">
-  import { fs, os, path } from '../../lib/cep/node';
   import {
     ExternalLink,
     FolderOpen,
     CircleX,
     ClipboardCopy,
   } from 'lucide-svelte';
-  import { Bookmark } from '../../stores/bookmark-store';
-  import { evalES, evalFile } from '../../lib/utils/bolt';
-  import { notifications } from '../../stores/notifications-store';
-  import { openFile } from '../../lib/utils/utils';
-  import csInterface from '../../lib/cep/csinterface';
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import { copyToClipboard } from '../../lib/utils/utils';
+
   import FileBrowser from '../FileBrowser/FileBrowser.svelte';
-  import { platform } from 'os';
+  import { Bookmark } from '@/stores/bookmark-store';
+  import { notifications } from '@/stores/notifications-store';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { os, path } from '@/lib/cep/node';
+  import { openFile, copyToClipboard } from '@/lib/utils/utils';
+  import { PROJECT_ROOT } from '@/api/files/files';
   import {
     getRootFolder,
     loadFolderChildren,
     updateNodeChildren,
-  } from '../../api/files/file-explorer';
-  import { type PathItem } from '../../api/exporter';
+  } from '@/api/files/file-explorer';
+  import type { PathItem } from '@/api/exporter';
 
+  import { logModule } from '@/lib/logger';
+  const log = logModule('bookmark-card');
   export let bookmark: Bookmark;
   export let onRemove: () => void;
 
@@ -35,14 +36,17 @@
     console.log('bookmark:', bookmark);
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
-      console.log('projectDir:', projectDir);
+      if (!projectDir) {
+        notifications.error('Failed to get project directory', 3000);
+        return '';
+      }
       const macPath = path.posix.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
       );
       const windowsPath = path.win32.join(
         PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop(),
+        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
       );
 
       return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
@@ -51,14 +55,14 @@
     }
   };
 
-  async function handleImportFolder() {
+  const handleImportFolder = async () => {
     const sourceFolder = await actualPath();
-    console.log('sourceFolder', sourceFolder);
+    log.debug('Copy source folder path', { path: sourceFolder });
     copyToClipboard(sourceFolder);
     notifications.info(`Path copied to clipboard: ${sourceFolder}`, 2000);
 
     // let folderPath = await evalES(`openExistingFolder("${sourceFolder}")`);
-    // console.log("folderPath", folderPath);
+    // log.debug('Selected folder', { path: folderPath });
 
     // if (folderPath && fs.existsSync(folderPath)) {
     //   const options = {
@@ -81,76 +85,82 @@
     // } else {
     //   await evalES(`alert("You must choose a file")`, true);
     // }
-  }
+  };
 
-  async function handleRevealFolder() {
+  const handleRevealFolder = async () => {
     const path = await actualPath();
     openFile(path);
-  }
+  };
 
-  function handleRemove() {
+  const handleRemove = () => {
     onRemove();
-  }
+  };
 
-  async function loadFileBrowser() {
+  const loadFileBrowser = async () => {
     isLoadingTree = true;
     try {
       const rootPath = await actualPath();
       fileTreeItems = await getRootFolder(rootPath, groupSequences);
       showFileBrowser = !showFileBrowser;
     } catch (error) {
-      console.error('Error loading file browser:', error);
+      log.error('Failed to load file browser', error as Error);
       notifications.error('Failed to load folder contents', 3000);
     } finally {
       isLoadingTree = false;
     }
-  }
+  };
 
-  async function handleLoadFolder(
+  const handleLoadFolder = async (
     event: CustomEvent<{
       folderId: string;
       folderPath: string;
       groupSequences: boolean;
     }>,
-  ) {
+  ) => {
+    const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
     try {
-      const { folderId, folderPath, groupSequences: groupSeq } = event.detail;
       const children = await loadFolderChildren(folderPath, folderId, groupSeq);
       fileTreeItems = updateNodeChildren(fileTreeItems, folderId, children);
     } catch (error) {
-      console.error('Error loading folder children:', error);
+      log.error('Failed to load folder children', error as Error, {
+        folderId,
+        folderPath,
+      });
       notifications.error('Failed to load folder contents', 3000);
     }
-  }
+  };
 
-  async function handleSequenceToggle(
+  const handleSequenceToggle = async (
     event: CustomEvent<{ groupSequences: boolean }>,
-  ) {
+  ) => {
     groupSequences = event.detail.groupSequences;
     // Reload the file tree with new settings
     if (showFileBrowser && fileTreeItems.length > 0) {
       isLoadingTree = true;
+      const rootPath = await actualPath();
       try {
-        const rootPath = await actualPath();
         fileTreeItems = await getRootFolder(rootPath, groupSequences);
       } catch (error) {
-        console.error('Error reloading file browser:', error);
+        log.error('Failed to reload file browser', error as Error, {
+          rootPath,
+          groupSequences,
+        });
         notifications.error('Failed to reload folder contents', 3000);
       } finally {
         isLoadingTree = false;
       }
     }
-  }
+  };
 
-  function handleOpenFileFromBrowser(
+  const handleOpenFileFromBrowser = (
     event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
+  ) => {
     openFile(event.detail.filePath);
-  }
+  };
 
-  async function handleImportFile(
+  const handleImportFile = async (
     event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
+  ) => {
     const node = findNodeById(fileTreeItems, event.detail.fileId);
     const isSequence = node?.metadata?.isSequence || false;
 
@@ -181,9 +191,9 @@
     } else {
       notifications.error('Failed to import file', 3000);
     }
-  }
+  };
 
-  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
+  const findNodeById = (nodes: PathItem[], id: string): PathItem | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
       if (node.children) {
@@ -192,11 +202,11 @@
       }
     }
     return null;
-  }
+  };
 
-  async function handleImportFiles(
+  const handleImportFiles = async (
     event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
-  ) {
+  ) => {
     const result = await evalES(
       `importMediaFiles(${JSON.stringify(event.detail.filePaths)})`,
       false,
@@ -209,20 +219,19 @@
     } else {
       notifications.error('Failed to import files', 3000);
     }
-  }
+  };
 
-  function handleRevealFile(
+  const handleRevealFile = (
     event: CustomEvent<{ fileId: string; filePath: string }>,
-  ) {
-    // TODO: Implement reveal file functionality
-    console.log('Reveal file:', event.detail.filePath);
+  ) => {
+    log.debug('Reveal file in folder', { filePath: event.detail.filePath });
 
     openFile(path.dirname(event.detail.filePath));
     // You can use the CEP API to reveal the file in the OS file explorer
     // For now, just log it
     // TODO: Use CEP API to reveal file
     // Example: cep.fs.revealInFileBrowser(event.detail.filePath);
-  }
+  };
 </script>
 
 <div class="bookmark-container">

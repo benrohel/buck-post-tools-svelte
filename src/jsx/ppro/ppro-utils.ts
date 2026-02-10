@@ -250,12 +250,26 @@ export function collectAllFilePaths() {
 
 
 export const getProjectDir = () => {
-
-  if (app.project.path !== null) {
-    //@ts-ignore
-    var projectFile = File(app.project.path);
-    return projectFile.parent.absoluteURI;
-  } else {
-    return '';
+  if (app.project && app.project.path === null) {
+    return null;
   }
+  const projectPath = app.project.path;
+  const projectDir = new File(projectPath).parent.absoluteURI;
+  return projectDir;
+}
+
+export const selectFolder = (
+  msg: string = 'Select a Folder'
+): string | false => {
+  const folder = Folder.selectDialog(msg);
+  // alert(file.fsName);
+  if (folder.exists) {
+    return JSON.stringify({ fsName: folder.fsName, absoluteURI: folder.absoluteURI });
+  }
+  return false;
 };
+
+
+export const appVersion = () => {
+  return app.version;
+}

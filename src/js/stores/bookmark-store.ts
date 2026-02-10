@@ -1,5 +1,9 @@
 import { writable, Writable } from 'svelte/store';
-import { PROJECT_ROOT } from "../api/files/files"
+import { PROJECT_ROOT } from "@/api/files/files"
+import { logModule } from '@/lib/logger';
+
+const log = logModule('bookmark-store');
+
 export interface Bookmark {
   name: string;
   path: string;
@@ -29,7 +33,7 @@ export function createBookmarkStore(key: string, initialValue = initialBookmarks
       }
       return JSON.parse(storedValue);
     } catch (error) {
-      console.error(`Error loading ${key} from localStorage:`, error);
+      log.error(`Failed to load ${key} from localStorage`, error as Error, { key });
       return initialValue;
     }
   };
@@ -42,7 +46,7 @@ export function createBookmarkStore(key: string, initialValue = initialBookmarks
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error saving ${key} to localStorage:`, error);
+      log.error(`Failed to save ${key} to localStorage`, error as Error, { key });
     }
   });
 

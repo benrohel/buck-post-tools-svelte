@@ -1,39 +1,44 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+
   import {
     localAppStore,
     lastFolderExport,
     storedExportRootFolder,
-  } from '../../stores/local-storage';
-  import { appStore } from '../../stores/app-store';
+  } from '@/stores/local-storage';
+  import { appStore } from '@/stores/app-store';
+  import { notifications } from '@/stores/notifications-store';
 
-  import { GetSelectedSequences } from '../../api/sequence';
-
-  import { fs, path } from '../../lib/cep/node';
-  import { notifications } from '../../stores/notifications-store';
-  import { onMount } from 'svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { GetThumbnail, type ClipType } from '../../api/clip';
+  import { GetSelectedSequences } from '@/api/sequence';
+  import { fs, path } from '@/lib/cep/node';
+  import { GetThumbnail, type ClipType } from '@/api/clip';
   import {
     exportSequenceCSV,
     GetSequencedClips,
     type Sequence,
-  } from '../../api/sequence';
-  import { recursiveMkDir } from '../../lib/utils/index';
+  } from '@/api/sequence';
+  import { recursiveMkDir } from '@/lib/utils/index';
 
-  $: uploadThumbnails = false;
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-sequence-csv');
+
+  let uploadThumbnails = false;
   let suffix = '';
-
   let rootFolder = '';
 
-  $: console.log(uploadThumbnails);
+  $: if (uploadThumbnails !== undefined) {
+    log.debug('Upload thumbnails updated', { uploadThumbnails });
+  }
 
-  function setRootFolder(path: string) {
+  const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
 
     rootFolder = path;
-  }
+  };
 
   const handleSequenceNameChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
@@ -42,7 +47,10 @@
 
   const exportCsv = async (seq: Sequence): Promise<string> => {
     const clips = await GetSequencedClips(seq);
-    console.log(clips);
+    log.debug('Retrieved sequence clips', {
+      sequenceName: seq.name,
+      clipCount: clips.length,
+    });
 
     let csv: string = '';
 
@@ -53,7 +61,10 @@
       }
       return new Promise(async (resolve, reject) => {
         const thumbnailPath = await GetThumbnail(c, rootFolder);
-        console.log(thumbnailPath);
+        log.debug('Generated thumbnail', {
+          clipName: c.clipName,
+          thumbnailPath,
+        });
         const updatedClip = c;
         updatedClip.thumbnailUrl = thumbnailPath;
         resolve(updatedClip);
@@ -79,7 +90,7 @@
   };
 
   const handleSubmitExport = async () => {
-    console.log('export CSV', uploadThumbnails);
+    log.debug('Exporting CSV', { uploadThumbnails, rootFolder });
     const sequences = await GetSelectedSequences();
     const csvPromises = sequences.map((seq) => {
       return exportCsv(seq);

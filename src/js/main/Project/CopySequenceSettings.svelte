@@ -1,14 +1,17 @@
 <script lang="ts">
   import { Download, Upload } from 'lucide-svelte';
+
+  import { notifications } from '@/stores/notifications-store';
+
   import {
     GetSequence,
     GetSelectedSequences,
     CopySequenceSettings,
-  } from '../../api/sequence';
-  import type { Sequence } from '../../api/sequence';
-  import { notifications } from '../../stores/notifications-store';
+    type Sequence,
+  } from '@/api/sequence';
+
   let fromSequence: Sequence | null = null;
-  let toSequences: any[] = [];
+  let toSequences: Sequence[] = [];
 
   $: isReady = () => {
     return fromSequence != null && toSequences.length > 0;

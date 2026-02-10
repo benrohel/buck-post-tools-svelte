@@ -1,4 +1,12 @@
 <script lang="ts">
+  // ═══════════════════════════════════════════════════════════
+  // 1. SVELTE IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { createEventDispatcher } from 'svelte';
+
+  // ═══════════════════════════════════════════════════════════
+  // 2. THIRD-PARTY IMPORTS
+  // ═══════════════════════════════════════════════════════════
   import {
     ChevronDown,
     ChevronRight,
@@ -9,9 +17,16 @@
     Layers,
     ExternalLink,
   } from 'lucide-svelte';
-  import { type PathItem } from '../../api/exporter';
-  import { createEventDispatcher } from 'svelte';
-  import { path } from '../../lib/cep/node';
+
+  // ═══════════════════════════════════════════════════════════
+  // 5. API/UTILITY IMPORTS
+  // ═══════════════════════════════════════════════════════════
+  import { type PathItem } from '@/api/exporter';
+  import { path } from '@/lib/cep/node';
+
+  // ═══════════════════════════════════════════════════════════
+  // 9. PROPS
+  // ═══════════════════════════════════════════════════════════
   export let rootFolder: string = '';
   export let items: PathItem[] = [];
   export let existingFiles: string[] = [];
@@ -23,6 +38,9 @@
   export let showExtensionFilter: boolean = false;
   export let extensionFilter: string = '';
 
+  // ═══════════════════════════════════════════════════════════
+  // 11. LOCAL STATE
+  // ═══════════════════════════════════════════════════════════
   const dispatch = createEventDispatcher<{
     loadFolder: {
       folderId: string;
@@ -53,18 +71,23 @@
     { value: 'avi', label: 'AVI' },
   ];
 
-  // Filter items by extension
+  // ═══════════════════════════════════════════════════════════
+  // 12. REACTIVE DECLARATIONS
+  // ═══════════════════════════════════════════════════════════
   $: filteredItems = filterByExtension(items, extensionFilter);
 
-  function filterByExtension(
+  // ═══════════════════════════════════════════════════════════
+  // 13. FUNCTIONS
+  // ═══════════════════════════════════════════════════════════
+  const filterByExtension = (
     itemList: PathItem[],
-    extFilter: string,
-  ): PathItem[] {
+    extFilter: string
+  ): PathItem[] => {
     if (!extFilter || extFilter === '') {
       return itemList;
     }
 
-    function filterNodeRecursively(node: PathItem): PathItem | null {
+    const filterNodeRecursively = (node: PathItem): PathItem | null => {
       if (node.type === 'file') {
         // For sequences, check the pattern
         if (node.metadata?.isSequence && node.metadata?.pattern) {
@@ -102,15 +125,14 @@
         }
       }
       return null;
-    }
+    };
 
     return itemList
       .map((item) => filterNodeRecursively(item))
       .filter((item) => item !== null) as PathItem[];
-  }
+  };
 
-  // Function to handle item selection with multi-select support (files only)
-  function handleItemClick(itemId: string, event: MouseEvent) {
+  const handleItemClick = (itemId: string, event: MouseEvent) => {
     const clickedNode = findNodeById(items, itemId);
 
     if (!clickedNode) return;
@@ -141,7 +163,7 @@
       // Shift+Click: Select range of files
       const currentIndex = flatItems.findIndex((item) => item.id === itemId);
       const lastIndex = flatItems.findIndex(
-        (item) => item.id === lastClickedId,
+        (item) => item.id === lastClickedId
       );
 
       if (currentIndex !== -1 && lastIndex !== -1) {
@@ -165,19 +187,17 @@
     }
 
     dispatch('selectionChange', { selectedIds: selectedItemIds });
-  }
+  };
 
-  // Function to clear selection when clicking outside items
-  function handleContainerClick() {
+  const handleContainerClick = () => {
     selectedItemIds = new Set();
     lastClickedId = null;
     dispatch('selectionChange', { selectedIds: selectedItemIds });
-  }
+  };
 
-  // Function to flatten the tree for iterative rendering
-  function flattenTree(
-    nodes: PathItem[],
-  ): Array<{ node: PathItem; depth: number; path: string[] }> {
+  const flattenTree = (
+    nodes: PathItem[]
+  ): Array<{ node: PathItem; depth: number; path: string[] }> => {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
 
@@ -219,10 +239,9 @@
     }
 
     return result;
-  }
+  };
 
-  // Helper function to find a node by ID in the tree
-  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
+  const findNodeById = (nodes: PathItem[], id: string): PathItem | null => {
     // First check at the current level
     const directMatch = nodes.find((node) => node.id === id);
     if (directMatch) return directMatch;
@@ -236,10 +255,9 @@
     }
 
     return null;
-  }
+  };
 
-  // Function to build a path for a node
-  function buildPath(node: PathItem, allNodes: PathItem[]): string {
+  const buildPath = (node: PathItem, allNodes: PathItem[]): string => {
     if (node.parentId === null) {
       return node.name;
     }
@@ -248,14 +266,13 @@
       return node.name;
     }
     return `${buildPath(parentNode, allNodes)}/${node.name}`;
-  }
+  };
 
-  // Helper function to update a node in the tree by ID
-  function updateNodeInTree(
+  const updateNodeInTree = (
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
-  ): PathItem[] {
+    updateFn: (node: PathItem) => PathItem
+  ): PathItem[] => {
     return nodes.map((node) => {
       if (node.id === nodeId) {
         node.path = buildPath(node, nodes);
@@ -268,10 +285,9 @@
       }
       return node;
     });
-  }
+  };
 
-  // Function to toggle node expansion with lazy loading
-  function toggleExpand(itemId: string) {
+  const toggleExpand = (itemId: string) => {
     const node = findNodeById(items, itemId);
     if (!node || node.type !== 'folder') return;
 
@@ -288,48 +304,48 @@
       ...n,
       expanded: !n.expanded,
     }));
-  }
+  };
 
-  function handleSequenceToggle() {
+  const handleSequenceToggle = () => {
     groupSequences = !groupSequences;
     dispatch('sequenceToggle', { groupSequences });
-  }
+  };
 
-  function fileExistsInProject(node: PathItem): boolean {
+  const fileExistsInProject = (node: PathItem): boolean => {
     const basename = path.basename(node.path);
     return existingFiles.map((file) => path.basename(file)).includes(basename);
-  }
+  };
 
-  function handleOpenFile(itemId: string) {
+  const handleOpenFile = (itemId: string) => {
     const node = findNodeById(items, itemId);
     if (node && node.type === 'file') {
       dispatch('openFile', { fileId: itemId, filePath: node.path });
     }
-  }
+  };
 
-  function handleRevealFile(itemId: string) {
+  const handleRevealFile = (itemId: string) => {
     const node = findNodeById(items, itemId);
     if (node && node.type === 'file') {
       dispatch('revealFile', { fileId: itemId, filePath: node.path });
     }
-  }
+  };
 
-  function handleImportFile(itemId: string) {
+  const handleImportFile = (itemId: string) => {
     const node = findNodeById(items, itemId);
     if (node && node.type === 'file') {
       dispatch('importFile', { fileId: itemId, filePath: node.path });
     }
-  }
+  };
 
-  function handleDoubleClick(itemId: string) {
+  const handleDoubleClick = (itemId: string) => {
     if (selectedItemIds.size > 1) {
       handleImportSelected();
     } else {
       handleImportFile(itemId);
     }
-  }
+  };
 
-  function handleImportSelected() {
+  const handleImportSelected = () => {
     if (selectedItemIds.size === 0) return;
 
     const allItems = findNodesByType(items, 'file');
@@ -343,10 +359,9 @@
         filePaths: selectedFiles.map((f) => f.path),
       });
     }
-  }
+  };
 
-  // Helper function to find node of a specific type and return an array of nodes
-  function findNodesByType(nodes: PathItem[], type: string): PathItem[] {
+  const findNodesByType = (nodes: PathItem[], type: string): PathItem[] => {
     let results: PathItem[] = [];
 
     // Add matches at the current level
@@ -361,18 +376,17 @@
     }
 
     return results;
-  }
+  };
 
-  // Export functions that parent components can use
-  export function getSelectedItems(): PathItem[] {
+  export const getSelectedItems = (): PathItem[] => {
     const allItems = findNodesByType(items, 'file');
     return allItems.filter((item) => selectedItemIds.has(item.id));
-  }
+  };
 
-  export function clearSelection() {
+  export const clearSelection = () => {
     selectedItemIds = new Set();
     lastClickedId = null;
-  }
+  };
 </script>
 
 <div class="file-browser" style="height: {height};">

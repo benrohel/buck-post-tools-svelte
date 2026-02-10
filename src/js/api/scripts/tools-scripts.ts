@@ -1,7 +1,15 @@
-import { fs, path, os } from '../../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
 import { type SelectToolItem } from 'src/js/global';
-import { SHARED_FOLDER, PRODUCTION_ROOT, PROJECT_SCRIPTS_FOLDER, PROJECT_COMMON_AE_FOLDER } from '../files/files';
+import {
+  SHARED_FOLDER,
+  PRODUCTION_ROOT,
+  PROJECT_SCRIPTS_FOLDER,
+  PROJECT_COMMON_AE_FOLDER,
+} from '@/api/files/files';
 import { platform } from 'os';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('tools-scripts');
 
 // /System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts/nuke-to-ae-tracker.1.0.0.jsx
 
@@ -11,7 +19,6 @@ export interface Script {
   filepath: string;
 }
 export const getBuckScripts = (appId: string): Script[] => {
-
   let scriptsFolder = '';
   if (appId === 'AEFT') {
     scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
@@ -21,12 +28,16 @@ export const getBuckScripts = (appId: string): Script[] => {
 
   // scriptsFolder = "/System/Volumes/Data/buck/globalprefs/SHARED/AFTER_EFFECTS/scripts"
   if (!fs.existsSync(scriptsFolder)) {
-    console.log('Buck scripts folder not found');
+    log.debug('Buck scripts folder not found', { scriptsFolder, appId });
     return [];
   }
 
   const folderFiles = fs.readdirSync(scriptsFolder);
-  console.log('Buck scripts folder', folderFiles);
+  log.debug(
+    'Found Buck scripts folder contents',
+    { scriptsFolder, fileCount: folderFiles.length },
+    folderFiles
+  );
 
   const scriptFiles = fs
     .readdirSync(scriptsFolder)
@@ -37,10 +48,14 @@ export const getBuckScripts = (appId: string): Script[] => {
       return {
         name: name,
         filepath: path.join(scriptsFolder, file),
-        filename: file
+        filename: file,
       };
     });
-  console.log('Buck scripts files', scriptFiles);
+  log.debug(
+    'Loaded Buck scripts',
+    { scriptsFolder, scriptCount: scriptFiles.length },
+    scriptFiles
+  );
   return scriptFiles;
 };
 
@@ -69,7 +84,6 @@ export const getLocalScripts = (
   }
   const [_, major] = versionMatch;
 
-
   if (os.platform() === 'win32') {
     scriptsFolder = path.join(
       'C:\\Program Files\\Adobe',
@@ -83,7 +97,6 @@ export const getLocalScripts = (
       `Adobe After Effects 20${major}`,
       'Scripts'
     );
-
   } else if (os.platform() === 'linux') {
     // scriptsFolder = path.join(SHARED_FOLDER, 'AFTER_EFFECTS', 'scripts');
   }
@@ -101,7 +114,7 @@ export const getLocalScripts = (
       return {
         name: name,
         filepath: path.join(scriptsFolder, file),
-        filename: file
+        filename: file,
       };
     });
 
@@ -116,24 +129,37 @@ export const getLocalScripts = (
         return {
           name: name,
           filepath: path.join(userScriptsFolder, file),
-          filename: file
+          filename: file,
         };
       });
   }
 
-  return [...localScripts, ...userScripts].sort((a: Script, b: Script) => a.name.localeCompare(b.name));
+  return [...localScripts, ...userScripts].sort((a: Script, b: Script) =>
+    a.name.localeCompare(b.name)
+  );
 };
 
-export const getProjectScripts = async (appId: string, projectPath: string): Promise<Script[]> => {
+export const getProjectScripts = async (
+  appId: string,
+  projectPath: string
+): Promise<Script[]> => {
+  const scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
+
   try {
-    let scriptsFolder = PROJECT_SCRIPTS_FOLDER(projectPath);
-    console.log("project scripts Folder", scriptsFolder);
-    if (!fs.existsSync(scriptsFolder)) {
-      console.log('Project scripts folder not found');
+    log.debug('Looking for project scripts', {
+      scriptsFolder,
+      projectPath,
+      appId,
+    });
+    if (!scriptsFolder || !fs.existsSync(scriptsFolder)) {
+      log.debug('Project scripts folder not found', {
+        scriptsFolder,
+        projectPath,
+      });
       return [];
     }
 
-    return fs
+    const scripts = fs
       .readdirSync(scriptsFolder)
       .filter((file) => !file.startsWith('.'))
       .filter((file) => file.endsWith('.jsx') || file.endsWith('.jsxbin'))
@@ -142,30 +168,44 @@ export const getProjectScripts = async (appId: string, projectPath: string): Pro
         return {
           name: name,
           filepath: path.join(scriptsFolder, file),
-          filename: file
+          filename: file,
         };
       });
+
+    log.debug(
+      'Loaded project scripts',
+      { scriptsFolder, scriptCount: scripts.length },
+      scripts
+    );
+    return scripts;
   } catch (e) {
-    console.error('Error getting project scripts', e);
+    log.error('Failed to get project scripts', e as Error, {
+      scriptsFolder,
+      projectPath,
+      appId,
+    });
     return [];
   }
 };
-
 
 export interface CommonSharedFile {
   name: string;
   path: string;
 }
-export const getProjectCommonFiles = (appId: string, projectPath: string): CommonSharedFile[] => {
-  console.log(appId, projectPath);
-  let commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
-  console.log("common scripts folder", commonFolder);
-  if (!fs.existsSync(commonFolder)) {
-    console.log('Project scripts folder not found');
+export const getProjectCommonFiles = (
+  appId: string,
+  projectPath: string
+): CommonSharedFile[] => {
+  log.debug('Getting project common files', { appId, projectPath });
+  const commonFolder = PROJECT_COMMON_AE_FOLDER(projectPath);
+  log.debug('Common folder path', { commonFolder });
+
+  if (!commonFolder || !fs.existsSync(commonFolder)) {
+    log.debug('Project common folder not found', { commonFolder, projectPath });
     return [];
   }
 
-  return fs
+  const files = fs
     .readdirSync(commonFolder)
     .filter((file) => !file.startsWith('.'))
     .filter((file) => file.endsWith('.aep'))
@@ -176,4 +216,38 @@ export const getProjectCommonFiles = (appId: string, projectPath: string): Commo
         path: path.join(commonFolder, file),
       };
     });
+
+  log.debug(
+    'Loaded project common files',
+    { commonFolder, fileCount: files.length },
+    files
+  );
+  return files;
+};
+
+export const addGapsBetweenClips = (gap: number) => {
+  return `// Add gaps between clips in the current timeline and fill with text of the next clip
+function addGapsBetweenClips(gap) {
+  app.enableQE();
+  const newSeq = app.project.activeSequence;
+
+  for (var t = 0; newSeq.videoTracks.numTracks; t++) {
+    var currentTrack = newSeq.videoTracks[t];
+
+    var numberOfClips = currentTrack.clips.numItems;
+    var clips = currentTrack.clips;
+
+    for (var c = numberOfClips - 1; c > 0; c--) {
+      var newInTime = new Time();
+      alert(String(newInTime.seconds));
+      newInTime.seconds = gap * c;
+
+      clips[c].move(newInTime);
+    }
+  }
+  alert('Gaps added between clips.');
+}
+
+// Run the function
+addGapsBetweenClips(${gap});`;
 };

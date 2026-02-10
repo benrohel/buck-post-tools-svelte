@@ -1,6 +1,6 @@
 const { fdir } = require('fdir');
-import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../../api/exporter';
+import { path, fs } from '@/lib/cep/node';
+import { type PathItem } from '@/api/exporter';
 interface HSFile {
   path: string;
   modified: Date;
@@ -234,7 +234,7 @@ export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions
     if (node.children && node.children.length > 0) {
       const filteredChildren = node.children
         .map(child => filterNode(child, depth + 1))
-        .filter(child => child !== null)
+        .filter((child): child is PathItem => child !== null)
         .sort((a: any, b: any) => a.path.localeCompare(b.path));
 
       // Return node with filtered children
@@ -250,7 +250,7 @@ export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions
 
   const res = data
     .map(node => filterNode(node))
-    .filter(node => node !== null);
+    .filter((node): node is PathItem => node !== null);
 
   if (onlyLatestVersions) {
     return filterLatestVersions(res);

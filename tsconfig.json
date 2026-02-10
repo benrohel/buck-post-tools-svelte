@@ -16,13 +16,10 @@
     "noEmit": true,
     "baseUrl": ".",
     "jsx": "preserve",
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "paths": {
-      "@esTypes/*": ["./src/jsx"],
-      "@/components": ["./src/js/components"],
-      "@/lib": ["./src/js/lib"],
-      "@/api": ["./src/js/api"],
-      "@/stores": ["./src/js/stores"],
+      "@esTypes/*": ["./src/jsx/*"],
+      "@/*": ["./src/js/*"]
     }
   },
   "include": ["./src", "./src/js/api/buck5/index.d.ts"],

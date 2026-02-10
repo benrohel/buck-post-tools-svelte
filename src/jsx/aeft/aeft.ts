@@ -8,12 +8,12 @@ export {
   getSelectedCompsForRender,
   getProjectFile,
   getProjectDir,
-  selectFolder,
   appVersion,
   importProjectAndSaveOutputModules,
   getProjectSettings,
   setProjectSettings,
   openExistingFolder,
+  selectFolder,
 } from './aeft-utils';
 export { getAndSetEssentialProperties, updateEssentialPropertiesFromCSV, listAllComps } from './templater';
 

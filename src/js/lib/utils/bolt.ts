@@ -1,7 +1,10 @@
-import CSInterface from "../cep/csinterface";
-import Vulcan, { VulcanMessage } from "../cep/vulcan";
-import { ns } from "../../../shared/shared";
-import { fs } from "../cep/node";
+import CSInterface from '@/lib/cep/csinterface';
+import Vulcan, { VulcanMessage } from '@/lib/cep/vulcan';
+import { ns } from '@/../shared/shared';
+import { fs } from '@/lib/cep/node';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('bolt');
 
 export const csi = new CSInterface();
 export const vulcan = new Vulcan();
@@ -22,12 +25,12 @@ export const vulcan = new Vulcan();
 export const evalES = (script: string, isGlobal = false): Promise<string> => {
   return new Promise(function (resolve, reject) {
     const pre = isGlobal
-      ? ""
+      ? ''
       : `var host = typeof $ !== 'undefined' ? $ : window; host["${ns}"].`;
     const fullString = pre + script;
-    console.log("evalES", fullString);
+    log.debug('Evaluating ExtendScript', { script: fullString, isGlobal });
     csi.evalScript(
-      "try{" + fullString + "}catch(e){alert(e);}",
+      'try{' + fullString + '}catch(e){alert(e);}',
       (res: string) => {
         resolve(res);
       }
@@ -35,7 +38,7 @@ export const evalES = (script: string, isGlobal = false): Promise<string> => {
   });
 };
 
-import type { Scripts } from "@esTypes/index";
+import type { Scripts } from '@esTypes/index';
 
 type ArgTypes<F extends Function> = F extends (...args: infer A) => any
   ? A
@@ -77,10 +80,10 @@ export const evalTS = <
   return new Promise(function (resolve, reject) {
     const formattedArgs = args
       .map((arg) => {
-        console.log(JSON.stringify(arg));
+        log.debug('Formatting ExtendScript argument', { arg: JSON.stringify(arg) });
         return `${JSON.stringify(arg)}`;
       })
-      .join(",");
+      .join(',');
     csi.evalScript(
       `try{
           var host = typeof $ !== 'undefined' ? $ : window;
@@ -92,11 +95,11 @@ export const evalTS = <
         }`,
       (res: string) => {
         try {
-          //@ts-ignore
-          if (res === "undefined") return resolve();
+          if (res === 'undefined' || res === undefined)
+            return resolve(undefined as ReturnType<Func>);
           const parsed = JSON.parse(res);
-          if (parsed.name === "ReferenceError") {
-            console.error("REFERENCE ERROR");
+          if (parsed.name === 'ReferenceError') {
+            log.error('ExtendScript reference error', new Error('ReferenceError'), parsed);
             reject(parsed);
           } else {
             resolve(parsed);
@@ -122,22 +125,22 @@ export const evalFile = (file: string) => {
 
 // js utils
 
-export const initBolt = (log = true) => {
+export const initBolt = (enableLogging = true) => {
   if (window.cep) {
-    const extRoot = csi.getSystemPath("extension");
+    const extRoot = csi.getSystemPath('extension');
     const jsxSrc = `${extRoot}/jsx/index.js`;
     const jsxBinSrc = `${extRoot}/jsx/index.jsxbin`;
     if (fs.existsSync(jsxSrc)) {
-      if (log) console.log(jsxSrc);
+      if (enableLogging) log.debug('Loading ExtendScript from source', { path: jsxSrc });
       evalFile(jsxSrc);
     } else if (fs.existsSync(jsxBinSrc)) {
-      if (log) console.log(jsxBinSrc);
+      if (enableLogging) log.debug('Loading ExtendScript from binary', { path: jsxBinSrc });
       evalFile(jsxBinSrc);
     }
   }
 };
 
-export const posix = (str: string) => str.replace(/\\/g, "/");
+export const posix = (str: string) => str.replace(/\\/g, '/');
 
 export const openLinkInBrowser = (url: string) => {
   if (window.cep) {
@@ -164,7 +167,7 @@ export const getAppBackgroundColor = () => {
 export const subscribeBackgroundColor = (callback: (color: string) => void) => {
   const getColor = () => {
     const newColor = getAppBackgroundColor();
-    console.log("BG Color Updated: ", { rgb: newColor.rgb });
+    log.debug('Background color updated', { rgb: newColor.rgb });
     const { r, g, b } = newColor.rgb;
     return `rgb(${r}, ${g}, ${b})`;
   };
@@ -172,7 +175,7 @@ export const subscribeBackgroundColor = (callback: (color: string) => void) => {
   callback(getColor());
   // listen for changes
   csi.addEventListener(
-    "com.adobe.csxs.events.ThemeColorChanged",
+    'com.adobe.csxs.events.ThemeColorChanged',
     () => callback(getColor()),
     {}
   );
@@ -231,7 +234,7 @@ export const selectFolder = (
     dir
   ) as IOpenDialogResult;
   if (result.data?.length > 0) {
-    const folder = decodeURIComponent(result.data[0].replace("file://", ""));
+    const folder = decodeURIComponent(result.data[0].replace('file://', ''));
     callback(folder);
   }
 };
@@ -248,7 +251,7 @@ export const selectFile = (
     dir
   ) as IOpenDialogResult;
   if (result.data?.length > 0) {
-    const folder = decodeURIComponent(result.data[0].replace("file://", ""));
+    const folder = decodeURIComponent(result.data[0].replace('file://', ''));
     callback(folder);
   }
 };

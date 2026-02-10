@@ -1,18 +1,21 @@
 import { rename } from 'fs';
-import { fs, path, os, child_process, zlib } from '../lib/cep/node';
+import { fs, path, os, child_process, zlib } from '@/lib/cep/node';
 import { DOMParser } from 'xmldom';
 import { preferencesDir } from './preferences';
 import { execSync } from 'child_process';
+import { logModule } from '@/lib/logger';
+
 const { exec } = child_process;
+const log = logModule('buck-library');
 const macPrefixes = ['buck', 'System/Volumes/Data/buck', 'Volumes'];
 
 
 export const SHARED_FOLDER = (): string => {
   const prefix = os.platform() === 'win32' ? '\\\\' : '/';
-  console.log("SHARED_FOLDER prefix", prefix);
+  log.debug('Resolving shared folder', { platform: os.platform(), prefix });
   if (os.platform() === 'win32') {
     const winSharedFolder = path.join(`${prefix}buck`, 'globalprefs', 'SHARED');
-    console.log("winSharedFolder", winSharedFolder);
+    log.debug('Windows shared folder', { path: winSharedFolder, exists: fs.existsSync(winSharedFolder) });
     // Check if the shared folder exists in the expected location
     if (fs.existsSync(winSharedFolder)) return winSharedFolder;
     return "";
@@ -43,7 +46,7 @@ export const getProjectTemplate = (appId: string, templateName: string) => {
   );
 };
 
-const extractVersion = (filepath: string): { major: number, minor: number, micro: number } | null => {
+export const extractVersion = (filepath: string): { major: number, minor: number, micro: number } | null => {
   // Regular expression to match version pattern in the format x.y.z
   const versionRegex = /\.(\d+)\.(\d+)\.(\d+)\./;
   const match = filepath.match(versionRegex);
@@ -113,14 +116,19 @@ export const checkForUpdate = async (extensionVersion: string) => {
   const versionFiles = fs.readdirSync(versionsFolder)
     .filter((f) => f.endsWith('.zxp'))
     .filter((f) => !f.startsWith('.'));
-  const remoteVersions = versionFiles.map((v) => {
-    const version = extractVersion(path.join(versionsFolder, v));
-    return { version, path: path.join(versionsFolder, v) };
-  });
+  const remoteVersions = versionFiles
+    .map((v) => {
+      const version = extractVersion(path.join(versionsFolder, v));
+      return version ? { version, path: path.join(versionsFolder, v) } : null;
+    })
+    .filter((v): v is { version: { major: number; minor: number; micro: number }; path: string } => v !== null);
 
-  console.log("remoteVersions", remoteVersions);
+  log.debug('Checking for updates', {
+    remoteVersionCount: remoteVersions.length,
+    latestRemote: remoteVersions[remoteVersions.length - 1]?.version
+  });
   const localVersion = getLocalVersion();
-  console.log("localVersion", localVersion);
+  log.debug('Local version', { version: localVersion });
   if (!localVersion) return null;
   const latestVersion = remoteVersions.sort((a, b) => {
     return compareVersions(a.version, b.version);
@@ -143,49 +151,48 @@ export const installFromLocalFilepath = async (filepath: string) => {
       command = `unzip -o "${zipPath}" -d "${panelPath}"`;
       exec(command, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Unzip failed: ${error.message}`);
+          log.error('Unzip failed', error, { zipPath, panelPath });
           reject(false);
         } else {
-          console.log("Unzip completed.");
-          console.log(stdout);
-          console.log(`New version installed successfully to ${panelPath}`);
+          log.debug('Unzip completed', { panelPath }, stdout);
+          log.info('New version installed successfully', { panelPath });
           resolve(true);
         }
       });
     } else if (os.platform() === 'win32') {
-      console.log("zip path", zipPath);
+      log.debug('Installing on Windows', { zipPath });
       const panelName = path.basename(zipPath);
       const tempZip = path.join(preferencesDir, panelName.replace('.zxp', '.zip'));
       if (!fs.existsSync(zipPath)) {
-        console.error(`File does not exist: ${zipPath}`);
+        log.error('File does not exist', new Error('File not found'), { zipPath });
         return reject(false);
       }
       fs.copyFileSync(zipPath, tempZip);
       if (!fs.existsSync(tempZip)) {
-        console.error(`Failed to copy file from ${zipPath} to ${tempZip}`);
+        log.error('Failed to copy file', new Error('Copy failed'), { from: zipPath, to: tempZip });
         return reject(false);
       }
-      console.log("tempZip", tempZip);
+      log.debug('Temporary zip created', { tempZip });
       command = `powershell -Command "Expand-Archive -Path '${tempZip}' -DestinationPath '${panelPath}' -Force"`;
       exec(command, (error, stdout, stderr) => {
         if (error) {
-          console.error(`Unzip failed: ${error.message}`);
+          log.error('Unzip failed', error, { tempZip, panelPath });
           reject(false);
         }
-        console.log("Unzip completed.");
+        log.debug('Unzip completed');
         try {
           fs.unlink(tempZip, (err) => {
-            if (err) console.error('Failed to delete temp zip:', err);
-            else console.log('Temp zip deleted.');
+            if (err) log.warn('Failed to delete temp zip', { error: err, tempZip });
+            else log.debug('Temp zip deleted', { tempZip });
           });
         } catch (err) {
-          console.error('Failed to delete temp zip:', err);
+          log.warn('Failed to delete temp zip', { error: err, tempZip });
         }
-        console.log(`New version installed successfully to ${panelPath}`);
+        log.info('New version installed successfully', { panelPath });
         resolve(true);
       });
     }
-    console.log("Running update unzip...");
+    log.debug('Running update unzip', { platform: os.platform() });
 
 
   });

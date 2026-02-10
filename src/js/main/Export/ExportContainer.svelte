@@ -5,19 +5,15 @@
   import ExportSequenceXML from './ExportSequenceXML.svelte';
   import ExportSequenceCSV from './ExportSequenceCSV.svelte';
   import ExportCompositions from './ExportCompositions.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { appId } from '../../lib/utils/cep';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
+  import ExportPproPathBuilder from './ExportPproPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
+  import { appStore } from '@/stores/app-store';
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-container');
 
-  $: console.log('appId:', appId);
-
-  interface SelectToolItem {
-    value: string;
-    label: string;
-    component: any;
-    apps: string[];
-  }
+  import type { SelectToolItem } from '@/types/models';
 
   const exportModes: SelectToolItem[] = [
     {
@@ -50,16 +46,54 @@
       component: ExportPathBuilder,
       apps: ['AEFT'],
     },
+    {
+      value: 'shots',
+      label: 'Shots',
+      component: ExportPproPathBuilder,
+      apps: ['PPRO'],
+    },
   ];
 
+  let filteredModes = exportModes.filter((m) =>
+    m.apps.includes($appStore.appId),
+  );
+
+  // Initialize as undefined - will be set by reactive block
+  let selectedExportMode: SelectToolItem | undefined = undefined;
+
   const handleOnChange = (value: SelectToolItem) => {
+    log.debug('Export mode changing', {
+      from: selectedExportMode?.value,
+      to: value.value,
+    });
     selectedExportMode = value;
-    console.log('selectedExportMode', selectedExportMode);
+    log.debug('Export mode changed', {
+      mode: selectedExportMode.value,
+      label: selectedExportMode.label,
+    });
   };
 
-  $: filteredModes = exportModes.filter((m) => m.apps.includes(appId));
-  let selectedExportMode: SelectToolItem =
-    appId === 'PPRO' ? exportModes[0] : exportModes[4];
+  onMount(() => {
+    log.debug('Export Container mounted', {
+      appId: $appStore.appId,
+      selectedMode: selectedExportMode?.value,
+      filteredModesCount: filteredModes.length,
+      hasComponent: !!selectedExportMode?.component,
+      componentName: selectedExportMode?.component?.name,
+    });
+    if ($appStore.appId) {
+      const defaultMode =
+        $appStore.appId === 'PPRO' ? exportModes[0] : exportModes[4];
+
+      // Only update if we don't have a valid selection or app changed
+      if (
+        !selectedExportMode ||
+        !selectedExportMode.apps.includes($appStore.appId)
+      ) {
+        selectedExportMode = defaultMode;
+      }
+    }
+  });
 </script>
 
 <MenuSelect
@@ -68,4 +102,15 @@
   onChange={handleOnChange}
 />
 
-<svelte:component this={selectedExportMode.component} />
+{#if selectedExportMode && selectedExportMode.component}
+  <div>
+    <svelte:component this={selectedExportMode.component} />
+  </div>
+{:else}
+  <div>No component selected or component is undefined</div>
+  {JSON.stringify({
+    hasMode: !!selectedExportMode,
+    modeValue: selectedExportMode?.value,
+    hasComponent: !!selectedExportMode?.component,
+  })}
+{/if}

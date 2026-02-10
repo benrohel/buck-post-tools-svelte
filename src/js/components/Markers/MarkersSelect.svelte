@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { OnChange } from '@/types/callbacks';
   import { XSquare } from 'lucide-svelte';
 
   interface MarkerColor {
@@ -18,7 +19,7 @@
     { name: 'Cyan', selected: false, color: '#00F4D5', colorIndex: 7 },
   ];
 
-  export let onChange: Function;
+  export let onChange: OnChange<MarkerColor[]>;
   let markers = sourceMarkers;
 
   const toggleMarkerSelection = (marker: any) => {

@@ -1,7 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
-  import { path } from '../../lib/cep/node';
+  import { path } from '@/lib/cep/node';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('file-table');
+
   interface FileEntry {
     name: string;
     filepath: string;
@@ -14,12 +18,12 @@
     frameRange: string;
   }
   export let clips: ClipEntry[] = [];
-  $: files = [] as FileEntry[];
   export let filterName = '';
 
   const dispatch = createEventDispatcher();
-
   let filteredFiles: FileEntry[] = [];
+
+  $: files = [] as FileEntry[];
 
   $: filterFiles = () => {
     if (filterName === '') {
@@ -73,8 +77,6 @@
     files = Object.values(groupedFiles);
   };
 
-  $: console.log('filteredFiles', filteredFiles);
-  $: console.log('files', files);
   const handleVersionChange = (file: FileEntry, version: string) => {
     dispatch('versionChange', { file, version });
   };

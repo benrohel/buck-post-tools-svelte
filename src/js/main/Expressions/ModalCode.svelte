@@ -3,11 +3,14 @@
   // exports to match the function signatures that `CodeJar` Component expects
   import hljs from 'highlight.js/lib/core';
   import javascript from 'highlight.js/lib/languages/javascript';
+
+  import ChatInput from '@/components/ChatInput/ChatInput.svelte';
+
   import {
     callAnthropicAPI,
     extractCodeFromMarkdown,
-  } from '../../api/ai/chat-claude';
-  import ChatInput from '../../components/ChatInput/ChatInput.svelte';
+  } from '@/api/ai/chat-claude';
+
   hljs.registerLanguage('javascript', javascript);
 
   // `highlight` takes the input code and returns the highlighted HTML markup
@@ -18,20 +21,26 @@
 </script>
 
 <script lang="ts">
-  import { fs, path } from '../../lib/cep/node';
+  import { fs, path } from '@/lib/cep/node';
   import { Circle3 } from 'svelte-loading-spinners';
   import 'svelte-highlight/styles/atom-one-dark.css';
-  import { appStore } from '../../stores/app-store';
+  import { appStore } from '@/stores/app-store';
   import horizonDark from 'svelte-highlight/styles/horizon-dark';
-  import { evalES, evalFile, evalTS } from '../../lib/utils/bolt';
+  import { evalES, evalFile, evalTS } from '@/lib/utils/bolt';
   import { ArrowUpFromLine, Braces, Code, CircleX } from 'lucide-svelte';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+  import type { ExpressionSnippet } from '@/types/models';
+  import type { OnClose, CodeChangeCallback } from '@/types/callbacks';
   import { CodeJar } from '@novacbn/svelte-codejar';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { localAppStore } from '../../stores/local-storage';
-  import { notifications } from '../../stores/notifications-store';
-  export let onClose: Function = () => {};
-  export let onApplyCode: Function = () => {};
+  import { localAppStore } from '@/stores/local-storage';
+  import { notifications } from '@/stores/notifications-store';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('modal-code');
+
+  export let onClose: OnClose = () => {};
+  export let onApplyCode: CodeChangeCallback = () => {};
   export let expression: ExpressionSnippet;
   let isScript: boolean = false;
   let isLoading: boolean = false;
@@ -69,12 +78,12 @@
     let formattedCode = expression.values.Expression.replace(reg, '');
     if (variables) {
       variables.forEach((v) => {
-        console.log(`${v.label}, ${v.value}`);
+        log.debug('Variable replacement', { label: v.label, value: v.value });
 
         formattedCode = formattedCode.replace(v.label, v.value);
       });
     }
-    console.log(formattedCode);
+    log.debug('Formatted code expression', { code: formattedCode });
     return formattedCode;
   };
 
@@ -92,7 +101,7 @@
   };
 
   const handleApplyCode = () => {
-    console.log(isScript);
+    log.debug('Apply code', { isScript });
     if (isScript) {
       handleEvalScript();
     } else {
@@ -115,7 +124,7 @@
     }
   };
 
-  $: console.log(codeString);
+  $: log.debug('Code string updated', { codeLength: codeString?.length || 0 });
   const handleEvalScript = async () => {
     const tempFile = path.join(
       __dirname,
@@ -142,7 +151,7 @@
   };
 
   const handleChatRequest = async () => {
-    console.log('gptMessage', gptMessage);
+    log.debug('Chat request', { message: gptMessage, isScript });
     if (!$localAppStore.aiService.apiKey) {
       notifications.error('AI Service API key is not set', 2000);
       return;
@@ -152,7 +161,7 @@
         $localAppStore.aiService.apiKey,
         isScript ? 'scripts' : 'expressions',
       );
-      console.log(res);
+      log.debug('Chat response received', { responseLength: res?.length || 0 });
       if (isScript) {
         codeString = extractCodeFromMarkdown(res);
       } else {
@@ -166,7 +175,7 @@
   };
 
   const handleSaveScript = async () => {
-    console.log('handleSaveScript');
+    log.debug('Save script');
   };
 </script>
 

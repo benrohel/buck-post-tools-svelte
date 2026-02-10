@@ -1,16 +1,21 @@
 <script lang="ts">
+  import type { ExpressionSnippet } from '@/types/models';
+  import type { ExpressionSelectCallback, ExpressionUpdateCallback } from '@/types/callbacks';
   import { onDestroy, onMount } from 'svelte';
   import Freezeframe from 'freezeframe';
-  import buckLogo from '../../../assets/BUCK_ICON_WHITE.svg';
+  import buckLogo from '@/../assets/BUCK_ICON_WHITE.svg';
   import { fly } from 'svelte/transition';
   import markdownToTxt from 'markdown-to-txt';
   import { Star } from 'lucide-svelte';
+  import { logModule } from '@/lib/logger';
+
+  const log = logModule('expression-card');
 
   export let expression: ExpressionSnippet;
   export let id = 0;
   export let selected = false;
-  export let onSelect: Function;
-  export let onUpdate: Function;
+  export let onSelect: ExpressionSelectCallback;
+  export let onUpdate: ExpressionUpdateCallback;
 
   let open = false;
   const reg = new RegExp(/```/, 'g');
@@ -58,7 +63,10 @@
       tb = expression.values.Thumbnail[0].url;
 
       const imgEL = document.getElementById(`${expression.id}`);
-      console.log('expression id', expression.values.Name, imgEL);
+      log.debug('Initializing expression preview', {
+        expressionName: expression.values.Name,
+        hasElement: !!imgEL
+      });
       if (imgEL) {
         freeze = new Freezeframe(imgEL, {
           trigger: 'hover',

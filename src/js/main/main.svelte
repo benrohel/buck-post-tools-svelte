@@ -1,10 +1,7 @@
 <script lang="ts">
   import { getContext, onMount, setContext } from 'svelte';
   import { writable } from 'svelte/store';
-  import { csi, evalES, subscribeBackgroundColor } from '../lib/utils/bolt';
-  import '../index.scss';
-  import Tabs from '../components/Tabs/Tabs.svelte';
-  import { getAuthAuthenticated, client } from 'buck-client';
+  import { getEnv } from '@/api/env';
   import {
     ArrowDownUp,
     PencilRuler,
@@ -17,7 +14,11 @@
     ToolCase,
     BookMarked,
   } from 'lucide-svelte';
-  import { connectToDaemon } from './backend';
+  import { getAuthAuthenticated, client } from 'buck-client';
+
+  import Tabs from '@/components/Tabs/Tabs.svelte';
+  import Toast from '@/components/Toast/Toast.svelte';
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
   import ProjectContainer from './Project/ProjectContainer.svelte';
   import RenameContext from './Rename/RenameContext.svelte';
   import IngestContainer from './Ingest/IngestContainer.svelte';
@@ -25,29 +26,29 @@
   import ToolsContainer from './Tools/ToolsContainer.svelte';
   import ExplorerContainer from './Explorer/ExplorerContainer.svelte';
   import Footer from './Footer.svelte';
-  import Toast from '../components/Toast/Toast.svelte';
+  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
+
+  import { buck5Server } from '@/stores/server-store';
   import {
     appStore,
     defaultAppStore,
     appVersion,
     extensionVersion,
-  } from '../stores/app-store';
-  import { localAppStore } from '../stores/local-storage';
-  import AeExpressionsContainer from './Expressions/AeExpressionsContainer.svelte';
-  import { appId } from '../lib/utils/cep';
-  import {
-    checkForUpdate,
-    installFromLocalFilepath,
-  } from '../api/buck-library';
-  import ModalConfirm from '../components/Modal/ModalConfirm.svelte';
-  import { notifications } from '../stores/notifications-store';
+  } from '@/stores/app-store';
+  import { localAppStore } from '@/stores/local-storage';
+  import { notifications } from '@/stores/notifications-store';
+
+  import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
+  import { checkForUpdate, installFromLocalFilepath } from '@/api/buck-library';
+  import { connectToDaemon } from './backend';
+  import '@/index.scss';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('main');
 
   let backgroundColor: string = '#232323';
   let modalConfirmOpen = false;
   let latestVersion: { version: string; path: string } | null = null;
-
-  $: appName = appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
-
   let items = [
     {
       label: 'Explorer',
@@ -99,11 +100,11 @@
       apps: ['AEFT'],
     },
   ];
-
   let appItems = items;
-
   let authenticated = false;
-  $: console.log('$localAppStore', $localAppStore);
+
+  $: appName = $appStore.appId === 'AEFT' ? 'After Effects' : 'Premiere Pro';
+
   if (!$localAppStore) {
     appStore.set(defaultAppStore);
     setContext('app-store', defaultAppStore);
@@ -113,6 +114,7 @@
   }
 
   const handleUpdateExtension = async () => {
+    if (latestVersion === null) return;
     const installed = await installFromLocalFilepath(latestVersion.path);
     if (!installed) {
       notifications.error('Extension update failed', 3000);
@@ -126,24 +128,47 @@
   };
 
   onMount(async () => {
+    const rezPackages = getEnv('REZ_PACKAGES_PATH');
+    log.debug('ENV Variables REZ', {
+      rezPackages,
+    });
+
     if (window.cep) {
+      // Initialize appId from csi FIRST, before any other CEP operations
+      log.debug('Initializing appId from csi', {
+        appId: csi.getHostEnvironment(),
+      });
+      appStore.set({
+        ...$appStore,
+        appId: csi.getApplicationID(),
+      });
+
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
       // await connectToDaemon();
-      appVersion.set(await evalES(`appVersion()`));
-      appItems = items.filter((item) => item.apps.includes(appId));
+      const versionFromApp = await evalES(`appVersion()`);
+      appVersion.set(versionFromApp);
+      appItems = items.filter((item) => item.apps.includes($appStore.appId));
       if (client) {
         // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     }
 
-    console.log('$localAppStore', $localAppStore);
-    console.log('env', import.meta.env);
+    log.debug(
+      'Component mounted',
+      {
+        hasLocalStore: !!$localAppStore,
+        environment: import.meta.env.MODE,
+      },
+      { localAppStore: $localAppStore, env: import.meta.env },
+    );
 
-    if ($extensionVersion) {
+    if ($extensionVersion && $buck5Server) {
       checkForUpdate($extensionVersion).then((v) => {
         if (!v) {
-          console.log('No update available');
+          log.debug('No extension update available', {
+            currentVersion: $extensionVersion,
+          });
           return;
         }
         latestVersion = {
@@ -151,8 +176,14 @@
           path: v.path,
         };
         modalConfirmOpen = true;
-        console.log($extensionVersion);
-        console.log(v);
+        log.debug(
+          'Extension update available',
+          {
+            currentVersion: $extensionVersion,
+            latestVersion: latestVersion.version,
+          },
+          v,
+        );
       });
     }
   });

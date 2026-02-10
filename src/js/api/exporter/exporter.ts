@@ -1,5 +1,8 @@
-import { fs, path } from '../../lib/cep/node';
-import { evalES } from '../../lib/utils/bolt';
+import { fs, path } from '@/lib/cep/node';
+import { evalES } from '@/lib/utils/bolt';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('exporter');
 export interface CompRenderData {
   compName: string;
   nodeId: number;
@@ -51,6 +54,9 @@ export const buildRenderPath = (
   selectedTask: string,
   version: number
 ) => {
+
+  log.debug("buildRenderPath", { compData, appId, rootFolder, previewString, selectedTask, version });
+
   let projectVersionString = compData.projectVersion
     ? 'v' + compData.projectVersion.padStart(3, '0')
     : 'v001';
@@ -104,8 +110,10 @@ export const addToRenderQueue = async (
   options: IAddToRenderQueueOptions
 ) => {
   // Build the render paths for each output module
-  console.log('Comp Data', comp);
-  console.log('Options', options);
+  log.debug('Adding composition to render queue', {
+    compName: comp.compName,
+    outputModuleCount: options.outputModules.length
+  }, { comp, options });
 
   const outputOptions = options.outputModules.map((outputModule) => {
     const renderPath = buildRenderPath(
@@ -113,8 +121,8 @@ export const addToRenderQueue = async (
       options.appId,
       options.rootFolder,
       outputModule.outputModuleFilePath,
-      options.selectedTask,
-      options.version
+      options.selectedTask ?? '',
+      options.version ?? 1
     );
     return {
       outputModuleName: outputModule.outputModuleName,

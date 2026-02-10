@@ -1,8 +1,7 @@
-import { padLeft, selectFolder, padStart } from '../utils/utils';
-export { selectFolder };
+import { padLeft, padStart } from '../utils/utils';
 
-import { getProjectFile, collectAllFilePaths, getProjectDir } from './ppro-utils';
-export { getProjectFile, collectAllFilePaths, getProjectDir };
+import { getProjectFile, collectAllFilePaths, getProjectDir, selectFolder, appVersion } from './ppro-utils';
+export { getProjectFile, collectAllFilePaths, getProjectDir, selectFolder, appVersion };
 declare var JSON: any;
 declare const qe: undefined | any;
 
@@ -282,10 +281,15 @@ function getBasicMotionProperties(clip: any) {
 }
 
 export function getAllTracksClipsForNode(sequenceId: string) {
-  const sequence = getSequenceFromNodeId(sequenceId);
+  let sequence;
+  if (!sequenceId) {
+    sequence = app.project.activeSequence;
+  }
+  sequence = getSequenceFromNodeId(sequenceId);
   if (!sequence) {
     return null;
   }
+  $.writeln('sequence : ' + sequence.projectItem.name);
   const tracksClips = getAllSequenceClips(sequence);
   let timelineClips = [];
   for (var i = 0; i < tracksClips.length; i++) {
@@ -1168,3 +1172,16 @@ export const addGap = ({ gap, trackName }: GapOptions) => {
 };
 
 
+// export const getProjectDir = () => {
+//   try {
+//     if (app.project.path !== null) {
+//       //@ts-ignore
+//       // Use fsName to get the native file system path
+//       const file = new File(app.project.path);
+//       return file.parent.fsName;
+//     }
+//     return '';
+//   } catch (e) {
+//     return '';
+//   }
+// };

@@ -1,53 +1,63 @@
 <script lang="ts">
   import { getContext, setContext, onMount } from 'svelte';
+
   import FindAndReplace from './FindAndReplace.svelte';
   import PrefixSuffix from './PrefixAndSuffix.svelte';
   import SequentialRename from './SequentialRename.svelte';
   import RevertToFilename from './RevertToFilename.svelte';
   import ReplaceAndRelink from './ReplaceAndRelink.svelte';
   import VersionUp from './VersionUp.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import QuickRenameTools from './QuickRenameTools.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
+
+  import { appStore } from '@/stores/app-store';
 
   import { type RenameContext, renameContextKey } from './RenameContext';
 
+  import type { SelectToolItem, Option } from '@/types/models';
+
   const renameContext = getContext('rename') as RenameContext;
 
-  const renameModes = [
-    { value: 'replace', label: 'Find and Replace', component: FindAndReplace },
+  const renameModes: SelectToolItem[] = [
+    { value: 'replace', label: 'Find and Replace', component: FindAndReplace, apps: ['AEFT', 'PPRO'] },
     {
       value: 'prefix',
       label: 'Add Prefix or Suffix',
       component: PrefixSuffix,
+      apps: ['AEFT', 'PPRO']
     },
     {
       value: 'sequential',
       label: 'Sequential Rename',
       component: SequentialRename,
+      apps: ['AEFT', 'PPRO']
     },
     {
       value: 'versionUp',
       label: 'Version Up',
       component: VersionUp,
+      apps: ['AEFT', 'PPRO']
     },
     {
       value: 'revert',
       label: 'Revert to filename',
       component: RevertToFilename,
+      apps: ['AEFT', 'PPRO']
     },
     {
       value: 'relink',
       label: 'Rename and Relink --project items only',
       component: ReplaceAndRelink,
+      apps: ['AEFT', 'PPRO']
     },
   ];
 
-  let selectedMode: any = renameModes[0];
-  const handleOnMenuChange = (value: any) => (selectedMode = value);
+  let selectedMode: SelectToolItem = renameModes[0];
 
-  const handleScopeChange = (item: any) => {
+  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
+
+  const handleScopeChange = (item: Option<string>) => {
     renameContext.getScope = item.value;
   };
 
@@ -69,7 +79,7 @@
           { value: 'project', label: 'Project' },
           {
             value: 'timeline',
-            label: appId === 'AEFT' ? 'Composition' : 'Sequence',
+            label: $appStore.appId === 'AEFT' ? 'Composition' : 'Sequence',
           },
         ]}
         onSelectionChange={handleScopeChange}

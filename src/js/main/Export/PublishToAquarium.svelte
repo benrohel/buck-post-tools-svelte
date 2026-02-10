@@ -1,34 +1,45 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import AquariumProjectMenu from '@/components/MultiSelect/AquariumProjectMenu.svelte';
+
   import {
     Projects,
     GetFootageLibrary,
     PostFootageAsset,
     ListAssetsFromLibrary,
-  } from '../../api/buck5/buck5-api';
-  import { onMount } from 'svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { XmemlParser } from '../../api/fcp-xml-to-csv';
-  import { fs, path } from '../../lib/cep/node';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetActiveSequence } from '../../api/edit';
-  import { preferencesDir } from '../../api/preferences';
-  import { PROJECT_ROOT } from '../../api/files/files';
-  import AquariumProjectMenu from '../../components/MultiSelect/AquariumProjectMenu.svelte';
+  } from '@/api/buck5/buck5-api';
+  import { XmemlParser } from '@/api/fcp-xml-to-csv';
+  import { GetActiveSequence } from '@/api/edit';
+  import { preferencesDir } from '@/api/preferences';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import { fs, path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import type * as BUCK5 from '@/api/buck5';
+  import type { Option } from '@/types/models';
+  import type { Sequence } from '@/api/sequence';
 
-  let projects: any[] = [];
-  $: projectItems = projects.map((p: any) => ({
+  import { logModule } from '@/lib/logger';
+  const log = logModule('publish-to-aquarium');
+
+  let projects: BUCK5.Item[] = [];
+  let projectName = '';
+  let selectedProject: Option<string> = { value: '', label: '' };
+
+  $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
     value: p._key,
     label: p.data.name,
   }));
-  let projectName = '';
-  $: selectedProject = { value: '', label: '' };
 
-  const setSelectedProject = (event: any) => {
-    console.log(event);
-    selectedProject = event;
+  const setSelectedProject = (event: Option<string> | null) => {
+    log.debug('Project selected', { project: event });
+    if (event) {
+      selectedProject = event;
+    }
   };
 
-  const exportSequenceXml = async (sequence: any): Promise<string> => {
+  const exportSequenceXml = async (sequence: Sequence): Promise<string> => {
     const filepath = path.join(preferencesDir, `${sequence.name}.xml`);
 
     if (!fs.existsSync(filepath)) {
@@ -36,8 +47,8 @@
     }
     return new Promise((resolve, reject) => {
       const result = evalES(
-        `exportSequenceXml("${filepath}","${sequence.id}")`,
-        false,
+        `exportSequenceXml("${filepath}","${sequence.nodeId}")`,
+        false
       );
       if (result) {
         resolve(result);
@@ -49,7 +60,7 @@
 
   const handleSubmitExport = async () => {
     if (!selectedProject) {
-      console.log('Please select a project');
+      log.warn('No project selected for export');
       return;
     }
     const sequence = await GetActiveSequence();
@@ -58,7 +69,10 @@
 
     const xml = await exportSequenceXml(sequence);
     const json = await parser.convertXmlToJSON(xml);
-    console.log(json);
+    log.debug('Parsed sequence XML to JSON', {
+      sequenceName: sequence.name,
+      assetCount: json?.length || 0
+    }, json);
 
     const existingAssets = await ListAssetsFromLibrary(library._key);
 
@@ -66,18 +80,15 @@
     //   assets.find((asset: any) => asset.data.name === item.name),
     // );
 
-    // const publishJobs = json.map((item: any) =>
-    //   PostFootageAsset(library._key, item),
-    // );
-    // Promise.all(publishJobs).then((res) => {
-    //   console.log('Footage Assets Published to Aquarium', res);
-    // });
+    // TODO: Implement footage asset publishing
+    // const publishJobs = json.map((item: any) => PostFootageAsset(library._key, item));
+    // await Promise.all(publishJobs);
   };
 
   const getProjectNameFromPath = async () => {
     const projectFile = await evalES('getProjectFile()', false);
     if (!projectFile) {
-      console.log('No project file found');
+      log.debug('No project file found');
       return;
     }
 
@@ -88,7 +99,7 @@
 
   const setDefaultProject = async () => {
     projectName = await getProjectNameFromPath();
-    if (projects.find((p: any) => p.data.name === projectName)) {
+    if (projects.find((p: BUCK5.Item) => p.data.name === projectName)) {
       selectedProject = { value: projectName, label: projectName };
     } else {
       selectedProject = projectItems[0];

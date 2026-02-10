@@ -3,12 +3,13 @@
 
   import ShotExplorer from './ShotExplorer.svelte';
   import Bookmarks from './Bookmarks.svelte';
-  import { appId } from '../../lib/utils/cep';
-  import { appStore } from '../../stores/app-store';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
 
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
+  import { appStore } from '@/stores/app-store';
 
-  const toolList = [
+  import type { SelectToolItem } from '@/types/models';
+
+  const toolList: SelectToolItem[] = [
     {
       label: 'Bookmarks',
       value: 'bookmarks',
@@ -23,12 +24,14 @@
     },
   ];
 
-  let selectedMode = toolList[0];
-  let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
-  const handleOnMenuChange = (value: any) => (selectedMode = value);
+  let selectedMode: SelectToolItem = toolList[0];
+
+  $: filteredToolList = toolList.filter((tool) => tool.apps.includes($appStore.appId));
+
+  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
 
   onMount(() => {
-    if ($appStore.defaultToBuck5ShotLibrary && appId === 'PPRO') {
+    if ($appStore.defaultToBuck5ShotLibrary && $appStore.appId === 'PPRO') {
       selectedMode = toolList[4];
     } else {
       selectedMode = toolList[0];

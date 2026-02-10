@@ -1,11 +1,14 @@
-import { GetActiveSequence, GetSequencedClips } from "../api/edit";
+import { GetActiveSequence, GetSequencedClips } from "@/api/edit";
 import {
   GetSystemFileVersionsWithShotName,
   GetFileVersion,
-} from "../api/files/files";
+} from "@/api/files/files";
+import { logModule } from '@/lib/logger';
+
+const log = logModule('timeline-clips');
 
 export const getClips = async () => {
-  let sequenceClips = [];
+  let sequenceClips: any[] = [];
   const seq = await GetActiveSequence();
   const pproClips = await GetSequencedClips(seq.id);
   const systemClips = await Promise.all(pproClips.map(async (clip) => {
@@ -30,6 +33,9 @@ export const getClips = async () => {
     };
   }));
   sequenceClips = systemClips;
-  console.log("sequenceClips", sequenceClips);
+  log.debug("Retrieved sequence clips", {
+    sequenceId: seq.id,
+    count: sequenceClips.length
+  }, sequenceClips);
   return Promise.resolve(sequenceClips);
 };

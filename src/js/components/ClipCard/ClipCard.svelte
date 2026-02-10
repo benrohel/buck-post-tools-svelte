@@ -1,97 +1,42 @@
 <script lang="ts">
   import { onMount, getContext } from 'svelte';
-  import { openFile } from '../../lib/utils/utils';
   import { fly } from 'svelte/transition';
+
   import { Download, ArrowUpDown, Eye } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { GetFileVersion } from '../../api/files/files';
-  import { checkVideoFileUpdate } from '../../api/video/video';
-  import { appStore } from '../../stores/app-store';
-  import { fs, path } from '../../lib/cep/node';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import { appId } from '../../lib/utils/cep';
-  export let clip: any;
+
+  import { appStore } from '@/stores/app-store';
+
+  import { openFile } from '@/lib/utils/utils';
+  import { evalES } from '@/lib/utils/bolt';
+  import { GetFileVersion } from '@/api/files/files';
+  import { checkVideoFileUpdate } from '@/api/video/video';
+  import { fs, path } from '@/lib/cep/node';
+  import type { ClipMetadata, VersionInfo } from '@/types/models';
+  import type { ClipSelectCallback, OnChange2 } from '@/types/callbacks';
+  import type { VideoDifference } from '@/types/api';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('clip-card');
+
+  export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
-  export let onSelect: Function;
-  export let onReplace: Function;
-  export let onImport: Function;
-  export let onChange: Function;
-
-  let selectedVersion: any = {};
-  let publishedVersion = '';
-  let editVersion = '';
-  $: isVideoMatch = true;
-  let videoDifferences: any[] = [];
-  let isMissing = false;
-  let showWarnings = $appStore.showVersionWarnings;
+  export let onSelect: ClipSelectCallback;
+  export let onReplace: ClipSelectCallback;
+  export let onImport: ClipSelectCallback;
+  export let onChange: OnChange2<ClipMetadata, VersionInfo>;
 
   export const BUCK_DAEMON_URL = 'http://127.0.0.1:8000';
 
-  export const FileUrl = (tb: string) => {
-    return `${BUCK_DAEMON_URL}${tb}`;
-  };
+  let selectedVersion: VersionInfo = {} as VersionInfo;
+  let publishedVersion = '';
+  let editVersion = '';
+  let videoDifferences: VideoDifference[] = [];
+  let isMissing = false;
+  let showWarnings = $appStore.showVersionWarnings;
 
-  const handleSelectTask = async () => {
-    if (onSelect) {
-      onSelect(clip);
-    }
-  };
-
-  const handleSelectVersion = async () => {
-    if (onChange) {
-      onChange(clip, selectedVersion);
-      handleCheckNewVersion();
-    }
-  };
-
-  const handleOnCommentClick = async (frame: number) => {
-    evalES(`goToFrame(${frame})`, false);
-  };
-
-  const handleReplaceClip = () => {
-    console.log('replace clip');
-    editVersion = selectedVersion.version;
-    onReplace(clip, selectedVersion);
-  };
-
-  const handleImportClip = () => {
-    onImport(clip, selectedVersion);
-  };
-
-  const handleEditClipCLick = () => {
-    const startFrame = clip.start * clip.sequenceFramerate;
-    switch ($appStore.appId) {
-      case 'PPRO':
-        evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
-        break;
-      case 'AEFT':
-        evalES(`goToFrame(${clip.nodeId})`).then((res) => {});
-        break;
-    }
-  };
-
-  const handleOpenFile = () => {
-    openFile(selectedVersion.filepath);
-  };
-
-  const handleCheckNewVersion = async () => {
-    console.log('Checking new version');
-    if (!clip.selectedVersion?.filepath) return;
-    const result = await checkVideoFileUpdate(
-      clip.filepath,
-      clip.selectedVersion.filepath,
-    );
-    console.log(result);
-    if (result.length > 0) {
-      console.log(`Clip ${clip.shotName} is different: ${result}`);
-      videoDifferences = result;
-      isVideoMatch = false; // Set to false if there are differences
-    } else {
-      isVideoMatch = true;
-      videoDifferences = [];
-    }
-  };
+  $: isVideoMatch = true;
 
   $: getSyncedColor = (): string => {
     const fileVersion = clip.clipName?.split('_v')[1];
@@ -116,11 +61,6 @@
   };
 
   $: initCard = async () => {
-    if (appId === 'PPRO') {
-      // const metadata = await evalES(`getPrMetadata(${clip.nodeId})`);
-      // console.log(metadata);
-    }
-
     if (!fs.existsSync(clip.filepath)) {
       isMissing = true;
     }
@@ -147,6 +87,81 @@
       return editVersion == selectedVersion.version;
     } else {
       return false;
+    }
+  };
+
+  export const FileUrl = (tb: string) => {
+    return `${BUCK_DAEMON_URL}${tb}`;
+  };
+
+  const handleSelectTask = async () => {
+    if (onSelect) {
+      onSelect(clip);
+    }
+  };
+
+  const handleSelectVersion = async () => {
+    if (onChange) {
+      onChange(clip, selectedVersion);
+      handleCheckNewVersion();
+    }
+  };
+
+  const handleOnCommentClick = async (frame: number) => {
+    evalES(`goToFrame(${frame})`, false);
+  };
+
+  const handleReplaceClip = () => {
+    log.debug('Replace clip', {
+      clipName: clip.shotName,
+      version: selectedVersion.version
+    });
+    editVersion = selectedVersion.version;
+    onReplace(clip, selectedVersion);
+  };
+
+  const handleImportClip = () => {
+    onImport(clip, selectedVersion);
+  };
+
+  const handleEditClipCLick = () => {
+    const startFrame = clip.start * clip.sequenceFramerate;
+    switch ($appStore.appId) {
+      case 'PPRO':
+        evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
+        break;
+      case 'AEFT':
+        evalES(`goToFrame(${clip.nodeId})`).then((res) => {});
+        break;
+    }
+  };
+
+  const handleOpenFile = () => {
+    openFile(selectedVersion.filepath);
+  };
+
+  const handleCheckNewVersion = async () => {
+    log.debug('Checking new version', { clipName: clip.shotName });
+    if (!clip.selectedVersion?.filepath) return;
+    const result = await checkVideoFileUpdate(
+      clip.filepath,
+      clip.selectedVersion.filepath,
+    );
+    log.debug('Version check result', {
+      clipName: clip.shotName,
+      hasDifferences: result.length > 0,
+      differenceCount: result.length
+    }, result);
+    if (result.length > 0) {
+      log.debug('Clip has differences', {
+        clipName: clip.shotName,
+        differences: result
+      });
+      videoDifferences = result;
+      isVideoMatch = false; // Set to false if there are differences
+    } else {
+      isVideoMatch = true;
+      videoDifferences = [];
     }
   };
 

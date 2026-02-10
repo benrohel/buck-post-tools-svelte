@@ -1,21 +1,24 @@
 <script lang="ts">
-  import FolderSelctWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { sequenceOutputFolder } from '../../stores/local-storage';
-  import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
-  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { onMount } from 'svelte';
-  import { fs, path } from '../../lib/cep/node';
-  import {
-    setPreferenceByKey,
-    getPreferenceByKey,
-  } from '../../api/preferences';
-  import type { ExportNamePreset } from '../../api/preferences';
-  //@ts-ignore
-  import { Tooltip } from '@svelte-plugins/tooltips';
-
+  import { ListPlus, ChevronDown, ChevronUp, SquarePlus } from 'lucide-svelte';
   import Select from 'svelte-select';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import FolderSelctWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
+  import { sequenceOutputFolder } from '@/stores/local-storage';
+  import { evalES } from '@/lib/utils/bolt';
+  import { fs, path } from '@/lib/cep/node';
+  import { setPreferenceByKey, getPreferenceByKey } from '@/api/preferences';
+  import type { ExportNamePreset } from '@/api/preferences';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-compositions');
+
+  interface CompRenderData {
+    compName: string;
+    nodeId: number;
+    projectName: string;
+    projectVersion: string;
+  }
 
   const tokenList = [
     {
@@ -120,13 +123,19 @@
   let presetName = '';
   let prefix = '';
   let useProjectFolder = false;
+  let tokens: string[] = [];
+  let version = 0;
+  let renderSettingsList: string[] = [];
+  let namePresetFocus = false;
+  let renderPresetFocus = false;
+  let tokenSelectFocus = false;
+  let selectTaskFocus = false;
 
   $: selectedTask = tasks[0];
   $: modalOpen = false;
-  //@ts-ignore
-  $: tokens = [];
-  let version = 0;
-  let renderSettingsList: string[] = [];
+  $: namePresetFilter = '';
+  $: renderPresetFilter = '';
+  $: tokenFilter = '';
 
   $: getHtmlString = () => {
     let tempString = '';
@@ -166,12 +175,15 @@
 
   const handlePresetChange = (e: any) => {
     activePreset = e.detail;
-    console.log('activePreset', activePreset);
+    log.debug('Preset changed', {
+      presetName: activePreset.name,
+      template: activePreset.template,
+    });
   };
 
   const handleTaskChange = (e: any) => {
     selectedTask = e.detail;
-    console.log('task', selectedTask);
+    log.debug('Task changed', { task: selectedTask.value });
   };
 
   const handleRenderSettingChange = (e: any) => {
@@ -204,12 +216,6 @@
     modalOpen = false;
   };
 
-  interface CompRenderData {
-    compName: string;
-    nodeId: number;
-    projectName: string;
-    projectVersion: string;
-  }
   const buildRenderPath = (compData: CompRenderData) => {
     const projectVersionString = compData.projectVersion
       ? 'v' + compData.projectVersion.padStart(3, '0')
@@ -228,7 +234,10 @@
 
   const addToRenderQueue = async (comp: CompRenderData) => {
     const renderPath = buildRenderPath(comp);
-    console.log('renderPath', renderPath);
+    log.debug('Adding comp to render queue', {
+      compName: comp.compName,
+      renderPath,
+    });
     const options = {
       compId: comp.nodeId,
       filepath: renderPath,
@@ -255,9 +264,10 @@
   };
 
   const closeModal = () => {
-    console.log('close modal outsie');
+    log.debug('Close modal');
     modalOpen = false;
   };
+
   onMount(async () => {
     const renderSettings = JSON.parse(
       await evalES('getOutputModulesTemplates()')
@@ -270,13 +280,6 @@
     exportNamePresets = await presetList();
     activePreset = exportNamePresets[0];
   });
-  let namePresetFocus = false;
-  $: namePresetFilter = '';
-  let renderPresetFocus = false;
-  $: renderPresetFilter = '';
-  let tokenSelectFocus = false;
-  $: tokenFilter = '';
-  let selectTaskFocus = false;
 </script>
 
 <div>

@@ -1,13 +1,18 @@
 <script lang="ts">
-  import { ArrowLeftRight } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { RenameContext } from './RenameContext';
   import { getContext } from 'svelte';
+
+  import { ArrowLeftRight } from 'lucide-svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
+  import { RenameContext } from './RenameContext';
+
+  import { logModule } from '@/lib/logger';
+  const log = logModule('prefix-and-suffix');
+
+  const renameContext = getContext('rename') as RenameContext;
 
   let prefix = '';
   let suffix = '';
-
-  const renameContext = getContext('rename') as RenameContext;
 
   const handlePrefixSuffix = async () => {
     const options = {
@@ -18,7 +23,7 @@
 
     await evalES(`addPrefixOrSuffix(${JSON.stringify(options)})`, false).then(
       (res) => {
-        console.log(res);
+        log.debug('Prefix/suffix operation complete', { result: res, prefix, suffix });
       },
     );
   };

@@ -54,7 +54,10 @@ export default defineConfig({
     cep(config),
   ],
   resolve: {
-    alias: [{ find: '@esTypes', replacement: path.resolve(__dirname, 'src') }],
+    alias: {
+      '@esTypes': path.resolve(__dirname, 'src', 'jsx'),
+      '@': path.resolve(__dirname, 'src', 'js'),
+    },
   },
   root,
   clearScreen: false,
@@ -71,6 +74,16 @@ export default defineConfig({
     watch: {
       include: 'src/jsx/**',
     },
+    minify: isPackage ? 'terser' : false,
+    terserOptions: isPackage
+      ? {
+          compress: {
+            // Remove console.log, console.debug, console.info in production
+            drop_console: ['log', 'debug', 'info'],
+            drop_debugger: true,
+          },
+        }
+      : undefined,
 
     rollupOptions: {
       input,

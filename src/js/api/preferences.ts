@@ -1,7 +1,13 @@
-import { fs, path, os } from '../lib/cep/node';
+import { fs, path, os } from '@/lib/cep/node';
 import pkg from '../../../package.json';
 import { Exporter } from './exporter';
-import { defaultExportPresets } from './exporter/exporters-default';
+import {
+  aeDefaultExportPresets,
+  pproDefaultExportPresets,
+} from './exporter/exporters-default';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('preferences');
 
 export declare interface ExportNamePreset {
   name: string;
@@ -25,9 +31,6 @@ const preferencesRoot =
 export const preferencesDir = path.join(homeDir, preferencesRoot, pkg.name);
 const preferencesPath = path.join(preferencesDir, 'preferences.json');
 
-
-
-
 /**
  * Reads the user's preferences from disk.
  * @returns the user's preferences. If the file does not exist, this method will throw an error.
@@ -47,7 +50,7 @@ export const getPreferences = async (): Promise<UserPreferences> => {
     }
     return JSON.parse(fs.readFileSync(preferencesPath, 'utf-8'));
   } catch (e) {
-    console.error('Failed to read preferences', e);
+    log.error('Failed to read preferences', e as Error, { preferencesPath });
     throw e;
   }
 };
@@ -82,7 +85,7 @@ export const setPreferences = async (preferences: any) => {
       'utf-8'
     );
   } catch (e) {
-    console.error('Failed to write preferences', e);
+    log.error('Failed to write preferences', e as Error, { preferencesPath });
     throw e;
   }
 };
@@ -99,11 +102,15 @@ export const setPreferenceByKey = async (
 export const getExporterPresets = async (
   appId: 'AEFT' | 'PPRO'
 ): Promise<Exporter[]> => {
+  const exportPresetsPath = path.join(
+    preferencesDir,
+    `exportPresets-${appId.toLowerCase()}.json`
+  );
+
+  const defaultExportPresets =
+    appId === 'AEFT' ? aeDefaultExportPresets : pproDefaultExportPresets;
+
   try {
-    const exportPresetsPath = path.join(
-      preferencesDir,
-      `exportPresets-${appId.toLowerCase()}.json`
-    );
     if (!fs.existsSync(exportPresetsPath)) {
       fs.mkdirSync(path.dirname(exportPresetsPath), { recursive: true });
       fs.writeFileSync(
@@ -115,7 +122,10 @@ export const getExporterPresets = async (
     }
     return JSON.parse(fs.readFileSync(exportPresetsPath, 'utf-8'));
   } catch (e) {
-    console.error('Failed to read preferences', e);
+    log.error('Failed to read export presets', e as Error, {
+      exportPresetsPath,
+      appId,
+    });
     throw e;
   }
 };
@@ -139,7 +149,10 @@ export const setExporterPresets = async (
     );
     return true;
   } catch (e) {
-    console.error('Failed to write preferences', e);
+    log.error('Failed to write export presets', e as Error, {
+      exportPresetsPath,
+      appId,
+    });
     throw e;
   }
 };
@@ -169,12 +182,14 @@ export const setShotsHistory = async (shotsProjectHistory: any) => {
     fs.mkdirSync(path.dirname(historyFile), { recursive: true });
   }
   try {
-    fs.writeFileSync(historyFile, JSON.stringify(shotsProjectHistory, null, 2), 'utf-8');
+    fs.writeFileSync(
+      historyFile,
+      JSON.stringify(shotsProjectHistory, null, 2),
+      'utf-8'
+    );
     return true;
   } catch (e) {
-    console.error('Failed to write preferences', e);
+    log.error('Failed to write shots history', e as Error, { historyFile });
     throw e;
   }
 };
-
-

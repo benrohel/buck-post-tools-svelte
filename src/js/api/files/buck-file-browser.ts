@@ -1,6 +1,9 @@
 const { fdir } = require('fdir');
-import { path, fs } from '../../lib/cep/node';
-import { type PathItem } from '../exporter';
+import { path, fs } from '@/lib/cep/node';
+import { type PathItem } from '@/api/exporter';
+import { logModule } from '@/lib/logger';
+
+const log = logModule('buck-file-browser');
 interface HSFile {
   path: string;
   modified: Date;
@@ -243,7 +246,7 @@ export type HierarchyFilters = {
 
 
 export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions: boolean = false) => {
-  console.log('filters', filters);
+  log.debug('Filtering tree by depth', { filterCount: Object.keys(filters).length, onlyLatestVersions }, filters);
   function filterNode(node: PathItem, depth = 0): PathItem | null {
     // Apply filter for current depth if it exists
     const filter = filters[depth];
@@ -255,7 +258,7 @@ export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions
     if (node.children && node.children.length > 0) {
       const filteredChildren = node.children
         .map(child => filterNode(child, depth + 1))
-        .filter(child => child !== null)
+        .filter((child): child is PathItem => child !== null)
         .sort((a: any, b: any) => a.path.localeCompare(b.path));
 
       // Return node with filtered children
@@ -271,7 +274,7 @@ export const filterByDepth = (data: PathItem[], filters: any, onlyLatestVersions
 
   const res = data
     .map(node => filterNode(node))
-    .filter(node => node !== null);
+    .filter((node): node is PathItem => node !== null);
 
   if (onlyLatestVersions) {
     return filterLatestVersions(res);

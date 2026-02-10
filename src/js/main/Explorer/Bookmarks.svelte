@@ -1,38 +1,37 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import BookMarkCard from '../../components/ClipCard/BookMarkCard.svelte';
-  import { createBookmarkStore } from '../../stores/bookmark-store';
   import { Plus } from 'lucide-svelte';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import ButtonGroup from '../../components/ButtonGroup/ButtonGroup.svelte';
-  const bookmarks = createBookmarkStore('bookmarks');
+  import BookMarkCard from '@/components/ClipCard/BookMarkCard.svelte';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
+  import { createBookmarkStore } from '@/stores/bookmark-store';
+  import type { Option } from '@/types/models';
 
+  const bookmarks = createBookmarkStore('bookmarks');
   let newName = '';
   let newPath = '';
-  $: folderType = 'relative';
 
-  function setPath(path: string) {
+  $: folderType = 'relative';
+  const setPath = (path: string) => {
     newPath = path;
     newName = path.split('/').pop() ?? '';
-  }
+  };
 
-  function addBookmark() {
+  const addBookmark = () => {
     $bookmarks = [
       ...$bookmarks,
       { name: newName, path: newPath, isRelative: folderType === 'relative' },
     ];
     newName = '';
     newPath = '';
-  }
+  };
 
-  function removeBookmark(index: number) {
+  const removeBookmark = (index: number) => {
     $bookmarks = $bookmarks.filter((_, i) => i !== index);
-  }
+  };
 
-  function handleOnButtonGroupChange(item: any) {
+  const handleOnButtonGroupChange = (item: Option<string>) => {
     folderType = item.value;
-  }
-
+  };
 </script>
 
 <div style="display:flex; flex-direction:column; gap:8px">

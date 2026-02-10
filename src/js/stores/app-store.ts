@@ -1,6 +1,5 @@
 import { writable, Writable } from 'svelte/store';
-import { appId } from '../lib/utils/cep';
-import { version } from "../../../package.json"
+import { version } from '../../../package.json';
 
 export const appVersion = writable('');
 export const extensionVersion = writable(version);
@@ -17,12 +16,11 @@ interface LatestBuck5LibrarySettings {
   extensionName: string;
 }
 
-
 export interface AppStore {
   showTooltips: boolean;
   defaultToBuck5ShotLibrary: boolean;
   latestBuck5LibrarySettings: LatestBuck5LibrarySettings;
-  appId: string;
+  appId: 'AEFT' | 'PPRO';
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
   rememberLastExportPreset: boolean;
@@ -42,7 +40,7 @@ export const defaultAppStore: AppStore = {
     taskName: '',
     extensionName: '',
   },
-  appId: appId,
+  appId: 'AEFT',
   rememberLastFolderSearch: true,
   rememberLastExportPath: true,
   rememberLastExportPreset: true,

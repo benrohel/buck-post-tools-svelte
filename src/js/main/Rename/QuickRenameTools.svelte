@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { evalES } from '../../lib/utils/bolt';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import { ArrowUp10, Undo2 } from 'lucide-svelte';
+
+  import { evalES } from '@/lib/utils/bolt';
 
   const handleRevertToFilename = async () => {
     await evalES('renameToFile()');
   };
+
   const handleVersionUpComps = async () => {
     await evalES('versionUpNames()');
   };

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { os, path } from '../../lib/cep/node';
   import { onMount } from 'svelte';
+
   import {
     Folder,
     File,
@@ -11,34 +11,37 @@
     Save,
     Pencil,
   } from 'lucide-svelte';
-  import { evalES } from '../../lib/utils/bolt';
-  import { generateId } from '../../lib/utils/utils';
-  import SelectFolderWeb from '../../components/SelectFolder/SelectFolderWeb.svelte';
-  import MenuSelect from '../../components/MultiSelect/MenuSelect.svelte';
-  import { lastFolderExport } from '../../stores/local-storage';
-  import ModalSettings from '../../components/Modal/ModalSettings.svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
-  import {
-    getExporterPresets,
-    setExporterPresets,
-  } from '../../api/preferences';
-  import { appStore } from '../../stores/app-store';
+  import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
+  import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
+  import ModalSettings from '@/components/Modal/ModalSettings.svelte';
+  import ModalConfirm from '@/components/Modal/ModalConfirm.svelte';
+  import Toggle from '@/components/Toggle/Toggle.svelte';
+
+  import { lastFolderExport } from '@/stores/local-storage';
+  import { appStore } from '@/stores/app-store';
   import {
     storedExportSettings,
     storedExportRootFolder,
-  } from '../../stores/local-storage';
+  } from '@/stores/local-storage';
+  import { notifications } from '@/stores/notifications-store';
+
+  import { os, path } from '@/lib/cep/node';
+  import { evalES } from '@/lib/utils/bolt';
+  import { getRenderSettingsList, getOutputModules } from '@/lib/utils/aeft';
+  import { generateId } from '@/lib/utils/utils';
+  import { getExporterPresets, setExporterPresets } from '@/api/preferences';
   import {
     type Exporter,
     type PathItem,
     type CompRenderData,
     addToRenderQueue,
     buildRenderPath,
-  } from '../../api/exporter';
+  } from '@/api/exporter';
+  import type { Option } from '@/types/models';
 
-  import { appId } from '../../lib/utils/cep';
-  import { notifications } from '../../stores/notifications-store';
-  import ModalConfirm from '../../components/Modal/ModalConfirm.svelte';
-  import Toggle from '../../components/Toggle/Toggle.svelte';
+  import { logModule } from '@/lib/logger';
+  const log = logModule('export-path-builder');
 
   //
   let isEditing = false;
@@ -48,8 +51,6 @@
   let useProjectFolder = false;
 
   let dummyComp: CompRenderData = {} as CompRenderData;
-
-  $: console.log(tokenDropdownRef);
 
   // Available tokens for path construction
   const aeAvailableTokens = [
@@ -68,100 +69,66 @@
   ];
 
   const availableTokens =
-    appId === 'AEFT' ? aeAvailableTokens : pproAvailableTokens;
-
-  $: modalOpen = false;
-  $: showBuildPreset = false;
+    $appStore.appId === 'AEFT' ? aeAvailableTokens : pproAvailableTokens;
 
   let pathStructure: PathItem[] = [];
   let version = 1;
   let taskName = '';
-
-  $: isReady = rootFolder || projectFolder;
-
-  let hasTask = false;
-  $: console.log(pathStructure);
-
-  // Default exporters for different file types
+  let pathPreviews = '';
+  let hasTask = true;
   let outputModules: string[] = [];
+  let selectedOutputModuleMenuItem = { label: '', value: '' };
+  let rootFolder = '';
+  let projectFolder = '';
+  let presetName = '';
+  let exportPresets: Exporter[] = [];
+  let selectedExportPresetMenuItem: { label: string; value: string } | null =
+    null;
+  let selectedExportPreset: Exporter | null = null;
+  let selectedItemId: string | null = null;
+  let suggestedTokens: { name: string; token: string }[] = [];
+  let showSuggestions = false;
+  let currentInputValue = '';
+  let currentNodeId = '';
+  let pathPreviewsCache: string = '';
+  let lastPathStructure: string = '';
 
+  $: modalOpen = false;
+  $: showBuildPreset = false;
+  $: isReady = rootFolder || projectFolder;
   $: outputModulesSelectItems = outputModules.map((module) => ({
     value: module,
     label: module,
   }));
-  let selectedOutputModuleMenuItem = { label: '', value: '' };
   $: selectedOutputModule =
     outputModules.find(
       (module) => module === selectedOutputModuleMenuItem?.value,
     ) || outputModules[0];
-
-  let rootFolder = '';
-  let projectFolder = '';
-  $: console.log('project folder', projectFolder);
-
-  // Preset Name
-  let presetName = '';
   $: presetNameExists = exportPresets.some(
     (preset) => preset.name === presetName,
   );
-
   $: validPresetName = presetName.length < 5 || presetNameExists;
-
-  // Exporter presets
-  let exportPresets: Exporter[] = [];
   $: exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
     value: preset.name,
     label: preset.name,
   }));
-
-  let selectedExportPresetMenuItem = { label: '', value: '' };
-  let selectedExportPreset: Exporter = exportPresets[0];
-
-  // Initialize with a basic hierarchical structure
-  onMount(async () => {
-    if ($appStore.rememberLastExportPath) {
-      lastFolderExport.set($lastFolderExport);
-    }
-    rootFolder = $lastFolderExport;
-    projectFolder = await evalES('getProjectDir()');
-    projectFolder = projectFolder.startsWith('~')
-      ? path.join(os.homedir(), projectFolder.slice(1))
-      : projectFolder;
-
-    const comps = JSON.parse(
-      await evalES('getSelectedCompsForRender()'),
-    ) as any;
-    dummyComp = comps.comps[0];
-
-    const renderSettings = JSON.parse(
-      await evalES('getOutputModulesTemplates()'),
-    );
-    outputModules = renderSettings.filter(
-      (p: string) => !p.startsWith('_HIDDEN'),
-    );
-
-    selectedOutputModule = outputModules[0];
-    outputModulesSelectItems = outputModules.map((module) => ({
-      value: module,
-      label: module,
-    }));
-    selectedOutputModuleMenuItem = outputModulesSelectItems[0];
-
-    // Get Stored Settings
-    if ($appStore.rememberLastExportPath) {
-      rootFolder = $lastFolderExport;
-    }
-    exportPresets = await getExporterPresets(appId);
-    let selectedExportPresetName = '';
-
-    if ($appStore.rememberLastExportPreset) {
-      selectedExportPresetName = $storedExportSettings;
+  $: {
+    if (dummyComp && selectedExportPreset) {
+      const renderFolder = useProjectFolder ? projectFolder : rootFolder;
+      pathPreviews = buildRenderPath(
+        dummyComp,
+        $appStore.appId,
+        renderFolder,
+        getMemoizedPaths(pathStructure),
+        taskName,
+        version
+      );
     } else {
-      selectedExportPresetName = exportPresets[0].name;
+      pathPreviews = '';
     }
 
     selectedExportPreset = exportPresets.find(
-      (preset: Exporter) => preset.name === selectedExportPresetName,
+      (preset: Exporter) => preset.name === selectedExportPresetName
     );
 
     if (selectedExportPreset) {
@@ -172,7 +139,7 @@
         label: preset.name,
       }));
       selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-        (preset) => preset.value === selectedExportPreset.name,
+        (preset) => preset.value === selectedExportPreset.name
       );
     }
   });
@@ -181,15 +148,18 @@
   let selectedItemId: string | null = null;
 
   // Function to set the Root Folder
-  function setRootFolder(path: string) {
+  const setRootFolder = (path: string) => {
     if ($appStore.rememberLastExportPath) {
       lastFolderExport.set(path);
     }
 
     rootFolder = path;
-  }
+  };
 
-  function handleOnChangeExportPreset(value: { value: string; label: string }) {
+  const handleOnChangeExportPreset = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
     const missingOm = checkOutputModuleTemplate();
     if (missingOm.length > 0) {
       notifications.warning(
@@ -201,38 +171,56 @@
     selectedExportPreset = exportPresets.find(
       (preset) => preset.name === value.value,
     );
+
+    if (!selectedExportPreset) {
+      log.warn('Export preset not found', { value });
+      return;
+    }
+
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
-    console.log('selectedExportPreset', selectedExportPreset);
+    log.debug(
+      'Export preset changed',
+      {
+        presetName: selectedExportPreset.name,
+        pathCount: selectedExportPreset.path?.length || 0,
+        useProjectFolder,
+      },
+      selectedExportPreset
+    );
     hasTask = selectedExportPreset.previewPath.includes('{task}');
     if ($appStore.rememberLastExportPreset) {
       storedExportSettings.set(selectedExportPreset.name);
     }
-  }
+  };
 
-  function handleOnChangeOutputModule(
+  const handleOnChangeOutputModule = (
     id: string,
-    value: { value: string; label: string },
+    value: { value: string; label: string }
   ) {
     selectedOutputModuleMenuItem = value;
     selectedOutputModule = outputModules.find(
-      (module) => module === value.value,
+      (module) => module === value.value
     );
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
       outputModule: selectedOutputModule,
     }));
-  }
+  };
 
   //Function ti add a new preset
-  function addExporter(name: string): Exporter {
+  const addExporter = (name: string): Exporter => {
     // first check if the name already exists
-    if (exportPresets.some((preset) => preset.name === name)) {
+    const exporterExists = exportPresets.some((preset) => preset.name === name);
+    if (exporterExists) {
       notifications.error(
         'Exporter preset with this name already exists',
         2000,
       );
-      return;
+      const exporter = exportPresets.find(
+        (prset) => prset.name === name
+      ) as Exporter;
+      return exporter;
     }
 
     const newExporter = {
@@ -264,20 +252,30 @@
       exportPresetsSelectItems[exportPresets.length - 1];
     pathStructure = selectedExportPreset.path;
     return newExporter;
-  }
+  };
 
   // Function to save the current preset
-  function saveExporter() {
+  const saveExporter = () => {
+    if (!selectedExportPreset) {
+      return;
+    }
     const updatedExportPreset = {
       ...selectedExportPreset,
       path: pathStructure,
       relativePath: useProjectFolder,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
+      preset.name === selectedExportPreset.name ? updatedExportPreset : preset
     );
-    console.log('updatedExportPresets', updatedExportPresets);
-    setExporterPresets(appId, updatedExportPresets).then((result) => {
+    log.debug(
+      'Saving exporter presets',
+      {
+        presetCount: updatedExportPresets.length,
+        currentPreset: selectedExportPreset.name,
+      },
+      updatedExportPresets
+    );
+    setExporterPresets($appStore.appId, updatedExportPresets).then((result) => {
       if (result) {
         exportPresets = updatedExportPresets;
         exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
@@ -285,7 +283,7 @@
           label: preset.name,
         }));
         selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name,
+          (preset) => preset.value === selectedExportPreset.name
         );
         pathStructure = selectedExportPreset.path;
 
@@ -296,39 +294,46 @@
     });
     selectedExportPreset = updatedExportPreset;
     selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-      (preset) => preset.value === selectedExportPreset.name,
+      (preset) => preset.value === selectedExportPreset.name
     );
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
     hasTask = selectedExportPreset.previewPath.includes('{task}');
-  }
+  };
 
   //Function to check if  outputModule template exists.
-  function checkOutputModuleTemplate(): string[] {
+  const checkOutputModuleTemplate = (): string[] => {
     const fileNodes: PathItem[] = findNodesByType(pathStructure, 'file');
-    console.log('fileNodes', fileNodes);
+    log.debug(
+      'Checking output module templates',
+      { fileNodeCount: fileNodes.length },
+      fileNodes
+    );
     let missing: string[] = [];
     fileNodes.forEach((node) => {
       if (!outputModules.find((o) => o === node.outputModule)) {
+        if (!node.outputModule) {
+          return;
+        }
         missing.push(node.outputModule);
       }
     });
     return missing;
-  }
+  };
 
   //Function to load output module from a node id
-  function findOutputModule(id: string) {
+  const findOutputModule = (id: string) => {
     const node = findNodeById(pathStructure, id);
     if (node && node.outputModule) {
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
-        (om) => om.value === node.outputModule,
+        (om) => om.value === node.outputModule
       );
     }
-  }
+  };
 
   // Function to add a new folder
-  function addFolder(parentId: string | null = null) {
+  const addFolder = (parentId: string | null = null) => {
     const newFolder = {
       id: generateId(),
       type: 'folder' as const,
@@ -347,10 +352,10 @@
       // Add as a child of the selected parent
       pathStructure = addChildToNode(pathStructure, parentId, newFolder);
     }
-  }
+  };
 
   // Function to add a new file
-  function addFile(parentId: string | null = null) {
+  const addFile = (parentId: string | null = null) => {
     const newFile = {
       id: generateId(),
       type: 'file' as const,
@@ -369,13 +374,13 @@
       // Add as a child of the selected parent
       pathStructure = addChildToNode(pathStructure, parentId, newFile);
     }
-  }
+  };
 
   // Helper function to add a child to a specific node in the tree
-  function addChildToNode(
+  const addChildToNode = (
     nodes: PathItem[],
     parentId: string,
-    newChild: PathItem,
+    newChild: PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === parentId) {
@@ -392,20 +397,20 @@
       }
       return node;
     });
-  }
+  };
 
   // Function to edit an item by ID
-  function editItem(itemId: string) {
-    console.log('editItem', itemId);
+  const editItem = (itemId: string) => {
+    log.debug('Edit item', { itemId });
 
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       isEditing: true,
     }));
-  }
+  };
 
   // Function to save edits
-  function saveItem(itemId: string, event: Event) {
+  const saveItem = (itemId: string, event: Event) => {
     const newName = (event.target as HTMLInputElement).value.trim();
 
     // Don't save if name is empty
@@ -418,10 +423,10 @@
       name: newName,
       isEditing: false,
     }));
-  }
+  };
 
   // Function to delete an item
-  function deleteItem(itemId: string) {
+  const deleteItem = (itemId: string) => {
     // First find the parent of this item
     const findParent = (nodes: PathItem[]): string | null => {
       for (const node of nodes) {
@@ -448,19 +453,19 @@
       // Item is at the root level
       pathStructure = pathStructure.filter((item) => item.id !== itemId);
     }
-  }
+  };
 
   // Function to toggle node expansion
-  function toggleExpand(itemId: string) {
+  const toggleExpand = (itemId: string) => {
     pathStructure = updateNodeInTree(pathStructure, itemId, (node) => ({
       ...node,
       expanded: !node.expanded,
     }));
-  }
+  };
 
   // Function to build a path for a node
-  function buildPath(node: PathItem): string {
-    if (node.parentId === null) {
+  const buildPath = (node: PathItem): string => {
+    if (node.parentId == null) {
       return node.name;
     }
     const parentNode = findNodeById(pathStructure, node.parentId);
@@ -468,13 +473,13 @@
       return node.name;
     }
     return `${buildPath(parentNode)}/${node.name}`;
-  }
+  };
 
   // Helper function to update a node in the tree by ID
-  function updateNodeInTree(
+  const updateNodeInTree = (
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem,
+    updateFn: (node: PathItem) => PathItem
   ): PathItem[] {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -488,16 +493,10 @@
       }
       return node;
     });
-  }
-
-  // Variables for autocomplete
-  let suggestedTokens: { name: string; token: string }[] = [];
-  let showSuggestions = false;
-  let currentInputValue = '';
-  let currentNodeId = '';
+  };
 
   // Function to check for token suggestion
-  function updateSuggestions(input: any) {
+  const updateSuggestions = (input: any) => {
     if (!input || typeof input.value !== 'string') return;
     const value = input.value;
     currentInputValue = value;
@@ -537,10 +536,10 @@
       showSuggestions = false;
       suggestedTokens = [];
     }
-  }
+  };
 
   // Function to insert a token at cursor position
-  function insertToken(input: any, token: string) {
+  const insertToken = (input: any, token: string) => {
     if (!input || typeof input.value !== 'string') return;
 
     const start = input.selectionStart || 0;
@@ -588,11 +587,10 @@
         showSuggestions = false;
       }
     }, 0);
-  }
-
+  };
   // Function to flatten the tree for iterative rendering
   function flattenTree(
-    nodes: PathItem[],
+    nodes: PathItem[]
   ): Array<{ node: PathItem; depth: number; path: string[] }> {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -635,10 +633,10 @@
     }
 
     return result;
-  }
+  };
 
   // Helper function to build paths (iterative version)
-  function buildPathFromNodes(nodes: PathItem[]): string {
+  const buildPathFromNodes = (nodes: PathItem[]): string => {
     let paths: string = '';
     const stack: Array<{ node: PathItem; path: string[] }> = [];
 
@@ -671,14 +669,10 @@
     }
 
     return paths;
-  }
-
-  // Cache for path previews to reduce rebuilds
-  let pathPreviewsCache: string = '';
-  let lastPathStructure: string = '';
+  };
 
   // Helper function to find a node by ID in the tree
-  function findNodeById(nodes: PathItem[], id: string): PathItem | null {
+  const findNodeById = (nodes: PathItem[], id: string): PathItem | null => {
     // First check at the current level
     const directMatch = nodes.find((node) => node.id === id);
     if (directMatch) return directMatch;
@@ -692,9 +686,9 @@
     }
 
     return null;
-  }
+  };
   // Helper function to find node of a specific type and return an array of nodes
-  function findNodesByType(nodes: PathItem[], type: string): PathItem[] {
+  const findNodesByType = (nodes: PathItem[], type: string): PathItem[] => {
     let results: PathItem[] = [];
 
     // Add matches at the current level
@@ -709,26 +703,25 @@
     }
 
     return results;
-  }
+  };
 
   // Generate the full path preview with memoization to prevent excessive recalculation
-  function getMemoizedPaths(nodes: PathItem[]): string {
+  const getMemoizedPaths = (nodes: PathItem[]): string => {
     const structureJson = JSON.stringify(nodes);
     if (structureJson !== lastPathStructure) {
       pathPreviewsCache = buildPathFromNodes(nodes);
       lastPathStructure = structureJson;
     }
     return pathPreviewsCache;
-  }
+  };
 
-  $: console.log(getMemoizedPaths(pathStructure));
+  // Removed excessive reactive logging to prevent UI freeze
 
-  function closeModal() {
-    console.log('close modal outsie');
+  const closeModal = () => {
     modalOpen = false;
-  }
+  };
 
-  async function handleAddCompsToRenderQueue() {
+  const handleAddCompsToRenderQueue = async () => {
     // find all file nodes in selected preset
     if (!selectedExportPreset) {
       return;
@@ -737,11 +730,18 @@
     const renderRootFolder = useProjectFolder ? projectFolder : rootFolder;
     const fileNodes = findNodesByType(selectedExportPreset.path, 'file');
     const outputModules = fileNodes.map((node) => ({
-      outputModuleName: node.outputModule,
+      outputModuleName: node.outputModule ?? 'Default',
       outputModuleFilePath: path.resolve(renderRootFolder, node.path),
     }));
 
-    console.log('fileNodes', fileNodes);
+    log.debug(
+      'Adding comps to render queue',
+      {
+        fileNodeCount: fileNodes.length,
+        renderRootFolder,
+      },
+      fileNodes
+    );
     const comps = JSON.parse(await evalES('getSelectedCompsForRender()'))
       .comps as CompRenderData[];
 
@@ -750,27 +750,39 @@
       const options = {
         rootFolder: renderRootFolder,
         outputModules: outputModules,
-        appId: appId,
+        appId: $appStore.appId,
         version: version,
         selectedTask: taskName ?? '',
       };
-      console.log('options', options);
+      log.debug(
+        'Render queue options',
+        {
+          compName: comp.compName,
+          version,
+          taskName,
+        },
+        options
+      );
       await addToRenderQueue(comp, options);
     }
     // Save settings if enabled
-    if ($appStore.rememberLastExportPreset) {
+    if ($appStore.rememberLastExportPreset && selectedExportPreset) {
       storedExportSettings.set(selectedExportPreset.name);
     }
     if ($appStore.rememberLastExportPath) {
       storedExportRootFolder.set(rootFolder);
     }
-  }
+  };
 
-  async function deleteExporter() {
+  const deleteExporter = async () => {
+    if (!selectedExportPreset) {
+      return;
+    }
+    const presetNameToDelete = selectedExportPreset.name;
     const updatedExportPresets = exportPresets.filter(
-      (preset) => preset.name !== selectedExportPreset.name,
+      (preset) => preset.name !== selectedExportPreset.name
     );
-    setExporterPresets(appId, updatedExportPresets).then((result) => {
+    setExporterPresets($appStore.appId, updatedExportPresets).then((result) => {
       if (result) {
         exportPresets = updatedExportPresets;
         exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
@@ -782,7 +794,7 @@
       }
     });
 
-    const storedExportPresets = await getExporterPresets(appId);
+    const storedExportPresets = await getExporterPresets($appStore.appId);
     if (storedExportPresets.length > 0) {
       exportPresets = storedExportPresets;
       selectedExportPreset = exportPresets[0];
@@ -796,17 +808,14 @@
     if (exportPresets.length > 0) {
       pathStructure = exportPresets[0].path;
     }
-  }
+  };
 
-  function handleDeleteExporter(value: boolean) {
+  const handleDeleteExporter = (value: boolean) => {
     if (value) {
       deleteExporter();
     }
     modalConfirmOpen = false;
   }
-
-  $: console.log('rootFolder:', rootFolder);
-  $: console.log('hasTask:', hasTask);
 
   $: pathPreviews = selectedNode ? getMemoizedPaths(pathStructure) : '';
   $: {
@@ -818,7 +827,7 @@
         renderFolder,
         getMemoizedPaths(pathStructure),
         taskName,
-        version,
+        version
       );
     }
     console.log('pathPreviews', pathPreviews);
@@ -832,6 +841,7 @@
 </script>
 
 <div class="export-path-builder">
+  <!-- Debug indicator -->
   <div class="header">
     <div
       style="display: flex; align-items: center; gap: 8px; justify-content: space-between;"
