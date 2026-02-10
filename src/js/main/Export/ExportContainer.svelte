@@ -46,12 +46,12 @@
       component: ExportPathBuilder,
       apps: ['AEFT'],
     },
-    {
-      value: 'shots',
-      label: 'Shots',
-      component: ExportPproPathBuilder,
-      apps: ['PPRO'],
-    },
+    // {
+    //   value: 'shots',
+    //   label: 'Shots',
+    //   component: ExportPproPathBuilder,
+    //   apps: ['PPRO'],
+    // },
   ];
 
   let filteredModes = exportModes.filter((m) =>
