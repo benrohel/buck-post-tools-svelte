@@ -122,7 +122,7 @@
     }
     notifications.success(
       `Extension updated successfully. Please restart ${appName}`,
-      3000
+      3000,
     );
     modalConfirmOpen = false;
   };
@@ -135,6 +135,9 @@
 
     if (window.cep) {
       // Initialize appId from csi FIRST, before any other CEP operations
+      log.debug('Initializing appId from csi', {
+        appId: csi.getHostEnvironment(),
+      });
       appStore.set({
         ...$appStore,
         appId: csi.getApplicationID(),
@@ -143,7 +146,8 @@
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
       // await connectToDaemon();
-      appVersion.set(await evalES(`appVersion()`));
+      const versionFromApp = await evalES(`appVersion()`);
+      appVersion.set(versionFromApp);
       appItems = items.filter((item) => item.apps.includes($appStore.appId));
       if (client) {
         // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
@@ -156,7 +160,7 @@
         hasLocalStore: !!$localAppStore,
         environment: import.meta.env.MODE,
       },
-      { localAppStore: $localAppStore, env: import.meta.env }
+      { localAppStore: $localAppStore, env: import.meta.env },
     );
 
     if ($extensionVersion && $buck5Server) {
@@ -178,7 +182,7 @@
             currentVersion: $extensionVersion,
             latestVersion: latestVersion.version,
           },
-          v
+          v,
         );
       });
     }

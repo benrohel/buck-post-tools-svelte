@@ -247,3 +247,29 @@ export function collectAllFilePaths() {
   walk(app.project.rootItem);
   return JSON.stringify(results);
 }
+
+
+export const getProjectDir = () => {
+  if (app.project && app.project.path === null) {
+    return null;
+  }
+  const projectPath = app.project.path;
+  const projectDir = new File(projectPath).parent.absoluteURI;
+  return projectDir;
+}
+
+export const selectFolder = (
+  msg: string = 'Select a Folder'
+): string | false => {
+  const folder = Folder.selectDialog(msg);
+  // alert(file.fsName);
+  if (folder.exists) {
+    return JSON.stringify({ fsName: folder.fsName, absoluteURI: folder.absoluteURI });
+  }
+  return false;
+};
+
+
+export const appVersion = () => {
+  return app.version;
+}

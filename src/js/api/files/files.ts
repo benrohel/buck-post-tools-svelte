@@ -1,6 +1,7 @@
 import { fs, os, path } from '@/lib/cep/node';
 const { fdir } = require('fdir');
 import { logModule } from '@/lib/logger';
+import { extractVersion } from '@/api/buck-library';
 
 const log = logModule('files');
 
@@ -121,13 +122,13 @@ export const GetSystemFileVersionsWithShotName = async (
     return versionsMapped.length > 0
       ? versionsMapped
       : [
-          {
-            filepath: filepath,
-            version: 'current',
-            name: baseFilename,
-            displayName: 'current',
-          },
-        ];
+        {
+          filepath: filepath,
+          version: 'current',
+          name: baseFilename,
+          displayName: 'current',
+        },
+      ];
   } catch (e) {
     log.error('Failed to find file versions', e as Error, {
       filepath,
@@ -378,10 +379,15 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
-  log.debug('files.ts', projectPath);
+
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
-  return path.posix.join(current[0], 'work', 'current', projectFolders[1]);
+  const projectRoot = path.posix.join(current[0], 'work', 'current', projectFolders[1]);
+  log.debug('files.ts', 'PROJECT_ROOT', projectRoot);
+  if (fs.existsSync(projectRoot)) {
+    return projectRoot;
+  }
+  return null;
 };
 
 export const PROJECT_AEFT_META_FOLDER = (projectPath: string) => {
@@ -467,21 +473,30 @@ export const PROJECT_COMMON_AE_FOLDER = (projectPath: string) => {
   return commonFolder;
 };
 
-export const USER_AME_PRESETS = async (appVersion: string) => {
+export interface EPRFile {
+  name: string;
+  path: string;
+}
+
+
+
+export const USER_AME_PRESETS = async (appVersion: string): Promise<EPRFile[]> => {
+  const majorVersion = appVersion.match(/\d+/)?.[0];
   const userFolder = os.homedir();
   const presetsFolder = path.join(
     userFolder,
     'Documents',
     'Adobe',
     'Adobe Media Encoder',
-    appVersion,
+    `${majorVersion}.0`,
     'Presets'
   );
 
-  const eprFiles = fs
-    .readdirSync(presetsFolder)
-    .filter((f) => f.endsWith('.epr'));
-
-  log.debug('USER_AME_PRESETS', { eprFiles });
-  return eprFiles;
+  return fs.readdirSync(presetsFolder).filter((f) => f.endsWith('.epr')).map((f) => ({ name: f, path: path.join(presetsFolder, f) }));
 };
+
+export const BUCK_AME_PRESETS = async (): Promise<EPRFile[]> => {
+  const buckAmeFolder = path.join(SHARED_FOLDER(), 'AME', 'presets');
+  return fs.readdirSync(buckAmeFolder).filter((f) => f.endsWith('.epr')).map((f) => ({ name: f, path: path.join(buckAmeFolder, f) }));
+}
+

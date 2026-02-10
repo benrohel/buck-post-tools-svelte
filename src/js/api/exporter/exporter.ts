@@ -54,6 +54,9 @@ export const buildRenderPath = (
   selectedTask: string,
   version: number
 ) => {
+
+  log.debug("buildRenderPath", { compData, appId, rootFolder, previewString, selectedTask, version });
+
   let projectVersionString = compData.projectVersion
     ? 'v' + compData.projectVersion.padStart(3, '0')
     : 'v001';

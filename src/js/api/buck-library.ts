@@ -46,7 +46,7 @@ export const getProjectTemplate = (appId: string, templateName: string) => {
   );
 };
 
-const extractVersion = (filepath: string): { major: number, minor: number, micro: number } | null => {
+export const extractVersion = (filepath: string): { major: number, minor: number, micro: number } | null => {
   // Regular expression to match version pattern in the format x.y.z
   const versionRegex = /\.(\d+)\.(\d+)\.(\d+)\./;
   const match = filepath.match(versionRegex);

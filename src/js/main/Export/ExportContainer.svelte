@@ -7,6 +7,7 @@
   import ExportCompositions from './ExportCompositions.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
+  import ExportPproPathBuilder from './ExportPproPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
   import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
@@ -48,13 +49,13 @@
     {
       value: 'shots',
       label: 'Shots',
-      component: ExportPathBuilder,
+      component: ExportPproPathBuilder,
       apps: ['PPRO'],
     },
   ];
 
   let filteredModes = exportModes.filter((m) =>
-    m.apps.includes($appStore.appId)
+    m.apps.includes($appStore.appId),
   );
 
   // Initialize as undefined - will be set by reactive block

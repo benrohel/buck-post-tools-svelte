@@ -13,6 +13,7 @@
   import { appStore, type AppStore } from '@/stores/app-store';
   import { localAppStore } from '@/stores/local-storage';
   import { buck5ShotLibraryStore } from '@/stores/buck5-shot-library-store';
+  import { notifications } from '@/stores/notifications-store';
 
   import {
     getShotFilesTree,
@@ -70,13 +71,13 @@
   $: filteredItemsAfterDepth = filterByDepth(
     pathStructure,
     depthFilters,
-    onlyShowLatestVersions
+    onlyShowLatestVersions,
   );
 
   // Additional filtering by extension
   $: filteredItems = filterByExtension(
     filteredItemsAfterDepth,
-    selectedExtensionName.value
+    selectedExtensionName.value,
   );
 
   const handleOnMenuChange = (value: any) => {
@@ -93,19 +94,26 @@
   };
 
   const loadShotLibrary = async (settings?: any) => {
-    if (!$buck5Server) {
+    if (!PROJECT_ROOT) {
       notifications.error(
         'You need to be connected to a Buck 5 server to use this feature',
-        3000
+        3000,
       );
       return;
     }
     isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
     const existingMediaFilesData = JSON.parse(
-      await evalES(`collectAllFilePaths()`, false)
+      await evalES(`collectAllFilePaths()`, false),
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
+    if (!rootFolder) {
+      notifications.error(
+        'You need to be connected to a Buck 5 server to use this feature',
+        3000,
+      );
+      return;
+    }
     const res = await getShotFilesTree(rootFolder, isBuck5, prefix);
 
     const folderNames = collectFolderNamesByLevel(res);
@@ -162,11 +170,10 @@
   // Helper function to apply saved filter settings from appStore
   const applyStoredFilterSettings = (settings: any) => {
     if (settings) {
-
       // Find matching options in the current data
       if (settings.sequenceName && sequenceNames.length > 0) {
         const foundSequence = sequenceNames.find(
-          (item) => item.value === settings.sequenceName
+          (item) => item.value === settings.sequenceName,
         );
         if (foundSequence) {
           selectedSequenceName = foundSequence;
@@ -175,7 +182,7 @@
 
       if (settings.shotName && shotNames.length > 0) {
         const foundShot = shotNames.find(
-          (item) => item.value === settings.shotName
+          (item) => item.value === settings.shotName,
         );
         if (foundShot) {
           selectedShotName = foundShot;
@@ -184,7 +191,7 @@
 
       if (settings.taskName && taskNames.length > 0) {
         const foundTask = taskNames.find(
-          (item) => item.value === settings.taskName
+          (item) => item.value === settings.taskName,
         );
         if (foundTask) {
           selectedTaskName = foundTask;
@@ -193,7 +200,7 @@
 
       if (settings.extensionName && extensionNames.length > 0) {
         const foundExtension = extensionNames.find(
-          (item) => item.value === settings.extensionName
+          (item) => item.value === settings.extensionName,
         );
         if (foundExtension) {
           selectedExtensionName = foundExtension;
@@ -219,7 +226,7 @@
   // Function to filter files by extension
   const filterByExtension = (
     items: PathItem[],
-    extensionFilter: string
+    extensionFilter: string,
   ): PathItem[] => {
     if (!extensionFilter || extensionFilter === '') {
       return items; // No filter applied, return all items
@@ -230,7 +237,7 @@
         // For files, check if the extension matches
         const fileName = node.name.toLowerCase();
         const hasExtension = fileName.endsWith(
-          `.${extensionFilter.toLowerCase()}`
+          `.${extensionFilter.toLowerCase()}`,
         );
         return hasExtension ? node : null;
       } else if (node.type === 'folder') {
@@ -279,13 +286,13 @@
 
   // Handler for file browser events
   const handleOpenFile = (
-    event: CustomEvent<{ fileId: string; filePath: string }>
+    event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     openFile(event.detail.filePath);
   };
 
   const handleImportFile = (
-    event: CustomEvent<{ fileId: string; filePath: string }>
+    event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     const importOptions = {
       filepath: event.detail.filePath,
@@ -298,7 +305,7 @@
   };
 
   const handleImportFiles = (
-    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>
+    event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
   ) => {
     for (let i = 0; i < event.detail.filePaths.length; i++) {
       const importOptions = {
@@ -308,13 +315,13 @@
       evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
         (res) => {
           res ? true : false;
-        }
+        },
       );
     }
   };
 
   const handleSelectionChange = (
-    event: CustomEvent<{ selectedIds: Set<string> }>
+    event: CustomEvent<{ selectedIds: Set<string> }>,
   ) => {
     selectedItemIds = event.detail.selectedIds;
   };
@@ -331,7 +338,7 @@
         evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
           (res) => {
             res ? true : false;
-          }
+          },
         );
       }
     }
@@ -351,7 +358,7 @@
           evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
             (res) => {
               res ? true : false;
-            }
+            },
           );
         }
       }
@@ -401,7 +408,10 @@
               Updated: {$buck5ShotLibraryStore.lastUpdated.toLocaleTimeString()}
             </span>
           {/if}
-          <button on:click={() => loadShotLibrary($appStore.latestBuck5LibrarySettings)}>
+          <button
+            on:click={() =>
+              loadShotLibrary($appStore.latestBuck5LibrarySettings)}
+          >
             <RefreshCcw size={16} />
           </button>
           <button
