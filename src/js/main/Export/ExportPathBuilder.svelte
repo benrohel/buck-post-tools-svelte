@@ -10,6 +10,7 @@
     Plus,
     Save,
     Pencil,
+    RefreshCw,
   } from 'lucide-svelte';
   import { Tooltip } from '@svelte-plugins/tooltips';
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
@@ -73,7 +74,7 @@
 
   let pathStructure: PathItem[] = [];
   let version = 1;
-  let taskName = '';
+  let taskName = 'comp';
   let pathPreviews = '';
   let hasTask = true;
   let outputModules: string[] = [];
@@ -86,7 +87,6 @@
     null;
   let selectedExportPreset: Exporter | null = null;
   let selectedItemId: string | null = null;
-  let selectedNode: PathItem | null = null;
   let suggestedTokens: { name: string; token: string }[] = [];
   let showSuggestions = false;
   let currentInputValue = '';
@@ -94,16 +94,9 @@
   let pathPreviewsCache: string = '';
   let lastPathStructure: string = '';
 
-  let modalOpen = false;
-  let showBuildPreset = false;
-  let isReady = false;
-  let outputModulesSelectItems: Array<{ value: string; label: string }> = [];
-  let selectedOutputModule: string | undefined = undefined;
-  let presetNameExists = false;
-  let validPresetName = true;
-  let exportPresetsSelectItems: Array<{ value: string; label: string }> = [];
-
-  $: isReady = !!(rootFolder || projectFolder);
+  $: modalOpen = false;
+  $: showBuildPreset = false;
+  $: isReady = rootFolder || projectFolder;
   $: outputModulesSelectItems = outputModules.map((module) => ({
     value: module,
     label: module,
@@ -134,23 +127,10 @@
     } else {
       pathPreviews = '';
     }
-
-    selectedExportPreset = exportPresets.find(
-      (preset: Exporter) => preset.name === selectedExportPresetMenuItem?.value,
-    );
-
-    if (selectedExportPreset) {
-      pathStructure = selectedExportPreset.path;
-      useProjectFolder = selectedExportPreset.relativePath;
-      exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
-        value: preset.name,
-        label: preset.name,
-      }));
-      selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-        (preset) => preset.value === selectedExportPreset.name,
-      );
-    }
   }
+  $: selectedNode = selectedItemId
+    ? findNodeById(pathStructure, selectedItemId)
+    : null;
 
   // Function to set the Root Folder
   const setRootFolder = (path: string) => {
@@ -204,9 +184,8 @@
     value: { value: string; label: string },
   ) => {
     selectedOutputModuleMenuItem = value;
-    selectedOutputModule = outputModules.find(
-      (module) => module === value.value,
-    );
+    selectedOutputModule =
+      outputModules.find((module) => module === value.value) ?? '';
     pathStructure = updateNodeInTree(pathStructure, id, (node) => ({
       ...node,
       outputModule: selectedOutputModule,
@@ -270,7 +249,7 @@
       relativePath: useProjectFolder,
     };
     const updatedExportPresets = exportPresets.map((preset) =>
-      preset.name === selectedExportPreset.name ? updatedExportPreset : preset,
+      preset.name === selectedExportPreset!.name ? updatedExportPreset : preset,
     );
     log.debug(
       'Saving exporter presets',
@@ -287,10 +266,11 @@
           value: preset.name,
           label: preset.name,
         }));
-        selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-          (preset) => preset.value === selectedExportPreset.name,
-        );
-        pathStructure = selectedExportPreset.path;
+        selectedExportPresetMenuItem =
+          exportPresetsSelectItems.find(
+            (preset) => preset.value === selectedExportPreset!.name,
+          ) ?? null;
+        pathStructure = selectedExportPreset!.path;
 
         notifications.success('Exporter preset saved successfully', 2000);
       } else {
@@ -298,9 +278,10 @@
       }
     });
     selectedExportPreset = updatedExportPreset;
-    selectedExportPresetMenuItem = exportPresetsSelectItems.find(
-      (preset) => preset.value === selectedExportPreset.name,
-    );
+    selectedExportPresetMenuItem =
+      exportPresetsSelectItems.find(
+        (preset) => preset.value === selectedExportPreset!.name,
+      ) ?? null;
     pathStructure = selectedExportPreset.path;
     useProjectFolder = selectedExportPreset.relativePath;
     hasTask = selectedExportPreset.previewPath.includes('{task}');
@@ -333,7 +314,7 @@
       selectedOutputModule = node.outputModule;
       selectedOutputModuleMenuItem = outputModulesSelectItems.find(
         (om) => om.value === node.outputModule,
-      );
+      ) as Option<string>;
     }
   };
 
@@ -594,9 +575,9 @@
     }, 0);
   };
   // Function to flatten the tree for iterative rendering
-  function flattenTree(
+  const flattenTree = (
     nodes: PathItem[],
-  ): Array<{ node: PathItem; depth: number; path: string[] }> {
+  ): Array<{ node: PathItem; depth: number; path: string[] }> => {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
 
@@ -638,7 +619,7 @@
     }
 
     return result;
-  }
+  };
 
   // Helper function to build paths (iterative version)
   const buildPathFromNodes = (nodes: PathItem[]): string => {
@@ -785,7 +766,7 @@
     }
     const presetNameToDelete = selectedExportPreset.name;
     const updatedExportPresets = exportPresets.filter(
-      (preset) => preset.name !== selectedExportPreset.name,
+      (preset) => preset.name !== presetNameToDelete,
     );
     setExporterPresets($appStore.appId, updatedExportPresets).then((result) => {
       if (result) {
@@ -822,27 +803,122 @@
     modalConfirmOpen = false;
   };
 
-  $: pathPreviews = selectedNode ? getMemoizedPaths(pathStructure) : '';
-  $: {
-    if (dummyComp && selectedExportPreset) {
-      const renderFolder = useProjectFolder ? projectFolder : rootFolder;
-      pathPreviews = buildRenderPath(
-        dummyComp,
-        $appStore.appId,
-        renderFolder,
-        getMemoizedPaths(pathStructure),
-        taskName,
-        version,
-      );
+  const loadComps = async () => {
+    log.debug('Calling getSelectedCompsForRender()...');
+    if ($appStore.appId == 'AEFT') {
+      const comps = JSON.parse(
+        await evalES('getSelectedCompsForRender()'),
+      ) as any;
+      dummyComp = comps.comps[0];
+      log.debug('Dummy comp loaded', { compName: dummyComp?.compName });
     }
-    console.log('pathPreviews', pathPreviews);
-  }
+  };
 
-  $: selectedNode = selectedItemId
-    ? findNodeById(pathStructure, selectedItemId)
-    : null;
+  onMount(async () => {
+    try {
+      log.debug('Component mounting', { appId: $appStore.appId });
 
-  $: console.log('selectedNode', selectedNode);
+      if ($appStore.rememberLastExportPath) {
+        lastFolderExport.set($lastFolderExport);
+      }
+      rootFolder = $lastFolderExport;
+
+      log.debug('Calling getProjectDir()...');
+      try {
+        projectFolder = await evalES('getProjectDir()');
+        log.debug('Folders initialized', { rootFolder, projectFolder });
+      } catch (error) {
+        log.error('Failed to get project directory', error as Error);
+        projectFolder = rootFolder; // Fallback to root folder
+      }
+
+      await loadComps();
+
+      if ($appStore.appId == 'AEFT') {
+        const comps = JSON.parse(
+          await evalES('getSelectedCompsForRender()'),
+        ) as any;
+        dummyComp = comps.comps[0];
+        log.debug('Dummy comp loaded', { compName: dummyComp?.compName });
+      }
+
+      // Load Buck Output Modules if not installed
+      const savedOutputModules = getOutputModules();
+      const buckModules = savedOutputModules.filter((module) =>
+        module.includes('BUCK'),
+      );
+
+      log.debug(
+        'Buck modules loaded',
+        { count: buckModules.length },
+        buckModules,
+      );
+      outputModules = savedOutputModules;
+
+      if (buckModules.length < 1) {
+        log.debug('Calling getOutputModulesTemplates()...');
+        const renderSettings = JSON.parse(
+          await evalES('getOutputModulesTemplates()'),
+        );
+        outputModules = renderSettings.filter(
+          (p: string) => !p.startsWith('_HIDDEN'),
+        );
+        log.debug('Output modules loaded', { count: outputModules.length });
+        selectedOutputModule = outputModules[0];
+        outputModulesSelectItems = outputModules.map((module) => ({
+          value: module,
+          label: module,
+        }));
+        selectedOutputModuleMenuItem = outputModulesSelectItems[0];
+      }
+
+      // Get Stored Settings
+      if ($appStore.rememberLastExportPath) {
+        rootFolder = $lastFolderExport;
+      }
+      exportPresets = await getExporterPresets($appStore.appId);
+      log.debug('Export presets loaded', { count: exportPresets.length });
+
+      if (exportPresets.length === 0) {
+        log.warn('No export presets found');
+        return;
+      }
+
+      let selectedExportPresetName = '';
+
+      if ($appStore.rememberLastExportPreset) {
+        selectedExportPresetName = $storedExportSettings;
+      } else {
+        selectedExportPresetName = exportPresets[0].name;
+      }
+
+      selectedExportPreset = exportPresets.find(
+        (preset: Exporter) => preset.name === selectedExportPresetName,
+      ) as Exporter;
+
+      if (selectedExportPreset) {
+        pathStructure = selectedExportPreset.path;
+        useProjectFolder = selectedExportPreset.relativePath;
+        exportPresetsSelectItems = exportPresets.map((preset: Exporter) => ({
+          value: preset.name,
+          label: preset.name,
+        }));
+        selectedExportPresetMenuItem =
+          exportPresetsSelectItems.find(
+            (preset) => preset.value === selectedExportPreset!.name,
+          ) ?? null;
+        log.debug('Component mounted successfully', {
+          preset: selectedExportPreset.name,
+          pathCount: pathStructure.length,
+        });
+      } else {
+        log.warn('Selected preset not found', { selectedExportPresetName });
+      }
+    } catch (error) {
+      log.error('Error mounting component', error as Error);
+      notifications.error('Failed to load export path builder', 3000);
+    }
+  });
 </script>
 
 <div class="export-path-builder">
@@ -929,11 +1005,12 @@
       <input type="number" placeholder="Version" bind:value={version} />
     </div>
     <div class="preview">
+      <button on:click={loadComps}><RefreshCw /></button>
       <div class="preview-header">Preview:</div>
       <div class="preview-path">
         {pathPreviews}
         <!-- {#each pathPreviews as path}
-          <div class="path-item-preview">{path}</div>
+        <div class="path-item-preview">{path}</div>
         {/each} -->
       </div>
     </div>
@@ -1595,8 +1672,10 @@
     border-radius: 3px;
     display: flex;
     flex-direction: row;
-    align-items: top;
+    align-items: center;
     margin-bottom: 4px;
+    gap: 8px;
+    background-color: $extra-dark;
   }
 
   .preview-path {

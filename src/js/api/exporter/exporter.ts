@@ -1,6 +1,7 @@
 import { fs, path } from '@/lib/cep/node';
 import { evalES } from '@/lib/utils/bolt';
 import { logModule } from '@/lib/logger';
+import { format } from 'path';
 
 const log = logModule('exporter');
 export interface CompRenderData {
@@ -52,7 +53,8 @@ export const buildRenderPath = (
   rootFolder: string,
   previewString: string,
   selectedTask: string,
-  version: number
+  version: number,
+
 ) => {
 
   log.debug("buildRenderPath", { compData, appId, rootFolder, previewString, selectedTask, version });
@@ -95,7 +97,12 @@ export const buildRenderPath = (
       break;
   }
 
+
+  if (dataString.includes(rootFolder)) {
+    return dataString;
+  }
   return path.join(rootFolder, dataString);
+  // return dataString;
 };
 
 export interface IAddToRenderQueueOptions {
@@ -133,7 +140,12 @@ export const addToRenderQueue = async (
   // Create the output folders
   outputOptions.forEach((outputOption) => {
     const dirFolder = path.dirname(outputOption.outputModuleFilePath);
-    fs.existsSync(dirFolder) || fs.mkdirSync(dirFolder, { recursive: true });
+    log.debug('Creating output folder', { dirFolder });
+    try {
+      fs.existsSync(dirFolder) || fs.mkdirSync(dirFolder, { recursive: true });
+    } catch (error) {
+      log.error('Failed to create output folder', error as Error);
+    }
   });
 
   const renderOptions = {

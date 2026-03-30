@@ -214,9 +214,9 @@ export const importMediaFile = (options: IImportOptions) => {
     importOptions.forceAlphabetical = true;
   }
   var importedItem = app.project.importFile(importOptions);
-  if(importedItem instanceof FootageItem) {
-  renameClipFromSource(importedItem);
-}
+  if (importedItem instanceof FootageItem) {
+    renameClipFromSource(importedItem);
+  }
   return importedItem.id;
 };
 
@@ -322,14 +322,27 @@ export const addToRenderQueue = (options: IRenderWithTokensOptions) => {
 
     // Apply the template
     try {
+
       om.applyTemplate(presetName);
-      om.file = new File(presetPath);
     } catch (e: any) {
       alert(
         'Failed to apply template: ' +
         outputModules[i].outputModuleName +
         '\n' +
         e.toString()
+      );
+      break;
+    }
+
+    try {
+      om.file = new File("");
+      om.file = new File(presetPath);
+    } catch (error: any) {
+      alert(
+        'Failed to set filepath: ' +
+        outputModules[i].outputModuleName +
+        '\n' +
+        error.toString()
       );
       break;
     }

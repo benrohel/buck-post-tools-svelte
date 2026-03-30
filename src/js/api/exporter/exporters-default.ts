@@ -66,6 +66,7 @@ export const aeDefaultExportPresets: Exporter[] = [
     description:
       'The root folder should be a sequence folder inside production/shots',
     relativePath: false,
+
     path: [
       {
         type: 'folder',
