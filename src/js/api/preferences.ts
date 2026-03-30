@@ -102,6 +102,8 @@ export const setPreferenceByKey = async (
 export const getExporterPresets = async (
   appId: 'AEFT' | 'PPRO'
 ): Promise<Exporter[]> => {
+  console.log('getExporterPresets', appId);
+  console.log('preferencesDir', preferencesDir);
   const exportPresetsPath = path.join(
     preferencesDir,
     `exportPresets-${appId.toLowerCase()}.json`

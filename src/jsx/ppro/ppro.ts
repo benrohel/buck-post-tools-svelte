@@ -2,6 +2,7 @@ import { padLeft, padStart } from '../utils/utils';
 
 import { getProjectFile, collectAllFilePaths, getProjectDir, selectFolder, appVersion } from './ppro-utils';
 export { getProjectFile, collectAllFilePaths, getProjectDir, selectFolder, appVersion };
+export { createSequencePerClip } from './create-sequences-per-clip';
 declare var JSON: any;
 declare const qe: undefined | any;
 
@@ -1170,6 +1171,9 @@ export const addGap = ({ gap, trackName }: GapOptions) => {
     }
   }
 };
+
+
+
 
 
 // export const getProjectDir = () => {

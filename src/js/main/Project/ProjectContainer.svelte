@@ -3,6 +3,7 @@
 
   import ProjectStarter from './ProjectStarter.svelte';
   import CopySequenceSettings from './CopySequenceSettings.svelte';
+  import CreateMultipleSequences from './CreateMultipleSequences.svelte';
   import AspectRatios from './AspectRatios.svelte';
   import ColorManagement from './ColorManagement.svelte';
   import ShotExplorer from '../Explorer/ShotExplorer.svelte';
@@ -27,6 +28,12 @@
       label: 'Sequence Settings',
       value: 'sequenceSettings',
       component: CopySequenceSettings,
+      apps: ['PPRO'],
+    },
+    {
+      label: 'Multiple Sequences',
+      value: 'multipleSequences',
+      component: CreateMultipleSequences,
       apps: ['PPRO'],
     },
     {
