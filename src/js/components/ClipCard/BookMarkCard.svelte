@@ -31,6 +31,22 @@
   let isLoadingTree = false;
   let showFileBrowser = false;
   let groupSequences = true;
+  let existingFilesInProject: string[] = [];
+
+  const loadExistingFilesInProject = async () => {
+    try {
+      const existingMediaFilesData = JSON.parse(
+        await evalES(`collectAllFilePaths()`, false),
+      ) as string[];
+      existingFilesInProject = existingMediaFilesData;
+    } catch (error) {
+      log.error(
+        'Failed to collect existing project file paths',
+        error as Error,
+      );
+      existingFilesInProject = [];
+    }
+  };
 
   let actualPath = async () => {
     console.log('bookmark:', bookmark);
@@ -99,6 +115,7 @@
   const loadFileBrowser = async () => {
     isLoadingTree = true;
     try {
+      await loadExistingFilesInProject();
       const rootPath = await actualPath();
       fileTreeItems = await getRootFolder(rootPath, groupSequences);
       showFileBrowser = !showFileBrowser;
@@ -180,6 +197,7 @@
       false,
     );
     if (result) {
+      await loadExistingFilesInProject();
       if (isSequence && node?.metadata?.frameCount) {
         notifications.success(
           `Successfully imported sequence (${node.metadata.frameCount} frames)`,
@@ -212,6 +230,7 @@
       false,
     );
     if (result) {
+      await loadExistingFilesInProject();
       notifications.success(
         `Successfully imported ${event.detail.filePaths.length} files`,
         2000,
@@ -271,7 +290,7 @@
         <FileBrowser
           bind:this={fileBrowserRef}
           items={fileTreeItems}
-          existingFiles={[]}
+          existingFiles={existingFilesInProject}
           showFileActions={true}
           allowMultiSelect={true}
           showSequenceToggle={true}

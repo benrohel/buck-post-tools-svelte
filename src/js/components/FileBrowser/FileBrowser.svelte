@@ -75,13 +75,16 @@
   // 12. REACTIVE DECLARATIONS
   // ═══════════════════════════════════════════════════════════
   $: filteredItems = filterByExtension(items, extensionFilter);
+  $: existingFilesSet = new Set(
+    existingFiles.map((file) => path.normalize(file).toLowerCase()),
+  );
 
   // ═══════════════════════════════════════════════════════════
   // 13. FUNCTIONS
   // ═══════════════════════════════════════════════════════════
   const filterByExtension = (
     itemList: PathItem[],
-    extFilter: string
+    extFilter: string,
   ): PathItem[] => {
     if (!extFilter || extFilter === '') {
       return itemList;
@@ -137,6 +140,10 @@
 
     if (!clickedNode) return;
 
+    if (clickedNode.type === 'file' && fileExistsInProject(clickedNode)) {
+      return;
+    }
+
     // Only handle selection for files, ignore folder clicks for selection
     if (clickedNode.type !== 'file') return;
 
@@ -163,7 +170,7 @@
       // Shift+Click: Select range of files
       const currentIndex = flatItems.findIndex((item) => item.id === itemId);
       const lastIndex = flatItems.findIndex(
-        (item) => item.id === lastClickedId
+        (item) => item.id === lastClickedId,
       );
 
       if (currentIndex !== -1 && lastIndex !== -1) {
@@ -174,7 +181,7 @@
         const newSelection = new Set(selectedItemIds);
         for (let i = startIndex; i <= endIndex; i++) {
           const rangeNode = flatItems[i];
-          if (rangeNode.type === 'file') {
+          if (rangeNode.type === 'file' && !fileExistsInProject(rangeNode)) {
             newSelection.add(rangeNode.id);
           }
         }
@@ -196,7 +203,7 @@
   };
 
   const flattenTree = (
-    nodes: PathItem[]
+    nodes: PathItem[],
   ): Array<{ node: PathItem; depth: number; path: string[] }> => {
     const result: Array<{ node: PathItem; depth: number; path: string[] }> = [];
     const stack: Array<{ node: PathItem; depth: number; path: string[] }> = [];
@@ -271,7 +278,7 @@
   const updateNodeInTree = (
     nodes: PathItem[],
     nodeId: string,
-    updateFn: (node: PathItem) => PathItem
+    updateFn: (node: PathItem) => PathItem,
   ): PathItem[] => {
     return nodes.map((node) => {
       if (node.id === nodeId) {
@@ -312,8 +319,27 @@
   };
 
   const fileExistsInProject = (node: PathItem): boolean => {
-    const basename = path.basename(node.path);
-    return existingFiles.map((file) => path.basename(file)).includes(basename);
+    if (node.type !== 'file') {
+      return false;
+    }
+
+    const nodePath = path.normalize(node.path).toLowerCase();
+    if (existingFilesSet.has(nodePath)) {
+      return true;
+    }
+
+    // For sequence nodes, metadata.pattern is usually a representative filename
+    // and we may not know the exact file path that is in the project.
+    if (node.metadata?.isSequence && node.metadata?.pattern) {
+      const patternBase = path.basename(node.metadata.pattern).toLowerCase();
+      for (const file of existingFilesSet) {
+        if (path.basename(file).toLowerCase() === patternBase) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   };
 
   const handleOpenFile = (itemId: string) => {
@@ -332,12 +358,16 @@
 
   const handleImportFile = (itemId: string) => {
     const node = findNodeById(items, itemId);
-    if (node && node.type === 'file') {
+    if (node && node.type === 'file' && !fileExistsInProject(node)) {
       dispatch('importFile', { fileId: itemId, filePath: node.path });
     }
   };
 
   const handleDoubleClick = (itemId: string) => {
+    const node = findNodeById(items, itemId);
+    if (node && node.type === 'file' && fileExistsInProject(node)) {
+      return;
+    }
     if (selectedItemIds.size > 1) {
       handleImportSelected();
     } else {
@@ -351,6 +381,7 @@
     const allItems = findNodesByType(items, 'file');
     const selectedFiles = allItems
       .filter((item) => selectedItemIds.has(item.id))
+      .filter((item) => !fileExistsInProject(item))
       .map((item) => ({ id: item.id, path: item.path }));
 
     if (selectedFiles.length > 0) {
@@ -467,13 +498,19 @@
                 <span class="item-name">{node.name || '[empty]'}</span>
                 {#if node.type === 'file' && showFileActions}
                   <div class="flex-row-end">
-                    <button on:click={() => handleRevealFile(node.id)}
+                    <button
+                      disabled={fileExistsInProject(node)}
+                      on:click={() => handleRevealFile(node.id)}
                       ><ExternalLink size="16" color="white" /></button
                     >
-                    <button on:click={() => handleOpenFile(node.id)}
+                    <button
+                      disabled={fileExistsInProject(node)}
+                      on:click={() => handleOpenFile(node.id)}
                       ><Eye size="16" color="white" /></button
                     >
-                    <button on:click={() => handleImportFile(node.id)}
+                    <button
+                      disabled={fileExistsInProject(node)}
+                      on:click={() => handleImportFile(node.id)}
                       ><Download size="16" color="white" /></button
                     >
                   </div>
