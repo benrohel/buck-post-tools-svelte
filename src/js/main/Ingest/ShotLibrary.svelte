@@ -53,7 +53,7 @@
       .map((clip) => {
         const fileVersion = GetSystemFileVersionsWithShotName(
           clip.filepath,
-          clip.shotName
+          clip.shotName,
         );
         fileVersion.sort((a, b) => {
           if (a.version > b.version) {
@@ -76,7 +76,7 @@
 
   const getAeClips = async () => {
     const selectedClips = JSON.parse(
-      await evalES(`getSelectedClips()`, false)
+      await evalES(`getSelectedClips()`, false),
     ) as any[];
     const systemClips = selectedClips
       .map((clip) => {
@@ -88,7 +88,7 @@
       .map((clip) => {
         const fileVersion = GetSystemFileVersionsWithShotName(
           clip.filepath,
-          clip.shotName
+          clip.shotName,
         );
         fileVersion.sort((a, b) => {
           if (a.version > b.version) {
@@ -194,33 +194,11 @@
       </button>
     </div>
 
-    <!-- <div>
-      {#each clips as clip}
-        <p>{path.basename(clip.file)}</p>
-      {/each}
-    </div> -->
     {#await clips.load()}
       <p>Loading...</p>
     {:then clips}
-      <!-- <TreeNode {clips} on:versionChange={handleVersionChange} /> -->
       <FileTable {clips} on:versionChange={handleVersionChange} />
     {/await}
-
-    <!-- <div id="card-list">
-      {#each sequenceClips as clip, id}
-        {#key clip.nodeId}
-          <ClipCard
-            {clip}
-            onSelect={handleClipSelect}
-            selected={false}
-            {id}
-            onReplace={handleReplaceClip}
-            onImport={handleImportClip}
-            onChange={handleClipOnChange}
-          />
-        {/key}
-      {/each}
-    </div> -->
   </div>
 </div>
 

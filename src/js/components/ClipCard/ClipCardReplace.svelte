@@ -1,34 +1,19 @@
 <script lang="ts">
-  // ═══════════════════════════════════════════════════════════
-  // 1. SVELTE IMPORTS
-  // ═══════════════════════════════════════════════════════════
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
 
-  // ═══════════════════════════════════════════════════════════
-  // 5. API/UTILITY IMPORTS
-  // ═══════════════════════════════════════════════════════════
   import { fs, path } from '@/lib/cep/node';
   import { evalES } from '@/lib/utils/bolt';
 
-  // ═══════════════════════════════════════════════════════════
-  // 8. TYPE DEFINITIONS
-  // ═══════════════════════════════════════════════════════════
   import type { ClipMetadata } from '@/types/models';
   import type { OnChange2 } from '@/types/callbacks';
 
-  // ═══════════════════════════════════════════════════════════
-  // 9. PROPS
-  // ═══════════════════════════════════════════════════════════
   export let clip: ClipMetadata;
   export let id = 0;
   export let selected = false;
   export let onChange: OnChange2<ClipMetadata, string>;
   export let selectedVersion = '';
 
-  // ═══════════════════════════════════════════════════════════
-  // 12. REACTIVE DECLARATIONS
-  // ═══════════════════════════════════════════════════════════
   $: getSyncedColor = () => {
     if (isSynced()) {
       return 'color: #3caea3';
@@ -46,9 +31,13 @@
       selectedVersion = clip.replacements[0];
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // 13. FUNCTIONS
-  // ═══════════════════════════════════════════════════════════
+  $: if (clip?.replacements?.length) {
+    const next = clip.selectedVersion || clip.replacements[0];
+    if (!selectedVersion || !clip.replacements.includes(selectedVersion)) {
+      selectedVersion = next;
+    }
+  }
+
   const handleSelectVersion = async () => {
     if (onChange) {
       onChange(clip, selectedVersion);
@@ -60,9 +49,6 @@
     evalES(`goToFrame(${startFrame}, false)`).then((res) => {});
   };
 
-  // ═══════════════════════════════════════════════════════════
-  // 14. LIFECYCLE HOOKS
-  // ═══════════════════════════════════════════════════════════
   onMount(() => {
     initCard();
   });
