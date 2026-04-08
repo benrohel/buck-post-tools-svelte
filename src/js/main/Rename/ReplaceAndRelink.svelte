@@ -68,7 +68,7 @@
     log.debug('Replace clip', {
       clipName: clip.clipName,
       nodeId: clip.nodeId,
-      selectedVersion
+      selectedVersion,
     });
     let importOptions = {
       nodeId: clip.nodeId,
@@ -135,7 +135,9 @@
       // Process next clip
       processNextClip(clips, index + 1);
     } catch (error) {
-      log.error(`Error processing clip ${clip.clipName}`, error as Error, { clipName: clip.clipName });
+      log.error(`Error processing clip ${clip.clipName}`, error as Error, {
+        clipName: clip.clipName,
+      });
       notifications.error(`Failed to replace clip ${clip.clipName}`, 2000);
       isProcessing = false;
     }
@@ -173,10 +175,14 @@
     }
 
     sequenceClips = [...currentFiles];
-    log.debug('Search files complete', {
-      clipCount: sequenceClips.length,
-      hasReplacements: sequenceClips.some(c => c.replacements?.length > 0)
-    }, sequenceClips);
+    log.debug(
+      'Search files complete',
+      {
+        clipCount: sequenceClips.length,
+        hasReplacements: sequenceClips.some((c) => c.replacements?.length > 0),
+      },
+      sequenceClips,
+    );
     isLoading = false;
   };
 
@@ -192,7 +198,9 @@
 
   onMount(async () => {
     if ($lastFolderSearch !== null && $appStore.rememberLastFolderSearch) {
-      log.debug('Restored last folder search', { lastFolderSearch: $lastFolderSearch });
+      log.debug('Restored last folder search', {
+        lastFolderSearch: $lastFolderSearch,
+      });
       rootFolder = $lastFolderSearch;
     }
     await getClips();
@@ -209,12 +217,22 @@
 </div>
 
 <div class="flex-row-end">
-  <Tooltip action="hover" content="Refresh Clips" position="bottom" delay={1000}>
+  <Tooltip
+    action="hover"
+    content="Refresh Clips"
+    position="bottom"
+    delay={1000}
+  >
     <button on:click={resetList}>
       <RefreshCw size="16" />
     </button>
   </Tooltip>
-  <Tooltip action="hover" content="Search Rename" position="bottom" delay={1000}>
+  <Tooltip
+    action="hover"
+    content="Search Rename"
+    position="bottom"
+    delay={1000}
+  >
     <button on:click={searchFiles}>
       <FolderSearch size="16" />
     </button>
@@ -237,7 +255,7 @@
 </div>
 
 {#if isProcessing}
-  <ProgressBar value={progressPercentage} max={100} />
+  <ProgressBar percentage={progressPercentage} />
   <div class="progress-text">
     Processing {processedCount} of {totalCount} clips...
   </div>
@@ -251,12 +269,7 @@
 
 <div class="clip-list">
   {#each sequenceClips as clip, i}
-    <ClipCardReplace
-      {clip}
-      id={i}
-      onReplace={handleReplaceClip}
-      onChange={handleClipOnChange}
-    />
+    <ClipCardReplace {clip} id={i} onChange={handleClipOnChange} />
   {/each}
 </div>
 

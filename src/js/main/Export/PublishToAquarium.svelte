@@ -9,6 +9,7 @@
     GetFootageLibrary,
     PostFootageAsset,
     ListAssetsFromLibrary,
+    Tasks,
   } from '@/api/buck5/buck5-api';
   import { XmemlParser } from '@/api/fcp-xml-to-csv';
   import { GetActiveSequence } from '@/api/edit';
@@ -19,6 +20,10 @@
   import type * as BUCK5 from '@/api/buck5';
   import type { Option } from '@/types/models';
   import type { Sequence } from '@/api/sequence';
+  import {
+    projects as projectsStore,
+    activeProject,
+  } from '@/stores/aquarium-store';
 
   import { logModule } from '@/lib/logger';
   const log = logModule('publish-to-aquarium');
@@ -27,10 +32,12 @@
   let projectName = '';
   let selectedProject: Option<string> = { value: '', label: '' };
 
-  $: projectItems = projects.map((p: BUCK5.Item): Option<string> => ({
-    value: p._key,
-    label: p.data.name,
-  }));
+  $: projectItems = projects.map(
+    (p: BUCK5.Item): Option<string> => ({
+      value: p._key,
+      label: p.data.name,
+    }),
+  );
 
   const setSelectedProject = (event: Option<string> | null) => {
     log.debug('Project selected', { project: event });
@@ -48,7 +55,7 @@
     return new Promise((resolve, reject) => {
       const result = evalES(
         `exportSequenceXml("${filepath}","${sequence.nodeId}")`,
-        false
+        false,
       );
       if (result) {
         resolve(result);
@@ -69,10 +76,14 @@
 
     const xml = await exportSequenceXml(sequence);
     const json = await parser.convertXmlToJSON(xml);
-    log.debug('Parsed sequence XML to JSON', {
-      sequenceName: sequence.name,
-      assetCount: json?.length || 0
-    }, json);
+    log.debug(
+      'Parsed sequence XML to JSON',
+      {
+        sequenceName: sequence.name,
+        assetCount: json?.length || 0,
+      },
+      json,
+    );
 
     const existingAssets = await ListAssetsFromLibrary(library._key);
 
@@ -92,13 +103,13 @@
       return;
     }
 
-    const projectPath = await PROJECT_ROOT(projectFile);
+    const projectPath = (await PROJECT_ROOT(projectFile)) as string;
     const projectName = path.basename(projectPath);
     return projectName;
   };
 
   const setDefaultProject = async () => {
-    projectName = await getProjectNameFromPath();
+    const projectName = (await getProjectNameFromPath()) as string;
     if (projects.find((p: BUCK5.Item) => p.data.name === projectName)) {
       selectedProject = { value: projectName, label: projectName };
     } else {
@@ -108,6 +119,7 @@
 
   onMount(async () => {
     projects = await Projects();
+    projectsStore.set(projects);
     setDefaultProject();
   });
 </script>

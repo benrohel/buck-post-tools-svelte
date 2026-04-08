@@ -54,7 +54,7 @@
       {
         selectedCount: markerColors.filter((m) => m.selected).length,
       },
-      markerColors
+      markerColors,
     );
   };
 
@@ -84,7 +84,7 @@
       await GetMarkersThumbnails(
         seq.nodeId,
         outputFolder,
-        markerColors.filter((m) => m.selected).map((m) => m.colorIndex)
+        markerColors.filter((m) => m.selected).map((m) => m.colorIndex),
       ).then(() => {
         log.debug('Marker thumbnails export complete', {
           outputFolder,
@@ -138,7 +138,7 @@
   <button
     class="active"
     on:click={handleSubmitExport}
-    disabled={$stillOutputFolder && $stillOutputFolder.length === 0}
+    disabled={!$stillOutputFolder || $stillOutputFolder.length === 0}
     >Export Stills</button
   >
 </div>

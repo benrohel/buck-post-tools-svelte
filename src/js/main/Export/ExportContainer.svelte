@@ -7,13 +7,13 @@
   import ExportCompositions from './ExportCompositions.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
-  import ExportPproPathBuilder from './ExportPproPathBuilder.svelte';
+  // import ExportPproPathBuilder from './ExportPproPathBuilder.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
   import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
   const log = logModule('export-container');
 
-  import type { SelectToolItem } from '@/types/models';
+  import type { Option, SelectToolItem } from '@/types/models';
 
   const exportModes: SelectToolItem[] = [
     {
@@ -58,18 +58,27 @@
     m.apps.includes($appStore.appId),
   );
 
-  // Initialize as undefined - will be set by reactive block
-  let selectedExportMode: SelectToolItem | undefined = undefined;
+  $: exportModeOptions = filteredModes.map(
+    (m): Option<string> => ({ value: m.value, label: m.label }),
+  );
 
-  const handleOnChange = (value: SelectToolItem) => {
+  let selectedExportModeOption: Option<string> | null = null;
+  $: selectedExportMode =
+    filteredModes.find((m) => m.value === selectedExportModeOption?.value) ??
+    null;
+
+  const handleOnChange = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
     log.debug('Export mode changing', {
       from: selectedExportMode?.value,
       to: value.value,
     });
-    selectedExportMode = value;
+    selectedExportModeOption = value as Option<string>;
     log.debug('Export mode changed', {
-      mode: selectedExportMode.value,
-      label: selectedExportMode.label,
+      mode: selectedExportMode?.value,
+      label: selectedExportMode?.label,
     });
   };
 
@@ -90,15 +99,18 @@
         !selectedExportMode ||
         !selectedExportMode.apps.includes($appStore.appId)
       ) {
-        selectedExportMode = defaultMode;
+        selectedExportModeOption = {
+          value: defaultMode.value,
+          label: defaultMode.label,
+        };
       }
     }
   });
 </script>
 
 <MenuSelect
-  items={filteredModes}
-  bind:value={selectedExportMode}
+  items={exportModeOptions}
+  bind:value={selectedExportModeOption}
   onChange={handleOnChange}
 />
 

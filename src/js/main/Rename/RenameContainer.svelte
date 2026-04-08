@@ -15,50 +15,65 @@
 
   import { type RenameContext, renameContextKey } from './RenameContext';
 
+  import type { RenameScope } from './RenameContext';
+
   import type { SelectToolItem, Option } from '@/types/models';
 
   const renameContext = getContext('rename') as RenameContext;
 
   const renameModes: SelectToolItem[] = [
-    { value: 'replace', label: 'Find and Replace', component: FindAndReplace, apps: ['AEFT', 'PPRO'] },
+    {
+      value: 'replace',
+      label: 'Find and Replace',
+      component: FindAndReplace,
+      apps: ['AEFT', 'PPRO'],
+    },
     {
       value: 'prefix',
       label: 'Add Prefix or Suffix',
       component: PrefixSuffix,
-      apps: ['AEFT', 'PPRO']
+      apps: ['AEFT', 'PPRO'],
     },
     {
       value: 'sequential',
       label: 'Sequential Rename',
       component: SequentialRename,
-      apps: ['AEFT', 'PPRO']
+      apps: ['AEFT', 'PPRO'],
     },
     {
       value: 'versionUp',
       label: 'Version Up',
       component: VersionUp,
-      apps: ['AEFT', 'PPRO']
+      apps: ['AEFT', 'PPRO'],
     },
     {
       value: 'revert',
       label: 'Revert to filename',
       component: RevertToFilename,
-      apps: ['AEFT', 'PPRO']
+      apps: ['AEFT', 'PPRO'],
     },
     {
       value: 'relink',
       label: 'Rename and Relink --project items only',
       component: ReplaceAndRelink,
-      apps: ['AEFT', 'PPRO']
+      apps: ['AEFT', 'PPRO'],
     },
   ];
 
   let selectedMode: SelectToolItem = renameModes[0];
 
-  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
+  const handleOnMenuChange = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
+    selectedMode =
+      renameModes.find((mode) => mode.value === value.value) ?? renameModes[0];
+  };
 
   const handleScopeChange = (item: Option<string>) => {
-    renameContext.getScope = item.value;
+    if (item.value === 'project' || item.value === 'timeline') {
+      renameContext.setScope(item.value as RenameScope);
+    }
   };
 
   onMount(() => {});

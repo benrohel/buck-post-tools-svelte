@@ -7,7 +7,7 @@
 
   import { appStore } from '@/stores/app-store';
 
-  import type { SelectToolItem } from '@/types/models';
+  import type { Option, SelectToolItem } from '@/types/models';
 
   const toolList: SelectToolItem[] = [
     {
@@ -26,9 +26,18 @@
 
   let selectedMode: SelectToolItem = toolList[0];
 
-  $: filteredToolList = toolList.filter((tool) => tool.apps.includes($appStore.appId));
+  $: filteredToolList = toolList.filter((tool) =>
+    tool.apps.includes($appStore.appId),
+  );
 
-  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
+  const handleOnMenuChange = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
+    selectedMode =
+      filteredToolList.find((mode) => mode.value === value.value) ??
+      filteredToolList[0];
+  };
 
   onMount(() => {
     if ($appStore.defaultToBuck5ShotLibrary && $appStore.appId === 'PPRO') {

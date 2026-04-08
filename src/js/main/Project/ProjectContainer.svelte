@@ -13,7 +13,7 @@
 
   import { csi } from '@/lib/utils/bolt';
 
-  import type { SelectToolItem } from '@/types/models';
+  import type { Option, SelectToolItem } from '@/types/models';
 
   const appId = csi.getApplicationID();
 
@@ -53,7 +53,14 @@
   let selectedMode: SelectToolItem = toolList[0];
   let filteredToolList = toolList.filter((tool) => tool.apps.includes(appId));
 
-  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
+  const handleOnMenuChange = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
+    selectedMode =
+      filteredToolList.find((mode) => mode.value === value.value) ??
+      filteredToolList[0];
+  };
 
   onMount(() => {
     if ($appStore.defaultToBuck5ShotLibrary && appId === 'PPRO') {

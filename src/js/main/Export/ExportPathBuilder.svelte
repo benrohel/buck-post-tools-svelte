@@ -153,9 +153,8 @@
       );
     }
     selectedExportPresetMenuItem = value;
-    selectedExportPreset = exportPresets.find(
-      (preset) => preset.name === value.value,
-    );
+    selectedExportPreset =
+      exportPresets.find((preset) => preset.name === value.value) ?? null;
 
     if (!selectedExportPreset) {
       log.warn('Export preset not found', { value });
@@ -892,9 +891,10 @@
         selectedExportPresetName = exportPresets[0].name;
       }
 
-      selectedExportPreset = exportPresets.find(
-        (preset: Exporter) => preset.name === selectedExportPresetName,
-      ) as Exporter;
+      selectedExportPreset =
+        exportPresets.find(
+          (preset: Exporter) => preset.name === selectedExportPresetName,
+        ) ?? null;
 
       if (selectedExportPreset) {
         pathStructure = selectedExportPreset.path;

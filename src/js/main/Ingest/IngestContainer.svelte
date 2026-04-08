@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
   import Versioner from './Versioner.svelte';
-  import ShotLibrary from './ShotLibrary.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import { appStore } from '@/stores/app-store';
-  import type { SelectToolItem } from '@/types/models';
+  import type { Option, SelectToolItem } from '@/types/models';
 
   const ingestModes: SelectToolItem[] = [
     {
@@ -13,12 +11,6 @@
       component: Versioner,
       apps: ['PPRO', 'AEFT'],
     },
-    // {
-    //   value: 'shotlibrary',
-    //   label: 'Shot Library',
-    //   component: ShotLibrary,
-    //   apps: ['PPRO'],
-    // },
   ];
 
   let selectedMode: SelectToolItem = ingestModes[0];
@@ -27,7 +19,14 @@
     tool.apps.includes($appStore.appId),
   );
 
-  const handleOnMenuChange = (value: SelectToolItem) => (selectedMode = value);
+  const handleOnMenuChange = (value: Option<any> | null) => {
+    if (!value) {
+      return;
+    }
+    selectedMode =
+      filteredIngestModes.find((mode) => mode.value === value.value) ??
+      filteredIngestModes[0];
+  };
 </script>
 
 <MenuSelect

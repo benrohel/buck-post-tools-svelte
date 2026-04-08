@@ -69,14 +69,14 @@
   let presetFilter: string = '';
 
   $: filteredPresets = videoResolutions.resolutions.filter((f) =>
-    f.label.includes(presetFilter)
+    f.label.includes(presetFilter),
   );
 
   const getMasterSequence = async () => {
     let selectedSequences = true;
     const aeResult = await evalES(
       `getSelectedSequencesForNode(${selectedSequences})`,
-      false
+      false,
     );
     const aeJson = JSON.parse(aeResult);
     masterSequence = aeJson.sequences[0];
@@ -109,7 +109,7 @@
       const sqp = await getPresetFile(
         option.width,
         option.height,
-        option.framerate
+        option.framerate,
       );
 
       if (sqp) {
@@ -121,7 +121,7 @@
 
         const seqId = await evalES(
           `createNewSequenceFromSQP(${JSON.stringify(sequenceOptions)})`,
-          false
+          false,
         );
         log.debug('Created new sequence', {
           seqId,
@@ -144,13 +144,31 @@
     }));
   };
 
-  const handleSelectionChange = (selection: Resolution[]) => {
+  const handleSelectionChange = (
+    selection: Array<{ value: string; label: string; selected: boolean }>,
+  ) => {
     log.debug(
       'Resolution selection changed',
       { count: selection.length },
-      selection
+      selection,
     );
-    selectedPresets = selection;
+    selectedPresets = selection.map((s) => {
+      const found =
+        filteredPresets.find((p) => p.value === s.value) ??
+        videoResolutions.resolutions.find((p) => p.value === s.value);
+
+      if (found) {
+        return {
+          ...found,
+          selected: s.selected,
+        };
+      }
+
+      return {
+        ...s,
+        ratio: '',
+      };
+    });
   };
 
   const handlePresetFilter = (e: Event) => {
@@ -207,7 +225,7 @@
           <li style="margin-left:2px">{item.label}</li>
           <div
             style="width: {getItemWidth(
-              item
+              item,
             )}; height: 20px; border: 1px solid grey; border-radius: 2px;margin-right: 2px;"
           />
         </div>

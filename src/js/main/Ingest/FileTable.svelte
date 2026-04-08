@@ -30,7 +30,7 @@
       return files;
     } else {
       return files.filter((file) =>
-        file.filepath.toLowerCase().includes(filterName.toLowerCase())
+        file.filepath.toLowerCase().includes(filterName.toLowerCase()),
       );
     }
   };
@@ -48,30 +48,33 @@
 
   $: initFiles = () => {
     // First group all files by basename without version
-    const groupedFiles = clips.reduce((acc, clip) => {
-      // Extract basename without version number
-      const fullName = path.basename(clip.file);
-      const versionMatch = fullName.match(/_v(\d+)/i);
-      const version = versionMatch ? versionMatch[1].padStart(3, '0') : '000';
-      const baseName = fullName.replace(/_v\d+/i, '');
+    const groupedFiles = clips.reduce<Record<string, FileEntry>>(
+      (acc, clip) => {
+        // Extract basename without version number
+        const fullName = path.basename(clip.file);
+        const versionMatch = fullName.match(/_v(\d+)/i);
+        const version = versionMatch ? versionMatch[1].padStart(3, '0') : '000';
+        const baseName = fullName.replace(/_v\d+/i, '');
 
-      if (!acc[baseName]) {
-        acc[baseName] = {
-          name: baseName,
-          filepath: clip.file, // Initial filepath from first occurrence
-          frameRange: clip.frameRange,
-          versions: [`v${version}`],
-        };
-      } else {
-        // Add this version to the existing file entry
-        acc[baseName].versions.push(`v${version}`);
+        if (!acc[baseName]) {
+          acc[baseName] = {
+            name: baseName,
+            filepath: clip.file, // Initial filepath from first occurrence
+            frameRange: clip.frameRange,
+            versions: [`v${version}`],
+          };
+        } else {
+          // Add this version to the existing file entry
+          acc[baseName].versions.push(`v${version}`);
 
-        // Sort versions in descending order (newest first)
-        acc[baseName].versions.sort((a, b) => b.localeCompare(a));
-      }
+          // Sort versions in descending order (newest first)
+          acc[baseName].versions.sort((a, b) => b.localeCompare(a));
+        }
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {} as Record<string, FileEntry>,
+    );
 
     // Convert the grouped files object to an array
     files = Object.values(groupedFiles);
@@ -108,7 +111,8 @@
             <td>{file.name}</td>
             <td>
               <select
-                on:change={(e) => handleVersionChange(file, e.target.value)}
+                on:change={(e) =>
+                  handleVersionChange(file, e.currentTarget.value)}
               >
                 {#each file.versions as version}
                   <option value={version}>{version}</option>

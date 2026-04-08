@@ -73,6 +73,7 @@ export const Projects = async (): Promise<BUCK5.Item[]> => {
     request: '/projects',
   };
   const projects = (await BuckRequest(projectsOptions)) as BUCK5.Item[];
+
   log.debug('Fetched projects', { count: projects.length }, projects);
   return Promise.resolve(projects);
 };
@@ -105,6 +106,17 @@ export const Shot = async (shotKey: string): Promise<BUCK5.Item> => {
 
   return Promise.resolve(shot);
 };
+
+
+export const Edits = async (projectKey: string): Promise<BUCK5.Item[]> => {
+  const editsOptions: BUCK5.BuckRequestConfig = {
+    method: 'POST',
+    request: `/projects/${projectKey}/edits`,
+  };
+  const edits = (await BuckRequest(editsOptions)) as BUCK5.Item[];
+  return Promise.resolve(edits);
+};
+
 
 // export const PublishedFilesOfShot = async (shotKey: string): Promise<BUCK5.Item[]> => {
 //   const projectsOptions: BUCK5.BuckRequestConfig = {
@@ -451,6 +463,7 @@ export const GetProjectProperties = async (
   return Promise.resolve(res[0]);
 };
 
+// Editsa Rnd
 export const GetEdits = async (projectKey: string): Promise<any> => {
   const options: BUCK5.BuckRequestConfig = {
     method: 'POST',
@@ -458,7 +471,7 @@ export const GetEdits = async (projectKey: string): Promise<any> => {
     contentType: 'application/json',
     data: {
       query:
-        '# -($Child,3)> $Timeline View{_key:BUCK5.Item._key,data:BUCK5.Item.data}',
+        '# -($Child,3)> $Edit View{_key:BUCK5.Item._key,data:BUCK5.Item.data}',
     },
   };
   const res = await BuckRequest(options);
@@ -587,5 +600,6 @@ export const PostFootageAsset = async (libraryKey: string, data: FootageAsset): 
   const res = await BuckRequest(options);
   return Promise.resolve(res);
 };
+
 
 
