@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import ShotExplorer from './ShotExplorer.svelte';
+  import AssetExplorer from './AssetExplorer.svelte';
   import Bookmarks from './Bookmarks.svelte';
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
 
@@ -20,6 +21,12 @@
       label: 'Shot Library',
       value: 'shotLibrary',
       component: ShotExplorer,
+      apps: ['PPRO', 'AEFT'],
+    },
+    {
+      label: 'Asset Library',
+      value: 'assetLibrary',
+      component: AssetExplorer,
       apps: ['PPRO', 'AEFT'],
     },
   ];

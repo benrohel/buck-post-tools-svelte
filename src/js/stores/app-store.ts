@@ -16,10 +16,18 @@ interface LatestBuck5LibrarySettings {
   extensionName: string;
 }
 
+interface LatestBuck5AssetLibrarySettings {
+  libraryName: string;
+  assetName: string;
+  taskName: string;
+  extensionName: string;
+}
+
 export interface AppStore {
   showTooltips: boolean;
   defaultToBuck5ShotLibrary: boolean;
   latestBuck5LibrarySettings: LatestBuck5LibrarySettings;
+  latestBuck5AssetLibrarySettings: LatestBuck5AssetLibrarySettings;
   appId: 'AEFT' | 'PPRO';
   rememberLastFolderSearch: boolean;
   rememberLastExportPath: boolean;
@@ -37,6 +45,12 @@ export const defaultAppStore: AppStore = {
   latestBuck5LibrarySettings: {
     sequenceName: '',
     shotName: '',
+    taskName: '',
+    extensionName: '',
+  },
+  latestBuck5AssetLibrarySettings: {
+    libraryName: '',
+    assetName: '',
     taskName: '',
     extensionName: '',
   },

@@ -80,6 +80,9 @@ export const getShotFiles = async (rootPath: string) => {
     .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0)); // example sort by version descending
 };
 
+
+
+
 interface ParsedFileInfo {
   sequence: string;
   shot: string;
@@ -178,6 +181,138 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
 export const getShotFilesTree = async (rootPath: string, isBuck5: boolean = true, prefix: string = "") => {
   const files = await getShotFiles(rootPath,);
   const tree = buildPathTreeFromParsedFiles(files);
+  return tree;
+};
+
+/**
+ * Get asset files from Production/assets/{Library}/{Asset}/{Task}/
+ */
+export const getAssetFiles = async (rootPath: string) => {
+  const assetsRoot = path.join(rootPath, 'Production', 'assets');
+  const targetExtensions = ['.mov', '.mp4', '.png', '.exr', '.jpg'];
+
+  const entries = await new fdir()
+    .withFullPaths()
+    .exclude((dirName: string) => dirName.includes('temp') || dirName.startsWith('.'))
+    .filter((filePath: string) => {
+      const ext = path.extname(filePath).toLowerCase();
+      const isTargetFile = targetExtensions.includes(ext);
+      const isDotFile = path.basename(filePath).startsWith('.');
+      return isTargetFile && !isDotFile;
+    })
+    .crawl(assetsRoot)
+    .withPromise();
+
+  return entries
+    .map((entry: string) => {
+      const stats = fs.statSync(entry);
+      const parsed = parseAssetHierarchy(entry);
+
+      return {
+        ...parsed,
+        path: entry,
+        modified: stats.mtime,
+        name: path.basename(entry)
+      }
+    })
+    .filter((item: any) => item !== null)
+    .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0));
+};
+
+interface ParsedAssetFileInfo {
+  library: string;
+  asset: string;
+  task: string;
+  version?: string;
+  versionNumber?: number;
+  path: string;
+  name: string;
+}
+
+function parseAssetHierarchy(filePath: string): ParsedAssetFileInfo | null {
+  const normalizedPath = path.normalize(filePath);
+  const parts = normalizedPath.split(path.sep);
+
+  const assetsIndex = parts.findIndex(p => p.toLowerCase() === 'assets');
+  if (assetsIndex === -1 || parts.length < assetsIndex + 4) {
+    return null;
+  }
+
+  const library = parts[assetsIndex + 1];
+  const asset = parts[assetsIndex + 2];
+  const task = parts[assetsIndex + 3];
+  const name = path.basename(filePath);
+
+  const versionMatch = name.match(/_v(\d{3})/i);
+  const version = versionMatch ? `v${versionMatch[1]}` : undefined;
+  const versionNumber = versionMatch ? parseInt(versionMatch[1], 10) : undefined;
+
+  return {
+    library,
+    asset,
+    task,
+    version,
+    versionNumber,
+    path: filePath,
+    name
+  };
+}
+
+function buildPathTreeFromParsedAssetFiles(files: ParsedAssetFileInfo[]): PathItem[] {
+  const root: PathItem[] = [];
+  const idMap = new Map<string, PathItem>();
+
+  for (const file of files) {
+    const { library, asset, task, path: fullPath, name } = file;
+
+    const pathSegments = ['Assets', library, asset, task];
+    let currentPath = '';
+    let parentId: string | null = null;
+    let children = root;
+
+    for (const segment of pathSegments) {
+      currentPath = path.join(currentPath, segment);
+      const id = currentPath;
+
+      if (!idMap.has(id)) {
+        const folderItem: PathItem = {
+          id,
+          type: 'folder',
+          path: currentPath,
+          name: segment,
+          parentId,
+          children: [],
+          expanded: true
+        };
+        idMap.set(id, folderItem);
+        children.push(folderItem);
+      }
+
+      const currentItem = idMap.get(id)!;
+      children = currentItem.children!.sort((a, b) => a.name.localeCompare(b.name));
+      parentId = currentItem.id;
+    }
+
+    const fileId = fullPath;
+    if (!idMap.has(fileId)) {
+      const fileItem: PathItem = {
+        id: fileId,
+        type: 'file',
+        path: fullPath,
+        name: name,
+        parentId,
+      };
+      idMap.set(fileId, fileItem);
+      children.push(fileItem);
+    }
+  }
+
+  return root;
+}
+
+export const getAssetFilesTree = async (rootPath: string) => {
+  const files = await getAssetFiles(rootPath);
+  const tree = buildPathTreeFromParsedAssetFiles(files);
   return tree;
 };
 

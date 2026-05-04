@@ -22,7 +22,9 @@ export const SHARED_FOLDER = (): string => {
   }
   else if (os.platform() === 'darwin') {
     for (const macPrefix of macPrefixes) {
+      log.debug('Checking macOS prefix', { prefix: macPrefix });
       const macSharedFolder = path.join(`${prefix}${macPrefix}`, 'globalprefs', 'SHARED');
+      log.debug('Checking macOS shared folder', { path: macSharedFolder, exists: fs.existsSync(macSharedFolder) });
       if (fs.existsSync(macSharedFolder)) return macSharedFolder;
     }
     return "";

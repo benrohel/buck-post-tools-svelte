@@ -14,7 +14,8 @@
 
   const handleSetOutputFolder = async () => {
     let res = await evalES(`selectFolder("${label}")`);
-    let folderPath = JSON.parse(res).absoluteURI;
+    log.debug('Folder selection result', { res });
+    let folderPath = JSON.parse(res).fsName;
     if (folderPath.startsWith('~')) {
       folderPath = folderPath.replace('~', os.homedir());
     }
