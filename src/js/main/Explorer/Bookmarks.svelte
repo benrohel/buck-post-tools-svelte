@@ -4,6 +4,8 @@
   import SelectFolderWeb from '@/components/SelectFolder/SelectFolderWeb.svelte';
   import ButtonGroup from '@/components/ButtonGroup/ButtonGroup.svelte';
   import { createBookmarkStore } from '@/stores/bookmark-store';
+  import { PROJECT_ROOT } from '@/api/files/files';
+  import { evalES } from '@/lib/utils/bolt';
   import type { Option } from '@/types/models';
 
   const bookmarks = createBookmarkStore('bookmarks');
@@ -16,10 +18,18 @@
     newName = path.split('/').pop() ?? '';
   };
 
-  const addBookmark = () => {
+  const addBookmark = async () => {
+    let savePath = newPath;
+    if (folderType === 'relative') {
+      const projectFile = await evalES(`getProjectFile()`, false);
+      const projectRoot = projectFile ? PROJECT_ROOT(projectFile) : null;
+      if (projectRoot && newPath.includes(projectRoot)) {
+        savePath = newPath.slice(projectRoot.length);
+      }
+    }
     $bookmarks = [
       ...$bookmarks,
-      { name: newName, path: newPath, isRelative: folderType === 'relative' },
+      { name: newName, path: savePath, isRelative: folderType === 'relative' },
     ];
     newName = '';
     newPath = '';

@@ -254,7 +254,7 @@ export const getProjectDir = () => {
     return null;
   }
   const projectPath = app.project.path;
-  const projectDir = new File(projectPath).parent.absoluteURI;
+  const projectDir = new File(projectPath).parent.fsName;
   return projectDir;
 }
 

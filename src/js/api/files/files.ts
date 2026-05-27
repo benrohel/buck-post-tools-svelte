@@ -380,8 +380,15 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 
 export const PROJECT_ROOT = (projectPath: string) => {
 
+  if (!projectPath.match(/\/current/)) {
+    log.debug('files.ts', 'PROJECT_ROOT', 'Project is not in work/current, returning null', { projectPath });
+    return null
+  }
+
   const current = projectPath.split(/\/work\/current/);
   const projectFolders = current[1].split('/');
+  log.debug('files.ts', 'PROJECT_ROOT', projectPath);
+  log.debug('files.ts', 'PROJECT_ROOT', { current, projectFolders });
   const projectRoot = path.posix.join(current[0], 'work', 'current', projectFolders[1]);
   log.debug('files.ts', 'PROJECT_ROOT', projectRoot);
   if (fs.existsSync(projectRoot)) {

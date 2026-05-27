@@ -49,21 +49,20 @@
   };
 
   let actualPath = async () => {
-    console.log('bookmark:', bookmark);
     if (bookmark.isRelative) {
       const projectDir = await evalES(`getProjectDir()`);
       if (!projectDir) {
         notifications.error('Failed to get project directory', 3000);
         return '';
       }
-      const macPath = path.posix.join(
-        PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
-      );
-      const windowsPath = path.win32.join(
-        PROJECT_ROOT(projectDir),
-        bookmark.path.split(PROJECT_ROOT(bookmark.path)).pop() ?? '',
-      );
+      const projectRoot = PROJECT_ROOT(projectDir);
+      if (!projectRoot) {
+        notifications.error('Failed to resolve project root', 3000);
+        return '';
+      }
+      // bookmark.path is stored as the relative portion (e.g. /Production/assets/Chars)
+      const macPath = path.posix.join(projectRoot, bookmark.path);
+      const windowsPath = path.win32.join(projectRoot, bookmark.path);
 
       return os.platform() === 'win32' ? `\\${windowsPath}` : macPath;
     } else {
@@ -244,12 +243,7 @@
     event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
     log.debug('Reveal file in folder', { filePath: event.detail.filePath });
-
     openFile(path.dirname(event.detail.filePath));
-    // You can use the CEP API to reveal the file in the OS file explorer
-    // For now, just log it
-    // TODO: Use CEP API to reveal file
-    // Example: cep.fs.revealInFileBrowser(event.detail.filePath);
   };
 </script>
 
