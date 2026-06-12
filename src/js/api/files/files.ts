@@ -364,7 +364,7 @@ export const getAeOutputModulesAEP = () => {
 
 export const SHARED_FOLDER = () => {
   const platformRoot =
-    os.platform() === 'win32' ? '\\\\buck' : '/System/Volumes/Data/buck';
+    os.platform() === 'win32' ? '\\\\buck' : '/Volumes';
 
   return path.join(platformRoot, 'globalprefs', 'SHARED');
 };

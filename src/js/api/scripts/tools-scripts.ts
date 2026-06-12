@@ -20,6 +20,7 @@ export interface Script {
 }
 export const getBuckScripts = (appId: string): Script[] => {
   let scriptsFolder = '';
+  log.debug('getBuckScripts', { appId }, SHARED_FOLDER());
   if (appId === 'AEFT') {
     scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
   } else if (appId === 'PPRO') {
@@ -64,10 +65,17 @@ export const installTool = (toolFilePath: string, appId: string) => {
   if (appId === 'AEFT') {
     scriptsFolder = path.join(SHARED_FOLDER(), 'AFTER_EFFECTS', 'scripts');
   } else if (appId === 'PPRO') {
-    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 's          cripts');
+    scriptsFolder = path.join(SHARED_FOLDER(), 'PREMIERE', 'scripts');
   }
 
-  fs.copyFileSync(toolFilePath, toolFilePath);
+  if (!scriptsFolder) {
+    log.error('No scripts folder found for app');
+    return;
+  }
+
+  const fileName = path.basename(toolFilePath);
+  const destinationPath = path.join(scriptsFolder, fileName);
+  fs.copyFileSync(toolFilePath, destinationPath);
 };
 
 export const getLocalScripts = (

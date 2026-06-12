@@ -120,7 +120,7 @@
 
     const shotNamesData = [
       { value: '', label: 'All Shots', selected: true },
-      ...folderNames[2].map((shotName) => ({
+      ...(folderNames[2] || []).map((shotName) => ({
         value: shotName,
         label: shotName,
         selected: true,
@@ -128,7 +128,7 @@
     ];
     const sequenceNamesData = [
       { value: '', label: 'All Sequences', selected: true },
-      ...folderNames[1].map((sequenceName) => ({
+      ...(folderNames[1] || []).map((sequenceName) => ({
         value: sequenceName,
         label: sequenceName,
         selected: true,
@@ -136,7 +136,7 @@
     ];
     const taskNamesData = [
       { value: '', label: 'All Tasks', selected: true },
-      ...folderNames[3].map((taskName) => ({
+      ...(folderNames[3] || []).map((taskName) => ({
         value: taskName,
         label: taskName,
         selected: true,
