@@ -379,17 +379,21 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
 };
 
 export const PROJECT_ROOT = (projectPath: string) => {
+  log.debug('files.ts', 'PROJECT_ROOT', 'Getting project root', { projectPath });
 
-  if (!projectPath.match(/\/current/)) {
-    log.debug('files.ts', 'PROJECT_ROOT', 'Project is not in work/current, returning null', { projectPath });
-    return null
+  const mountPattern = /\/(work|BuckNFS)\/current/;
+  const match = projectPath.match(mountPattern);
+  if (!match) {
+    log.debug('files.ts', 'PROJECT_ROOT', 'Project is not in a known mount point, returning null', { projectPath });
+    return null;
   }
 
-  const current = projectPath.split(/\/work\/current/);
+  const mountSegment = match[1];
+  const current = projectPath.split(new RegExp(`\\/${mountSegment}\\/current`));
   const projectFolders = current[1].split('/');
   log.debug('files.ts', 'PROJECT_ROOT', projectPath);
   log.debug('files.ts', 'PROJECT_ROOT', { current, projectFolders });
-  const projectRoot = path.posix.join(current[0], 'work', 'current', projectFolders[1]);
+  const projectRoot = path.posix.join(current[0], mountSegment, 'current', projectFolders[1]);
   log.debug('files.ts', 'PROJECT_ROOT', projectRoot);
   if (fs.existsSync(projectRoot)) {
     return projectRoot;

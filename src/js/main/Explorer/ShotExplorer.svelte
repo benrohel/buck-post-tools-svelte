@@ -94,19 +94,23 @@
   };
 
   const loadShotLibrary = async (settings?: any) => {
-    if (!PROJECT_ROOT) {
-      notifications.error(
-        'You need to be connected to a Buck 5 server to use this feature',
-        3000,
-      );
-      return;
-    }
-    isLoading = true;
     const projectFile = await evalES(`getProjectFile()`, false);
+
+    // if (!PROJECT_ROOT(projectFile)) {
+
+    //   notifications.error(
+    //     'You need to be connected to a Buck 5 server to use this feature',
+    //     3000,
+    //   );
+    //   return;
+    // }
+    // isLoading = true;
+
     const existingMediaFilesData = JSON.parse(
       await evalES(`collectAllFilePaths()`, false),
     ) as string[];
     const rootFolder = PROJECT_ROOT(projectFile);
+
     if (!rootFolder) {
       notifications.error(
         'You need to be connected to a Buck 5 server to use this feature',
@@ -383,6 +387,10 @@
 
   onMount(() => {
     // Only load if not already loaded
+    log.debug('ShotExplorer', 'onMount', 'ShotExplorer mounted', {
+      buck5Server: $buck5Server,
+      isLoaded: $buck5ShotLibraryStore.isLoaded,
+    });
     if ($buck5Server && !$buck5ShotLibraryStore.isLoaded) {
       loadShotLibrary($appStore.latestBuck5LibrarySettings);
     } else {

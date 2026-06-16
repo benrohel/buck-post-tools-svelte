@@ -1,6 +1,9 @@
 const { fdir } = require('fdir');
 import { path, fs } from '@/lib/cep/node';
 import { type PathItem } from '@/api/exporter';
+import { logModule } from '@/lib/logger';
+const log = logModule('buck5-file-browser');
+
 interface HSFile {
   path: string;
   modified: Date;
@@ -188,7 +191,7 @@ export const getShotFilesTree = async (rootPath: string, isBuck5: boolean = true
  * Get asset files from Production/assets/{Library}/{Asset}/{Task}/
  */
 export const getAssetFiles = async (rootPath: string) => {
-  const assetsRoot = path.join(rootPath, 'Production', 'assets');
+  const assetsRoot = path.join(rootPath, 'Production', 'Assets');
   const targetExtensions = ['.mov', '.mp4', '.png', '.exr', '.jpg'];
 
   const entries = await new fdir()
@@ -205,8 +208,9 @@ export const getAssetFiles = async (rootPath: string) => {
 
   return entries
     .map((entry: string) => {
-      const stats = fs.statSync(entry);
       const parsed = parseAssetHierarchy(entry);
+      if (!parsed) return null;
+      const stats = fs.statSync(entry);
 
       return {
         ...parsed,
@@ -215,8 +219,8 @@ export const getAssetFiles = async (rootPath: string) => {
         name: path.basename(entry)
       }
     })
-    .filter((item: any) => item !== null)
-    .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0));
+    .filter((item: any): item is ParsedAssetFileInfo & { modified: Date } => item !== null)
+    .sort((a: ParsedAssetFileInfo, b: ParsedAssetFileInfo) => (b.versionNumber || 0) - (a.versionNumber || 0));
 };
 
 interface ParsedAssetFileInfo {
@@ -312,6 +316,7 @@ function buildPathTreeFromParsedAssetFiles(files: ParsedAssetFileInfo[]): PathIt
 
 export const getAssetFilesTree = async (rootPath: string) => {
   const files = await getAssetFiles(rootPath);
+  log.debug('buck5-file-browser.ts', 'getAssetFilesTree', 'files', files);
   const tree = buildPathTreeFromParsedAssetFiles(files);
   return tree;
 };

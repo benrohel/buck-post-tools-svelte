@@ -93,68 +93,75 @@
       return;
     }
     isLoading = true;
-    const projectFile = await evalES(`getProjectFile()`, false);
-    const existingMediaFilesData = JSON.parse(
-      await evalES(`collectAllFilePaths()`, false),
-    ) as string[];
-    const rootFolder = PROJECT_ROOT(projectFile);
-    if (!rootFolder) {
-      notifications.error(
-        'You need to be connected to a Buck 5 server to use this feature',
-        3000,
-      );
-      return;
+    try {
+      const projectFile = await evalES(`getProjectFile()`, false);
+      const existingMediaFilesData = JSON.parse(
+        await evalES(`collectAllFilePaths()`, false),
+      ) as string[];
+      const rootFolder = PROJECT_ROOT(projectFile);
+      if (!rootFolder) {
+        notifications.error(
+          'You need to be connected to a Buck 5 server to use this feature',
+          3000,
+        );
+        return;
+      }
+      const res = await getAssetFilesTree(rootFolder);
+      log.debug('AssetExplorer - loadAssetLibrary - res', res);
+
+      const folderNames = collectFolderNamesByLevel(res);
+
+      const libraryNamesData = [
+        { value: '', label: 'All Libraries', selected: true },
+        ...(folderNames[1] || []).map((libraryName) => ({
+          value: libraryName,
+          label: libraryName,
+          selected: true,
+        })),
+      ];
+      const assetNamesData = [
+        { value: '', label: 'All Assets', selected: true },
+        ...(folderNames[2] || []).map((assetName) => ({
+          value: assetName,
+          label: assetName,
+          selected: true,
+        })),
+      ];
+      const taskNamesData = [
+        { value: '', label: 'All Tasks', selected: true },
+        ...(folderNames[3] || []).map((taskName) => ({
+          value: taskName,
+          label: taskName,
+          selected: true,
+        })),
+      ];
+
+      buck5AssetLibraryStore.update((store) => ({
+        ...store,
+        pathStructure: res,
+        libraryNames: libraryNamesData,
+        assetNames: assetNamesData,
+        taskNames: taskNamesData,
+        existingMediaFiles: existingMediaFilesData,
+        lastUpdated: new Date(),
+        isLoaded: true,
+      }));
+
+      if (settings) {
+        selectedLibraryName = settings.libraryName ?? '';
+        selectedAssetName = settings.assetName ?? '';
+        selectedTaskName = settings.taskName ?? '';
+      } else {
+        selectedLibraryName = libraryNamesData[0];
+        selectedAssetName = assetNamesData[0];
+        selectedTaskName = taskNamesData[0];
+      }
+    } catch (e) {
+      log.error('AssetExplorer', 'loadAssetLibrary', e);
+      notifications.error('Failed to load asset library', 3000);
+    } finally {
+      isLoading = false;
     }
-    const res = await getAssetFilesTree(rootFolder);
-
-    const folderNames = collectFolderNamesByLevel(res);
-
-    const libraryNamesData = [
-      { value: '', label: 'All Libraries', selected: true },
-      ...(folderNames[1] || []).map((libraryName) => ({
-        value: libraryName,
-        label: libraryName,
-        selected: true,
-      })),
-    ];
-    const assetNamesData = [
-      { value: '', label: 'All Assets', selected: true },
-      ...(folderNames[2] || []).map((assetName) => ({
-        value: assetName,
-        label: assetName,
-        selected: true,
-      })),
-    ];
-    const taskNamesData = [
-      { value: '', label: 'All Tasks', selected: true },
-      ...(folderNames[3] || []).map((taskName) => ({
-        value: taskName,
-        label: taskName,
-        selected: true,
-      })),
-    ];
-
-    buck5AssetLibraryStore.update((store) => ({
-      ...store,
-      pathStructure: res,
-      libraryNames: libraryNamesData,
-      assetNames: assetNamesData,
-      taskNames: taskNamesData,
-      existingMediaFiles: existingMediaFilesData,
-      lastUpdated: new Date(),
-      isLoaded: true,
-    }));
-
-    if (settings) {
-      selectedLibraryName = settings.libraryName ?? '';
-      selectedAssetName = settings.assetName ?? '';
-      selectedTaskName = settings.taskName ?? '';
-    } else {
-      selectedLibraryName = libraryNamesData[0];
-      selectedAssetName = assetNamesData[0];
-      selectedTaskName = taskNamesData[0];
-    }
-    isLoading = false;
   };
 
   const applyStoredFilterSettings = (settings: any) => {
