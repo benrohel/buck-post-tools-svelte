@@ -133,15 +133,19 @@
       rezPackages,
     });
 
-    if (window.cep) {
+    if (window.cep || window.__adobe_cep__) {
       // Initialize appId from csi FIRST, before any other CEP operations
       log.debug('Initializing appId from csi', {
         appId: csi.getHostEnvironment(),
       });
-      appStore.set({
-        ...$appStore,
-        appId: csi.getApplicationID(),
-      });
+      const detectedAppId = csi.getApplicationID();
+      log.debug('Detected appId', { detectedAppId });
+      if (detectedAppId) {
+        appStore.set({
+          ...$appStore,
+          appId: detectedAppId,
+        });
+      }
 
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
@@ -149,9 +153,12 @@
       const versionFromApp = await evalES(`appVersion()`);
       appVersion.set(versionFromApp);
       appItems = items.filter((item) => item.apps.includes($appStore.appId));
+      log.debug('Filtered appItems', { appId: $appStore.appId, count: appItems.length });
       if (client) {
         // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
+    } else {
+      log.debug('CEP environment not detected', { windowCep: !!window.cep, adobeCep: !!(window as any).__adobe_cep__ });
     }
 
     log.debug(
