@@ -134,8 +134,18 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
   for (const file of files) {
     const { sequence, shot, task, path: fullPath, name } = file;
 
-    // Build hierarchy: Shots → Sequence → Shot → Task → File
+    // Build hierarchy: Shots → Sequence → Shot → Task → [subfolders] → File
     const pathSegments = ['Shots', sequence, shot, task];
+
+    // Extract subfolders between task and the file, excluding the last folder
+    const normalizedPath = path.normalize(fullPath);
+    const parts = normalizedPath.split(path.sep);
+    const shotsIndex = parts.findIndex(p => p.toLowerCase() === 'shots');
+    // After shots: [sequence, shot, task, ...subfolders, lastFolder, filename]
+    // Include subfolders up to (but not including) the last folder before the file
+    const subfolders = parts.slice(shotsIndex + 4, parts.length - 2);
+    pathSegments.push(...subfolders);
+
     let currentPath = '';
     let parentId: string | null = null;
     let children = root;
@@ -409,8 +419,16 @@ export const filterLatestVersions = (data: PathItem[]) => {
     const folders = node.children.filter(child => child.type === 'folder');
     const files = node.children.filter(child => child.type === 'file');
 
-    // Keep only the last file (latest version)
-    const latestFile = files.length > 0 ? [files[files.length - 1]] : [];
+    // Group files by extension, keep only the latest version per extension
+    const latestByExt = new Map<string, PathItem>();
+    for (const file of files) {
+      const ext = path.extname(file.name).toLowerCase();
+      const existing = latestByExt.get(ext);
+      if (!existing || extractVersion(file.name) > extractVersion(existing.name)) {
+        latestByExt.set(ext, file);
+      }
+    }
+    const latestFile = Array.from(latestByExt.values());
 
     // Recursively process folders
     const processedFolders = folders.map(folder => processNode(folder));
