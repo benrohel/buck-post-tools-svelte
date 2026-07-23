@@ -14,7 +14,7 @@ export const SHARED_FOLDER = (): string => {
   const prefix = os.platform() === 'win32' ? '\\\\' : '/';
   log.debug('Resolving shared folder', { platform: os.platform(), prefix });
   if (os.platform() === 'win32') {
-    const winSharedFolder = path.join(`${prefix}buck`, 'globalprefs', 'SHARED');
+    const winSharedFolder = path.join(`${prefix}buck`, 'GlobalPrefs', 'SHARED');
     log.debug('Windows shared folder', { path: winSharedFolder, exists: fs.existsSync(winSharedFolder) });
     // Check if the shared folder exists in the expected location
     if (fs.existsSync(winSharedFolder)) return winSharedFolder;
