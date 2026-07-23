@@ -8,6 +8,7 @@
   import MenuSelect from '@/components/MultiSelect/MenuSelect.svelte';
   import ExportPathBuilder from './ExportPathBuilder.svelte';
   // import ExportPproPathBuilder from './ExportPproPathBuilder.svelte';
+  import ExportSequences from './ExportSequences.svelte';
   import PublishToAquarium from './PublishToAquarium.svelte';
   import { appStore } from '@/stores/app-store';
   import { logModule } from '@/lib/logger';
@@ -38,6 +39,12 @@
       value: 'still',
       label: 'Stills',
       component: ExportStills,
+      apps: ['PPRO'],
+    },
+    {
+      value: 'sequences',
+      label: 'Export Sequences',
+      component: ExportSequences,
       apps: ['PPRO'],
     },
     {
@@ -91,8 +98,7 @@
       componentName: selectedExportMode?.component?.name,
     });
     if ($appStore.appId) {
-      const defaultMode =
-        $appStore.appId === 'PPRO' ? exportModes[0] : exportModes[4];
+      const defaultMode = filteredModes[0];
 
       // Only update if we don't have a valid selection or app changed
       if (

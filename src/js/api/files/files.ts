@@ -378,6 +378,15 @@ export const PRODUCTION_ROOT = (projectPath: string) => {
   return productionDir;
 };
 
+export const PRODUCTION_NAME = (projectPath: string) => {
+
+  log.debug('files.ts', 'PRODUCTION_NAME', 'Getting production name', { projectPath });
+  const folders = projectPath.split('/');
+  const currentIndex = folders.findIndex((folder) => folder === 'current');
+  if (currentIndex === -1) return null;
+  return folders[currentIndex + 1];
+};
+
 export const PROJECT_ROOT = (projectPath: string) => {
   log.debug('files.ts', 'PROJECT_ROOT', 'Getting project root', { projectPath });
 

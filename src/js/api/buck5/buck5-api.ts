@@ -1,37 +1,42 @@
 import type * as BUCK5 from '.';
 import { format } from 'date-fns';
-import axios from 'axios';
 import { logModule } from '@/lib/logger';
 
 const log = logModule('buck5-api');
 const today = () => {
   return format(new Date(), 'yyyy-MM-dd');
 };
-export const BUCK_DAEMON_URL = 'http://127.0.0.1:22131';
+export const BUCK_API_URL = 'https://api.pipeline.lax.k8s.buck.local';
 
 export const BuckRequest = async (
   requestOptions: BUCK5.BuckRequestConfig
 ): Promise<any> => {
-  const options: any = {
+  const headers: Record<string, string> = {
+    'X-BUCK-APP': 'cep-panel',
+  };
+  if (requestOptions.contentType) {
+    headers['Content-Type'] = requestOptions.contentType;
+  }
+
+  const fetchOptions: RequestInit = {
     method: requestOptions.method,
-    url: `${BUCK_DAEMON_URL}${requestOptions.request}`,
-    headers: {
-      'Content-Type': requestOptions.contentType
-        ? requestOptions.contentType
-        : '',
-      'X-BUCK-APP': 'cep-panel',
-    },
-    data: requestOptions.data,
+    headers,
   };
 
-  return new Promise((resolve, reject) => {
-    axios.request(options).then((response) => {
-      if (response.status === 200) {
-        resolve(response.data);
-      } else {
-      }
-    });
-  });
+  if (requestOptions.data) {
+    fetchOptions.body = JSON.stringify(requestOptions.data);
+  }
+
+  const response = await fetch(
+    `${BUCK_API_URL}${requestOptions.request}`,
+    fetchOptions,
+  );
+
+  if (!response.ok) {
+    throw new Error(`BuckRequest failed: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 };
 
 export const WhoAmI = async () => {
@@ -312,7 +317,7 @@ export const CreatePlaylist = async (
 };
 
 export const FileUrl = (tb: string) => {
-  return `${BUCK_DAEMON_URL}/${tb}`;
+  return `${BUCK_API_URL}/${tb}`;
 };
 
 export const AddMediaToPlaylist = async (

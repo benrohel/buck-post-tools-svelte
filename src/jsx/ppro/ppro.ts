@@ -1071,6 +1071,34 @@ export const exportSequenceXml = (filepath: string, sequenceId: string) => {
   return filepath;
 };
 
+export const exportActiveSequenceToAME = (
+  outputPath: string,
+  presetPath: string,
+  region: number,
+  startEncoding: boolean,
+) => {
+  var seq = app.project.activeSequence;
+  if (!seq) {
+    return JSON.stringify({ success: false, error: 'No active sequence' });
+  }
+
+  var outputFile = outputPath + '/' + seq.name;
+  app.encoder.launchEncoder();
+  var result = app.encoder.encodeSequence(
+    seq,
+    outputFile,
+    presetPath,
+    region,
+    1,
+  );
+
+  if (startEncoding) {
+    app.encoder.startBatch();
+  }
+
+  return JSON.stringify({ success: true, sequenceName: seq.name });
+};
+
 export const versionUpNames = (scope: string) => {
   var clips: any[] = [];
   if (scope === 'project') {
