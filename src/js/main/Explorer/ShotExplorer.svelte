@@ -19,6 +19,8 @@
     getShotFilesTree,
     collectFolderNamesByLevel,
     filterByDepth,
+    SHOT_VIDEO_EXTENSIONS,
+    SHOT_IMAGE_EXTENSIONS,
     type HierarchyFilters,
   } from '@/api/files/buck5-file-browser';
   import { PROJECT_ROOT } from '@/api/files/files';
@@ -29,10 +31,13 @@
   import { logModule } from '@/lib/logger';
   const log = logModule('shot-explorer');
 
+  // tif/tiff and jpg/jpeg are matched together, see filterByExtension
   const extensionNames = [
     { value: '', label: 'All Extensions', selected: true },
-    { value: 'mov', label: 'mov', selected: false },
-    { value: 'mp4', label: 'mp4', selected: false },
+    ...[...SHOT_VIDEO_EXTENSIONS, ...SHOT_IMAGE_EXTENSIONS]
+      .map((ext) => ext.slice(1))
+      .filter((ext) => ext !== 'tiff' && ext !== 'jpeg')
+      .map((ext) => ({ value: ext, label: ext, selected: false })),
   ];
 
   let filteredItems: PathItem[] = [];
@@ -42,6 +47,7 @@
   let fileBrowserRef: FileBrowser;
   let selectedItemIds: Set<string> = new Set();
   let onlyShowLatestVersions = true;
+  let flattenView = false;
   let selectedSequenceName: any = '';
   let selectedShotName: any = '';
   let selectedTaskName: any = '';
@@ -79,6 +85,15 @@
     filteredItemsAfterDepth,
     selectedExtensionName.value,
   );
+
+  // Flat view: every visible file at the root, in tree order, without folders.
+  // Node ids are unchanged so selection and import handlers keep working.
+  $: displayedItems = flattenView
+    ? getAllFilesFromTree(filteredItems).map((node) => ({
+        ...node,
+        parentId: null,
+      }))
+    : filteredItems;
 
   const handleOnMenuChange = (value: any) => {
     appStore.update((s: AppStore) => ({
@@ -238,11 +253,13 @@
 
     const filterNodeRecursively = (node: PathItem): PathItem | null => {
       if (node.type === 'file') {
-        // For files, check if the extension matches
-        const fileName = node.name.toLowerCase();
-        const hasExtension = fileName.endsWith(
-          `.${extensionFilter.toLowerCase()}`,
-        );
+        // Sequence names end with the frame range, so match on the pattern
+        const fileName = (node.metadata?.pattern ?? node.name).toLowerCase();
+        const ext = extensionFilter.toLowerCase();
+        const hasExtension =
+          fileName.endsWith(`.${ext}`) ||
+          (ext === 'tif' && fileName.endsWith('.tiff')) ||
+          (ext === 'jpg' && fileName.endsWith('.jpeg'));
         return hasExtension ? node : null;
       } else if (node.type === 'folder') {
         // For folders, recursively filter children
@@ -288,38 +305,62 @@
     localAppStore.set($appStore);
   };
 
+  // Image sequences are imported from their first frame with isSequence set,
+  // everything else (videos, stills) is imported as a single file.
+  const getImportOptions = (
+    node: PathItem | null,
+    fallbackPath: string,
+  ): { filepath: string; isSequence: boolean } => {
+    const firstFrame = node?.metadata?.isSequence
+      ? node.metadata.files?.[0]
+      : undefined;
+    return firstFrame
+      ? { filepath: firstFrame, isSequence: true }
+      : { filepath: node?.path ?? fallbackPath, isSequence: false };
+  };
+
+  const importNode = (node: PathItem | null, fallbackPath: string) => {
+    const importOptions = getImportOptions(node, fallbackPath);
+    evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then((res) => {
+      res ? true : false;
+    });
+  };
+
+  const findFileNode = (nodes: PathItem[], id: string): PathItem | null => {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children && node.children.length > 0) {
+        const found = findFileNode(node.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   // Handler for file browser events
   const handleOpenFile = (
     event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
-    openFile(event.detail.filePath);
+    const node = findFileNode(filteredItems, event.detail.fileId);
+    openFile(getImportOptions(node, event.detail.filePath).filepath);
   };
 
   const handleImportFile = (
     event: CustomEvent<{ fileId: string; filePath: string }>,
   ) => {
-    const importOptions = {
-      filepath: event.detail.filePath,
-      isSequence: false,
-    };
-
-    evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then((res) => {
-      res ? true : false;
-    });
+    importNode(
+      findFileNode(filteredItems, event.detail.fileId),
+      event.detail.filePath,
+    );
   };
 
   const handleImportFiles = (
     event: CustomEvent<{ fileIds: string[]; filePaths: string[] }>,
   ) => {
     for (let i = 0; i < event.detail.filePaths.length; i++) {
-      const importOptions = {
-        filepath: event.detail.filePaths[i],
-        isSequence: false,
-      };
-      evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
-        (res) => {
-          res ? true : false;
-        },
+      importNode(
+        findFileNode(filteredItems, event.detail.fileIds[i]),
+        event.detail.filePaths[i],
       );
     }
   };
@@ -332,57 +373,34 @@
 
   const importAllVisible = async () => {
     if (fileBrowserRef) {
-      const allVisibleFiles = getAllFilesFromTree(filteredItems);
-
-      for (let i = 0; i < allVisibleFiles.length; i++) {
-        const importOptions = {
-          filepath: allVisibleFiles[i],
-          isSequence: false,
-        };
-        evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
-          (res) => {
-            res ? true : false;
-          },
-        );
+      for (const node of getAllFilesFromTree(filteredItems)) {
+        importNode(node, node.path);
       }
     }
   };
 
   const importSelectedItems = async () => {
     if (fileBrowserRef && selectedItemIds.size > 0) {
-      const selectedFiles = fileBrowserRef
-        .getSelectedItems()
-        .map((item) => item.path);
-      if (selectedFiles.length > 0) {
-        for (let i = 0; i < selectedFiles.length; i++) {
-          const importOptions = {
-            filepath: selectedFiles[i],
-            isSequence: false,
-          };
-          evalES(`importMediaFile(${JSON.stringify(importOptions)})`).then(
-            (res) => {
-              res ? true : false;
-            },
-          );
-        }
+      for (const node of fileBrowserRef.getSelectedItems()) {
+        importNode(node, node.path);
       }
     }
   };
 
-  // Helper to get all files from tree recursively
-  const getAllFilesFromTree = (nodes: PathItem[]): string[] => {
-    let filePaths: string[] = [];
+  // Helper to get all file nodes from tree recursively
+  const getAllFilesFromTree = (nodes: PathItem[]): PathItem[] => {
+    let files: PathItem[] = [];
 
     for (const node of nodes) {
       if (node.type === 'file') {
-        filePaths.push(node.path);
+        files.push(node);
       }
       if (node.children && node.children.length > 0) {
-        filePaths = filePaths.concat(getAllFilesFromTree(node.children));
+        files = files.concat(getAllFilesFromTree(node.children));
       }
     }
 
-    return filePaths;
+    return files;
   };
 
   onMount(() => {
@@ -409,6 +427,8 @@
         <div class="flex-row-start">
           <Toggle bind:checked={onlyShowLatestVersions} />
           <span>latest versions</span>
+          <Toggle bind:checked={flattenView} />
+          <span>flatten</span>
         </div>
         <div class="flex-row-end">
           {#if $buck5ShotLibraryStore.lastUpdated}
@@ -485,7 +505,7 @@
       {:else}
         <FileBrowser
           bind:this={fileBrowserRef}
-          items={filteredItems}
+          items={displayedItems}
           existingFiles={existingMediaFiles}
           showFileActions={true}
           allowMultiSelect={true}

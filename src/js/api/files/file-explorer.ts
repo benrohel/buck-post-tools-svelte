@@ -22,7 +22,7 @@ const IMAGE_SEQUENCE_EXTENSIONS = [
 /**
  * Interface for parsed sequence information
  */
-interface SequenceInfo {
+export interface SequenceInfo {
   baseName: string; // e.g., "shot_"
   padding: number; // e.g., 4 for "0001"
   extension: string; // e.g., ".exr"
@@ -79,7 +79,7 @@ function parseSequenceFilename(filename: string): {
  * @param files - Array of filenames
  * @returns Map of sequence patterns to SequenceInfo
  */
-function groupSequences(files: string[]): Map<string, SequenceInfo> {
+export function groupSequences(files: string[]): Map<string, SequenceInfo> {
   const sequences = new Map<string, SequenceInfo>();
 
   for (const file of files) {

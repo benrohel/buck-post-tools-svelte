@@ -328,6 +328,17 @@
       return true;
     }
 
+    // Imported sequences are referenced in the project by one of their frames
+    // (usually the first one), not by the "####" pattern path.
+    if (node.metadata?.isSequence && node.metadata?.files?.length) {
+      const isFrameInProject = node.metadata.files.some((frame) =>
+        existingFilesSet.has(path.normalize(frame).toLowerCase()),
+      );
+      if (isFrameInProject) {
+        return true;
+      }
+    }
+
     // For sequence nodes, metadata.pattern is usually a representative filename
     // and we may not know the exact file path that is in the project.
     if (node.metadata?.isSequence && node.metadata?.pattern) {

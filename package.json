@@ -1,6 +1,6 @@
 {
   "name": "co.buck-post-tools.cep",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "scripts": {
     "dev": "vite",
     "dev:prod": "NODE_ENV=production vite",
@@ -21,7 +21,7 @@
     "@svelte-plugins/tooltips": "^3.0.3",
     "axios": "^1.6.2",
     "body-parser": "^1.20.2",
-    "buck-client": "../buck5/javascript/lib/buck-client",
+    "@buck5/client": "^0.14.5",
     "codejar": "^4.2.0",
     "cors": "^2.8.5",
     "date-fns": "^2.30.0",

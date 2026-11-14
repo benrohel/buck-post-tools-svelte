@@ -14,7 +14,7 @@
     ToolCase,
     BookMarked,
   } from 'lucide-svelte';
-  import { getAuthAuthenticated, client } from 'buck-client';
+  import { client } from '@buck5/client';
 
   import Tabs from '@/components/Tabs/Tabs.svelte';
   import Toast from '@/components/Toast/Toast.svelte';
@@ -40,7 +40,6 @@
 
   import { csi, evalES, subscribeBackgroundColor } from '@/lib/utils/bolt';
   import { checkForUpdate, installFromLocalFilepath } from '@/api/buck-library';
-  import { connectToDaemon } from './backend';
   import '@/index.scss';
 
   import { logModule } from '@/lib/logger';
@@ -149,16 +148,21 @@
 
       subscribeBackgroundColor((c: string) => (backgroundColor = c));
 
-      // await connectToDaemon();
       const versionFromApp = await evalES(`appVersion()`);
       appVersion.set(versionFromApp);
       appItems = items.filter((item) => item.apps.includes($appStore.appId));
-      log.debug('Filtered appItems', { appId: $appStore.appId, count: appItems.length });
+      log.debug('Filtered appItems', {
+        appId: $appStore.appId,
+        count: appItems.length,
+      });
       if (client) {
         // authenticated = (await getAuthAuthenticated()).data.user ? true : false;
       }
     } else {
-      log.debug('CEP environment not detected', { windowCep: !!window.cep, adobeCep: !!(window as any).__adobe_cep__ });
+      log.debug('CEP environment not detected', {
+        windowCep: !!window.cep,
+        adobeCep: !!(window as any).__adobe_cep__,
+      });
     }
 
     log.debug(
@@ -167,6 +171,7 @@
         hasLocalStore: !!$localAppStore,
         environment: import.meta.env.MODE,
       },
+
       { localAppStore: $localAppStore, env: import.meta.env },
     );
 

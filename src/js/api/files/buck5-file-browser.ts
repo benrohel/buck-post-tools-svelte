@@ -1,8 +1,27 @@
 const { fdir } = require('fdir');
 import { path, fs } from '@/lib/cep/node';
 import { type PathItem } from '@/api/exporter';
+import { groupSequences } from '@/api/files/file-explorer';
 import { logModule } from '@/lib/logger';
 const log = logModule('buck5-file-browser');
+
+/** Video formats listed in the Shot Explorer */
+export const SHOT_VIDEO_EXTENSIONS = ['.mov', '.mp4'];
+
+/** Still / sequence image formats both Premiere Pro and After Effects can import */
+export const SHOT_IMAGE_EXTENSIONS = [
+  '.exr',
+  '.dpx',
+  '.tif',
+  '.tiff',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.tga',
+  '.psd',
+];
+
+export const SHOT_FILE_EXTENSIONS = [...SHOT_VIDEO_EXTENSIONS, ...SHOT_IMAGE_EXTENSIONS];
 
 interface HSFile {
   path: string;
@@ -48,40 +67,97 @@ export function extractVersion(filename: string) {
  * @param rootPath is the Project folder
  * @returns 
  */
-export const getShotFiles = async (rootPath: string) => {
+export const getShotFiles = async (rootPath: string): Promise<ParsedFileInfo[]> => {
   const productionRoot = path.join(rootPath, 'Production', 'shots');
-  const targetExtensions = ['.mov', '.mp4'];
+  const targetExtensions = SHOT_FILE_EXTENSIONS;
 
 
-  const entries = await new fdir()
+  const entries: string[] = await new fdir()
     .withFullPaths()
     .exclude((dirName: string) => dirName.includes('temp') || dirName.startsWith('.'))
     .filter((filePath: string) => {
       const ext = path.extname(filePath).toLowerCase();
       const isTargetFile = targetExtensions.includes(ext);
       const isDotFile = path.basename(filePath).startsWith('.');
-      const isInShotsRender = filePath.toLowerCase().includes('/shots/') && filePath.toLowerCase().includes('/render/');
+      // Normalize separators so the folder checks also work on Windows
+      const posixPath = filePath.replace(/\\/g, '/').toLowerCase();
+      const isInShotsRender = posixPath.includes('/shots/') && posixPath.includes('/render/');
       const isRootVideo = !filePath.includes('/') && targetExtensions.includes(ext);
       return isTargetFile && (isInShotsRender || isRootVideo) && !isDotFile;
     })
     .crawl(productionRoot)
     .withPromise();
 
-  return entries
-    .map((entry: string) => {
-      const stats = fs.statSync(entry);
-      const parsed = parseHierarchy(entry);
+  const files: ParsedFileInfo[] = [];
+  for (const entry of groupShotImageSequences(entries)) {
+    const parsed = parseHierarchy(entry.path);
+    if (!parsed) continue;
 
-      return {
-        ...parsed,
-        path: entry,
-        modified: stats.mtime,
-        name: path.basename(entry)
-      }
-    })
-    .filter((item: any) => item !== null)
-    .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0)); // example sort by version descending
+    const versionMatch = entry.name.match(/_v(\d{3})/i);
+    const file: ParsedFileInfo = {
+      ...parsed,
+      name: entry.name,
+      version: versionMatch ? `v${versionMatch[1]}` : undefined,
+      versionNumber: versionMatch ? parseInt(versionMatch[1], 10) : undefined,
+    };
+    if (entry.metadata) file.metadata = entry.metadata;
+    files.push(file);
+  }
+
+  return files.sort((a, b) => (b.versionNumber || 0) - (a.versionNumber || 0)); // sort by version descending
 };
+
+/**
+ * Collapses numbered image frames living in the same folder into a single
+ * sequence entry (same shape as the sequence items built by file-explorer).
+ * Videos, stills and single frames are returned as-is.
+ */
+function groupShotImageSequences(filePaths: string[]): Array<{
+  path: string;
+  name: string;
+  metadata?: PathItem['metadata'];
+}> {
+  const filesByDir = new Map<string, string[]>();
+  for (const filePath of filePaths) {
+    const dir = path.dirname(filePath);
+    if (!filesByDir.has(dir)) filesByDir.set(dir, []);
+    filesByDir.get(dir)!.push(path.basename(filePath));
+  }
+
+  const results: Array<{ path: string; name: string; metadata?: PathItem['metadata'] }> = [];
+
+  for (const [dir, fileNames] of filesByDir.entries()) {
+    const sequencedFiles = new Set<string>();
+
+    for (const seq of groupSequences(fileNames).values()) {
+      // "shot_v001.png, shot_v002.png" are versioned stills, not frames of a sequence
+      if (/(^|[_.\-])v$/i.test(seq.baseName)) continue;
+
+      seq.files.sort();
+      seq.files.forEach((f) => sequencedFiles.add(f));
+      results.push({
+        path: path.join(dir, seq.pattern),
+        name: `${seq.pattern} [${seq.firstFrame}-${seq.lastFrame}]`,
+        metadata: {
+          isSequence: true,
+          frameRange: [seq.firstFrame, seq.lastFrame],
+          frameCount: seq.frames.length,
+          frames: seq.frames,
+          pattern: seq.pattern,
+          files: seq.files.map((f) => path.join(dir, f)),
+        },
+      });
+    }
+
+    for (const fileName of fileNames) {
+      if (!sequencedFiles.has(fileName)) {
+        results.push({ path: path.join(dir, fileName), name: fileName });
+      }
+    }
+  }
+
+  return results;
+}
 
 
 
@@ -94,6 +170,7 @@ interface ParsedFileInfo {
   versionNumber?: number;
   path: string;
   name: string;
+  metadata?: PathItem['metadata'];
 }
 
 function parseHierarchy(filePath: string): ParsedFileInfo | null {
@@ -132,7 +209,7 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
   const idMap = new Map<string, PathItem>();
 
   for (const file of files) {
-    const { sequence, shot, task, path: fullPath, name } = file;
+    const { sequence, shot, task, path: fullPath, name, metadata } = file;
 
     // Build hierarchy: Shots → Sequence → Shot → Task → [subfolders] → File
     const pathSegments = ['Shots', sequence, shot, task];
@@ -182,6 +259,7 @@ function buildPathTreeFromParsedFiles(files: ParsedFileInfo[]): PathItem[] {
         path: fullPath,
         name: name,
         parentId,
+        ...(metadata ? { metadata } : {}),
       };
       idMap.set(fileId, fileItem);
       children.push(fileItem);
